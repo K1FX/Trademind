@@ -1064,11 +1064,7 @@ function renderFullStats(){
   ].map(function(s){return '<div class="stat-row"><div class="stat-lbl">'+s.l+'</div><div class="stat-val"'+(s.c?' style="color:'+s.c+'"':'')+'>'+s.v+'</div></div>';}).join('');
 }
 
-async function callAI(prompt,maxTokens){
-  if(!checkAILimit())throw new Error('AI limit reached');
-  var r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':API_KEY,'anthropic-version':'2023-06-01'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:maxTokens||300,messages:[{role:'user',content:prompt}]})});
-  var d=await r.json();return d.content&&d.content[0]?d.content[0].text:'No response';
-}
+
 
 async function loadAIBrief(){
   try{var r=await callAI('You are TradeMind AI. Give a 2-sentence trading brief: market sentiment and one actionable tip for forex traders today.',150);document.getElementById('ai-brief').innerHTML=r;}
