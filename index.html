@@ -747,7 +747,7 @@ async function initApp(){
   var today=new Date();
   document.getElementById('p-from').value=new Date(today.getFullYear(),today.getMonth(),1).toISOString().split('T')[0];
   document.getElementById('p-to').value=today.toISOString().split('T')[0];
-  await loadTrades();await loadRules();
+  await loadTrades();await loadRules();await loadSubscription();
   updateDash();renderCal();loadAIBrief();loadEcoCal();updateSessBadge();
 }
 
@@ -1251,6 +1251,26 @@ function nav(id,el){
 function openM(id){document.getElementById(id).classList.add('open');}
 function closeM(id){document.getElementById(id).classList.remove('open');}
 document.querySelectorAll('.mo').forEach(function(m){m.addEventListener('click',function(e){if(e.target===m)m.classList.remove('open');});});
+async function loadSubscription(){
+  try{
+    var r=await fetch('https://ucyblsicfuoappzlurvs.supabase.co/rest/v1/subscriptions?email=eq.'+user.email+'&select=plan,status',{
+      headers:{
+        'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjeWJsc2ljZnVvYXBwemx1cnZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxOTgyODAsImV4cCI6MjA5NTc3NDI4MH0.AIW-9Ee2gYRiyKw2x4qY9lE9yspGz_9vO1FGh4kfVfE',
+        'Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjeWJsc2ljZnVvYXBwemx1cnZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxOTgyODAsImV4cCI6MjA5NTc3NDI4MH0.AIW-9Ee2gYRiyKw2x4qY9lE9yspGz_9vO1FGh4kfVfE'
+      }
+    });
+    var data=await r.json();
+    if(data&&data.length>0&&data[0].status==='active'){
+      userPlan=data[0].plan||'free';
+    }else{
+      userPlan='free';
+    }
+    // Update UI
+    var planEl=document.getElementById('plan-name');
+    if(planEl)planEl.textContent=userPlan.charAt(0).toUpperCase()+userPlan.slice(1)+' Plan';
+  }catch(e){userPlan='free';}
+}
+
 sb.auth.getSession().then(function(r){if(r.data.session){user=r.data.session.user;initApp();}});
 </script>
 
