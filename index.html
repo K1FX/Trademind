@@ -82,7 +82,7 @@ input,select,textarea,button{font-family:'Inter',sans-serif}
 .btn-blue{background:rgba(74,158,255,0.1);color:var(--blue);border:1px solid rgba(74,158,255,0.2)}
 
 /* CONTENT */
-.content{flex:1;overflow-y:auto;padding:16px 20px;-webkit-overflow-scrolling:touch}
+.content{flex:1;overflow-y:auto;padding:16px 20px;-webkit-overflow-scrolling:touch;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
 .page{display:none}
 .page.active{display:block}
 
@@ -226,6 +226,12 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
   .content{padding:12px}
   .topbar{padding:0 12px}
 }
+
+/* Scrollbar styling */
+.content::-webkit-scrollbar{width:4px}
+.content::-webkit-scrollbar-track{background:transparent}
+.content::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px}
+.content::-webkit-scrollbar-thumb:hover{background:var(--text-dim)}
 </style>
 </head>
 <body>
@@ -1099,7 +1105,8 @@ function updateSessBadge(){
 function nav(id,el){
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
   document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
-  document.getElementById('page-'+id).classList.add('active');
+  var page=document.getElementById('page-'+id);
+  if(page)page.classList.add('active');
   if(el)el.classList.add('active');
   var titles={dashboard:'Dashboard',support:'Support',policies:'Legal & Policies',journal:'Trade Journal',calendar:'P&L Calendar',analytics:'Analytics',marketai:'MarketAI',ecocal:'Economic Calendar',rules:'My Rules',connect:'MT4/MT5 Connect',pricing:'Plans and Pricing',profile:'Profile'};
   var subs={dashboard:'Your performance overview',support:'AI assistant + contact form',policies:'Terms, Privacy, Refunds, Affiliate',journal:'Click a trade for full details',calendar:'Your daily P&L history',analytics:'Deep dive into your stats',marketai:'Ask anything about the market',ecocal:'Key economic events this week',rules:'Define and track your trading rules',connect:'Connect your broker account',pricing:'Choose your plan',profile:'Your account settings'};
@@ -1109,6 +1116,8 @@ function nav(id,el){
   if(id==='analytics')renderAnalytics();
   if(id==='calendar')renderCal();
   if(id==='rules'){renderRules();analyzeRulesAI();}
+  if(id==='policies')showPolicy('terms');
+  if(id==='profile')loadAPIKeys();
 }
 
 function openM(id){document.getElementById(id).classList.add('open');}
@@ -1252,43 +1261,8 @@ function showPolicy(type){
 
 // Update nav function to include new pages
 var _origNav=nav;
-function nav(id,el){
-  _origNav(id,el);
-  var extraTitles={support:'Support',policies:'Legal & Policies'};
-  var extraSubs={support:'AI assistant + contact form',policies:'Terms, Privacy, Refunds, Affiliate'};
-  if(extraTitles[id]){
-    document.getElementById('tb-title').textContent=extraTitles[id];
-    document.getElementById('tb-sub').textContent=extraSubs[id];
-  }
-  if(id==='policies')showPolicy('terms');
-}
-
 sb.auth.getSession().then(function(r){if(r.data.session){user=r.data.session.user;initApp();}});
 
 </script>
 </body>
 </html>
-<script>
-function saveAPIKeys(){
-  var ak=document.getElementById('cfg-anthropic').value.trim();
-  var rk=document.getElementById('cfg-resend').value.trim();
-  var spk=document.getElementById('cfg-stripe-pk').value.trim();
-  if(ak)localStorage.setItem('tm_api_key',ak);
-  if(rk)localStorage.setItem('tm_resend_key',rk);
-  if(spk)localStorage.setItem('tm_stripe_pk',spk);
-  API_KEY=localStorage.getItem('tm_api_key')||'';
-  RESEND_KEY=localStorage.getItem('tm_resend_key')||'';
-  STRIPE_PK=localStorage.getItem('tm_stripe_pk')||'';
-  document.getElementById('keys-status').textContent='Keys saved securely on your device!';
-}
-function loadAPIKeys(){
-  var ak=localStorage.getItem('tm_api_key')||'';
-  var rk=localStorage.getItem('tm_resend_key')||'';
-  var spk=localStorage.getItem('tm_stripe_pk')||'';
-  if(ak)document.getElementById('cfg-anthropic').value='••••••••••••••••';
-  if(rk)document.getElementById('cfg-resend').value='••••••••••••••••';
-  if(spk)document.getElementById('cfg-stripe-pk').value='••••••••••••••••';
-  document.getElementById('keys-status').textContent=ak?'API keys configured':'No API keys set yet';
-  document.getElementById('keys-status').style.color=ak?'var(--accent)':'var(--text-muted)';
-}
-</script>
