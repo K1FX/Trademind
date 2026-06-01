@@ -632,8 +632,41 @@ var sb=supabase.createClient(SB_URL,SB_KEY);
 var user=null,trades=[],rules=[],imgBase64=null,currentTrade=null;
 var pnlC=null,pairC=null,dayC=null,sessC=null;
 var calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
+var userPlan='free'; // 'free','pro','elite'
+var FREE_TRADE_LIMIT=20;
+var FREE_AI_LIMIT=5;
+var aiCallsToday=0;
+
+function checkAILimit(){
+  var today=new Date().toISOString().split('T')[0];
+  var stored=JSON.parse(localStorage.getItem('tm_ai_calls')||'{}');
+  if(stored.date!==today){stored={date:today,count:0};}
+  aiCallsToday=stored.count;
+  if(userPlan==='free'&&aiCallsToday>=FREE_AI_LIMIT){
+    showUpgradeModal('You have used all 5 free AI questions today. Upgrade to Pro for unlimited AI access.');
+    return false;
+  }
+  stored.count++;
+  localStorage.setItem('tm_ai_calls',JSON.stringify(stored));
+  return true;
+}
+
+function checkTradeLimit(){
+  if(userPlan==='free'&&trades.length>=FREE_TRADE_LIMIT){
+    showUpgradeModal('You have reached the 20 trades limit on the Free plan. Upgrade to Pro for unlimited trades.');
+    return false;
+  }
+  return true;
+}
+
+function showUpgradeModal(msg){
+  var modal=document.getElementById('m-upgrade');
+  document.getElementById('upgrade-msg').textContent=msg;
+  modal.classList.add('open');
+}
 
 async function callAI(prompt,maxTokens){
+  if(!checkAILimit())throw new Error('AI limit reached');
   try{
     var r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'user',content:prompt}],max_tokens:maxTokens||500})});
     if(!r.ok)throw new Error('HTTP '+r.status);
@@ -650,6 +683,38 @@ var sb=supabase.createClient(SB_URL,SB_KEY);
 var user=null,trades=[],rules=[],imgBase64=null,currentTrade=null;
 var pnlC=null,pairC=null,dayC=null,sessC=null;
 var calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
+var userPlan='free'; // 'free','pro','elite'
+var FREE_TRADE_LIMIT=20;
+var FREE_AI_LIMIT=5;
+var aiCallsToday=0;
+
+function checkAILimit(){
+  var today=new Date().toISOString().split('T')[0];
+  var stored=JSON.parse(localStorage.getItem('tm_ai_calls')||'{}');
+  if(stored.date!==today){stored={date:today,count:0};}
+  aiCallsToday=stored.count;
+  if(userPlan==='free'&&aiCallsToday>=FREE_AI_LIMIT){
+    showUpgradeModal('You have used all 5 free AI questions today. Upgrade to Pro for unlimited AI access.');
+    return false;
+  }
+  stored.count++;
+  localStorage.setItem('tm_ai_calls',JSON.stringify(stored));
+  return true;
+}
+
+function checkTradeLimit(){
+  if(userPlan==='free'&&trades.length>=FREE_TRADE_LIMIT){
+    showUpgradeModal('You have reached the 20 trades limit on the Free plan. Upgrade to Pro for unlimited trades.');
+    return false;
+  }
+  return true;
+}
+
+function showUpgradeModal(msg){
+  var modal=document.getElementById('m-upgrade');
+  document.getElementById('upgrade-msg').textContent=msg;
+  modal.classList.add('open');
+}
 
 async function login(){
   var e=document.getElementById('l-email').value.trim(),p=document.getElementById('l-pwd').value;
@@ -697,6 +762,7 @@ function previewImg(inp){
 }
 
 async function saveTrade(){
+  if(!checkTradeLimit())return;
   var pnl=parseFloat(document.getElementById('t-pnl').value)||0;
   var entry=parseFloat(document.getElementById('t-entry').value)||0;
   var exit=parseFloat(document.getElementById('t-exit').value)||0;
@@ -843,7 +909,7 @@ function updateDash(){
   var pnlEl=document.getElementById('d-pnl');
   pnlEl.textContent=(totalPnl>=0?'+ ':'')+'$'+totalPnl.toFixed(2);
   pnlEl.style.color=totalPnl>=0?'var(--accent)':'var(--red)';
-  document.getElementById('d-pnl-s').textContent=trades.length+' trades total';
+  document.getElementById('d-pnl-s').textContent=trades.length+' trades'+(userPlan==='free'?' / 20 free':" total");
   var wrEl=document.getElementById('d-wr');wrEl.textContent=wr+'%';wrEl.style.color=wr>=50?'var(--accent)':'var(--red)';
   document.getElementById('d-wr-s').textContent=wins+' wins / '+losses+' losses';
   document.getElementById('d-pf').textContent=pf;
@@ -999,6 +1065,7 @@ function renderFullStats(){
 }
 
 async function callAI(prompt,maxTokens){
+  if(!checkAILimit())throw new Error('AI limit reached');
   var r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':API_KEY,'anthropic-version':'2023-06-01'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:maxTokens||300,messages:[{role:'user',content:prompt}]})});
   var d=await r.json();return d.content&&d.content[0]?d.content[0].text:'No response';
 }
@@ -1186,5 +1253,18 @@ function closeM(id){document.getElementById(id).classList.remove('open');}
 document.querySelectorAll('.mo').forEach(function(m){m.addEventListener('click',function(e){if(e.target===m)m.classList.remove('open');});});
 sb.auth.getSession().then(function(r){if(r.data.session){user=r.data.session.user;initApp();}});
 </script>
+
+<div id="m-upgrade" class="mo">
+  <div class="modal" style="max-width:420px;text-align:center;padding:28px">
+    <div style="width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,#55D396,#21F1A8);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;color:#040605;margin:0 auto 16px">TM</div>
+    <div style="font-size:16px;font-weight:700;margin-bottom:10px">Upgrade to Pro</div>
+    <div id="upgrade-msg" style="font-size:13px;color:var(--text-muted);line-height:1.7;margin-bottom:20px"></div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <button class="btn btn-acc" style="width:100%;padding:12px;font-size:14px" onclick="startCheckout('pro_monthly');closeM('m-upgrade')">Upgrade to Pro — $29/mo</button>
+      <button class="btn btn-ghost" style="width:100%" onclick="closeM('m-upgrade')">Maybe later</button>
+    </div>
+    <div style="font-size:11px;color:var(--text-muted);margin-top:12px">30-day money back guarantee</div>
+  </div>
+</div>
 </body>
 </html>
