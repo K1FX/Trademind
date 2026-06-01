@@ -638,11 +638,12 @@ var FREE_AI_LIMIT=5;
 var aiCallsToday=0;
 
 function checkAILimit(){
+  if(userPlan!=='free')return true;
   var today=new Date().toISOString().split('T')[0];
-  var stored=JSON.parse(localStorage.getItem('tm_ai_calls')||'{}');
+  var stored=JSON.parse(localStorage.getItem('tm_ai_calls')||'{"date":"","count":0}');
   if(stored.date!==today){stored={date:today,count:0};}
   aiCallsToday=stored.count;
-  if(userPlan==='free'&&aiCallsToday>=FREE_AI_LIMIT){
+  if(aiCallsToday>=FREE_AI_LIMIT){
     showUpgradeModal('You have used all 5 free AI questions today. Upgrade to Pro for unlimited AI access.');
     return false;
   }
@@ -666,7 +667,6 @@ function showUpgradeModal(msg){
 }
 
 async function callAI(prompt,maxTokens){
-  if(!checkAILimit())throw new Error('AI limit reached');
   try{
     var r=await fetch('https://trademind-chat.shopapple090.workers.dev/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'user',content:prompt}],max_tokens:maxTokens||500})});
     if(!r.ok)throw new Error('HTTP '+r.status);
@@ -689,11 +689,12 @@ var FREE_AI_LIMIT=5;
 var aiCallsToday=0;
 
 function checkAILimit(){
+  if(userPlan!=='free')return true;
   var today=new Date().toISOString().split('T')[0];
-  var stored=JSON.parse(localStorage.getItem('tm_ai_calls')||'{}');
+  var stored=JSON.parse(localStorage.getItem('tm_ai_calls')||'{"date":"","count":0}');
   if(stored.date!==today){stored={date:today,count:0};}
   aiCallsToday=stored.count;
-  if(userPlan==='free'&&aiCallsToday>=FREE_AI_LIMIT){
+  if(aiCallsToday>=FREE_AI_LIMIT){
     showUpgradeModal('You have used all 5 free AI questions today. Upgrade to Pro for unlimited AI access.');
     return false;
   }
@@ -1072,6 +1073,7 @@ async function loadAIBrief(){
 }
 
 async function sendMsg(){
+  if(!checkAILimit())return;
   var inp=document.getElementById('chat-inp');var msg=inp.value.trim();if(!msg)return;inp.value='';
   var msgs=document.getElementById('chat-msgs');
   msgs.innerHTML+='<div class="msg msg-user">'+msg+'</div>';
