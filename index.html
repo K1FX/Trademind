@@ -1048,11 +1048,18 @@ async function sendMsg(){
   }
   var inp=document.getElementById('chat-inp');var msg=inp.value.trim();if(!msg)return;inp.value='';
   var msgs=document.getElementById('chat-msgs');
+  var msgId='ai-msg-'+Date.now();
   msgs.innerHTML+='<div class="msg msg-user">'+msg+'</div>';
-  msgs.innerHTML+='<div class="msg msg-ai" id="ai-typing"><div class="msg-lbl">TRADEMIND AI</div>Analyzing...</div>';
+  msgs.innerHTML+='<div class="msg msg-ai" id="'+msgId+'"><div class="msg-lbl">TRADEMIND AI</div>Analyzing...</div>';
   msgs.scrollTop=msgs.scrollHeight;
-  try{var r=await callAI('You are TradeMind AI. Answer concisely: '+msg,400);document.getElementById('ai-typing').innerHTML='<div class="msg-lbl">TRADEMIND AI</div>'+r;}
-  catch(e){document.getElementById('ai-typing').innerHTML='<div class="msg-lbl">TRADEMIND AI</div>Error: '+e.message;}
+  try{
+    var r=await callAI('You are TradeMind AI. Answer concisely: '+msg,400);
+    var el=document.getElementById(msgId);
+    if(el)el.innerHTML='<div class="msg-lbl">TRADEMIND AI</div>'+r;
+  }catch(e){
+    var el=document.getElementById(msgId);
+    if(el)el.innerHTML='<div class="msg-lbl">TRADEMIND AI</div>Error: '+e.message;
+  }
   msgs.scrollTop=msgs.scrollHeight;
 }
 function quickAsk(q){document.getElementById('chat-inp').value=q;sendMsg();}
@@ -1143,13 +1150,18 @@ async function sendSupport(){
   var inp=document.getElementById('support-inp');
   var msg=inp.value.trim();if(!msg)return;inp.value='';
   var msgs=document.getElementById('support-msgs');
+  var supId='sup-msg-'+Date.now();
   msgs.innerHTML+='<div class="msg msg-user">'+msg+'</div>';
-  msgs.innerHTML+='<div class="msg msg-ai" id="sup-typing"><div class="msg-lbl">SUPPORT AI</div>Analyzing...</div>';
+  msgs.innerHTML+='<div class="msg msg-ai" id="'+supId+'"><div class="msg-lbl">SUPPORT AI</div>Analyzing...</div>';
   msgs.scrollTop=msgs.scrollHeight;
   try{
     var r=await callAI('You are TradeMind support. Answer questions about TradeMind trading journal. Features: dashboard, journal, calendar, analytics, MarketAI, MT5 connect, trading rules. Plans: Free (20 trades/mo), Pro $29/mo, Elite $49/mo. 30-day refund. Answer: '+msg,300);
-    document.getElementById('sup-typing').innerHTML='<div class="msg-lbl">SUPPORT AI</div>'+r;
-  }catch(e){document.getElementById('sup-typing').innerHTML='<div class="msg-lbl">SUPPORT AI</div>Error: '+e.message;}
+    var el=document.getElementById(supId);
+    if(el)el.innerHTML='<div class="msg-lbl">SUPPORT AI</div>'+r;
+  }catch(e){
+    var el=document.getElementById(supId);
+    if(el)el.innerHTML='<div class="msg-lbl">SUPPORT AI</div>Error: '+e.message;
+  }
   msgs.scrollTop=msgs.scrollHeight;
 }
 function supportAsk(q){document.getElementById('support-inp').value=q;sendSupport();}
