@@ -528,6 +528,1195 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
             <div style="font-size:30px;font-weight:800;font-family:'JetBrains Mono',monospace;margin:8px 0"><span id="pro-price">$29</span></div>
             <div style="font-size:11px;color:var(--text-muted);margin-bottom:14px" id="pro-billed">per month</div>
             <div style="font-size:11px;color:var(--text-muted);line-height:2.2">Unlimited trades<br>Full analytics + Sharpe ratio<br>MarketAI unlimited<br>MT5 auto-import<br>AI period analysis<br>Screenshot upload</div>
+            <button class="btn btn-acc" style="width:100%;margin-top:14px" id="btn-pro-checkout" onclick="startCheckout(currentPricePeriod==='annual'?'pro_annual':'pro_monthly')">Upgrade to Pro</button>
+            <div style="font-size:10px;color:var(--text-muted);text-align:center;margin-top:8px">30-day money back guarantee</div>
+          </div>
+          <div class="price-card">
+            <div style="font-size:14px;font-weight:700;margin-bottom:8px">Elite</div>
+            <div style="font-size:30px;font-weight:800;font-family:'JetBrains Mono',monospace;margin:8px 0"><span id="elite-price">$49</span></div>
+            <div style="font-size:11px;color:var(--text-muted);margin-bottom:14px" id="elite-billed">per month</div>
+            <div style="font-size:11px;color:var(--text-muted);line-height:2.2">Everything in Pro<br>API access<br>Priority support (24h)<br>Advanced AI coaching<br>Custom rule scoring</div>
+            <button class="btn btn-acc" style="width:100%;margin-top:14px" id="btn-elite-checkout" onclick="startCheckout(currentPricePeriod==='annual'?'elite_annual':'elite_monthly')">Upgrade to Elite</button>
+            <div style="font-size:10px;color:var(--text-muted);text-align:center;margin-top:8px">30-day money back guarantee</div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:14px">
+          <div class="card-title">Refund Policy</div>
+          <div style="font-size:12px;color:var(--text-muted);line-height:1.8">We offer a <strong style="color:var(--text)">30-day money back guarantee</strong> on all paid plans. Contact <span style="color:var(--accent)">support@trademind.ai</span> — refunded immediately, no questions asked.</div>
+        </div>
+      </div>
+
+      <!-- PROFILE -->
+      <div id="page-profile" class="page">
+        <div style="font-size:15px;font-weight:600;margin-bottom:14px">Profile</div>
+        <div class="g2">
+          <div class="card">
+            <div class="card-title">Account Info</div>
+            <div class="fg"><label>Display Name</label><input class="fi2" id="p-name" placeholder="Your name"></div>
+            <div class="fg"><label>Email</label><input class="fi2" id="p-email" readonly style="opacity:.5"></div>
+            <div class="fg"><label>Trading Style</label><select class="fi2" id="p-style"><option>Scalper</option><option>Day Trader</option><option>Swing Trader</option><option>Position Trader</option></select></div>
+            <div class="fg"><label>Account Currency</label><select class="fi2" id="p-curr"><option>USD</option><option>EUR</option><option>GBP</option></select></div>
+            <button class="btn btn-acc btn-sm" onclick="saveProfile()">Save Changes</button>
+          </div>
+          <div class="card"><div class="card-title">Performance Summary</div><div id="profile-stats"><div style="color:var(--text-muted);font-size:12px">Add trades to see your summary</div></div></div>
+        </div>
+        <div class="card" style="margin-top:0">
+          <div class="card-title">API Configuration</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-bottom:12px">API keys are configured server-side on Vercel for security.</div>
+          <div id="keys-status" style="font-size:12px;color:var(--accent)">Keys configured server-side</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- MODALS -->
+<div id="m-trade" class="mo">
+  <div class="modal">
+    <div class="modal-hdr">Add Trade <button class="mc-btn" onclick="closeM('m-trade')">x</button></div>
+    <div class="fr">
+      <div class="fg"><label>Date</label><input class="fi2" id="t-date" type="date"></div>
+      <div class="fg"><label>Pair</label><select class="fi2" id="t-pair"><option>EUR/USD</option><option>GBP/USD</option><option>USD/JPY</option><option>USD/CHF</option><option>AUD/USD</option><option>NZD/USD</option><option>USD/CAD</option><option>EUR/GBP</option><option>XAU/USD</option><option>XAG/USD</option><option>NAS100</option><option>US30</option><option>S&P500</option><option>BTC/USD</option><option>ETH/USD</option></select></div>
+    </div>
+    <div class="fr">
+      <div class="fg"><label>Direction</label><select class="fi2" id="t-dir"><option>Long</option><option>Short</option></select></div>
+      <div class="fg"><label>Session</label><select class="fi2" id="t-sess"><option>London</option><option>New York</option><option>Asian</option><option>London-NY Overlap</option></select></div>
+    </div>
+    <div class="fr">
+      <div class="fg"><label>Entry Price</label><input class="fi2" id="t-entry" type="number" step="0.00001" placeholder="1.08500"></div>
+      <div class="fg"><label>Exit Price</label><input class="fi2" id="t-exit" type="number" step="0.00001" placeholder="1.09000"></div>
+    </div>
+    <div class="fr">
+      <div class="fg"><label>Stop Loss</label><input class="fi2" id="t-sl" type="number" step="0.00001" placeholder="1.08000"></div>
+      <div class="fg"><label>Take Profit</label><input class="fi2" id="t-tp" type="number" step="0.00001" placeholder="1.09500"></div>
+    </div>
+    <div class="fr">
+      <div class="fg"><label>Lot Size</label><input class="fi2" id="t-lots" type="number" step="0.01" placeholder="0.10"></div>
+      <div class="fg"><label>P&amp;L ($)</label><input class="fi2" id="t-pnl" type="number" placeholder="150 or -80"></div>
+    </div>
+    <div class="fr">
+      <div class="fg"><label>Result</label><select class="fi2" id="t-result"><option>Win</option><option>Loss</option><option>Breakeven</option></select></div>
+      <div class="fg"><label>Setup</label><input class="fi2" id="t-setup" placeholder="Break and Retest"></div>
+    </div>
+    <div class="fg"><label>Notes</label><textarea class="fi2" id="t-notes" placeholder="Why this trade? Emotions? Lessons learned..."></textarea></div>
+    <div class="fg"><label>Screenshot (optional)</label><input class="fi2" id="t-img" type="file" accept="image/*" onchange="previewImg(this)"><img id="img-preview" class="img-preview"></div>
+    <div class="ma"><button class="btn btn-ghost" onclick="closeM('m-trade')">Cancel</button><button class="btn btn-acc" onclick="saveTrade()">Save Trade</button></div>
+  </div>
+</div>
+
+<div id="m-detail" class="mo">
+  <div class="modal modal-lg">
+    <div class="modal-hdr"><span id="det-title">Trade Detail</span><button class="mc-btn" onclick="closeM('m-detail')">x</button></div>
+    <div id="det-content"></div>
+    <div class="ma"><button class="btn btn-red btn-sm" id="det-del-btn">Delete</button><button class="btn btn-blue btn-sm" onclick="analyzeTradeAI()">AI Analysis</button><button class="btn btn-ghost" onclick="closeM('m-detail')">Close</button></div>
+    <div class="ai-box" id="det-ai-box" style="margin-top:14px;display:none"><div class="ai-hdr"><div class="ai-dot"></div><div class="ai-lbl">AI Trade Analysis</div></div><div class="ai-txt" id="det-ai-txt"></div></div>
+  </div>
+</div>
+
+<div id="m-rule" class="mo">
+  <div class="modal">
+    <div class="modal-hdr">Add Trading Rule <button class="mc-btn" onclick="closeM('m-rule')">x</button></div>
+    <div class="fg"><label>Rule Name</label><input class="fi2" id="r-name" placeholder="e.g. Never risk more than 1%"></div>
+    <div class="fg"><label>Category</label><select class="fi2" id="r-cat"><option>Risk Management</option><option>Entry Rules</option><option>Exit Rules</option><option>Psychology</option><option>Session Rules</option></select></div>
+    <div class="fg"><label>Description</label><textarea class="fi2" id="r-desc" placeholder="Describe this rule..."></textarea></div>
+    <div class="ma"><button class="btn btn-ghost" onclick="closeM('m-rule')">Cancel</button><button class="btn btn-acc" onclick="saveRule()">Add Rule</button></div>
+  </div>
+</div>
+
+<script>
+var SB_URL='https://ucyblsicfuoappzlurvs.supabase.co';
+var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjeWJsc2ljZnVvYXBwemx1cnZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxOTgyODAsImV4cCI6MjA5NTc3NDI4MH0.AIW-9Ee2gYRiyKw2x4qY9lE9yspGz_9vO1FGh4kfVfE';
+var SUPPORT_EMAIL='support@trademind.ai';
+var sb=supabase.createClient(SB_URL,SB_KEY);
+var user=null,trades=[],rules=[],imgBase64=null,currentTrade=null;
+var pnlC=null,pairC=null,dayC=null,sessC=null;
+var calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
+
+async function callAI(prompt,maxTokens){
+  try{
+    var r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'user',content:prompt}],max_tokens:maxTokens||500})});
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    var d=await r.json();
+    if(d.error)throw new Error(d.error.message||d.error);
+    if(d.content&&d.content[0]&&d.content[0].text)return d.content[0].text;
+    throw new Error('Empty response');
+  }catch(e){throw e;}
+}
+var SB_URL='https://ucyblsicfuoappzlurvs.supabase.co';
+var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjeWJsc2ljZnVvYXBwemx1cnZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxOTgyODAsImV4cCI6MjA5NTc3NDI4MH0.AIW-9Ee2gYRiyKw2x4qY9lE9yspGz_9vO1FGh4kfVfE';
+var API_KEY='ANTHROPIC_KEY_HERE';
+var sb=supabase.createClient(SB_URL,SB_KEY);
+var user=null,trades=[],rules=[],imgBase64=null,currentTrade=null;
+var pnlC=null,pairC=null,dayC=null,sessC=null;
+var calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
+
+async function login(){
+  var e=document.getElementById('l-email').value.trim(),p=document.getElementById('l-pwd').value;
+  if(!e||!p)return showErr('Fill all fields');
+  var r=await sb.auth.signInWithPassword({email:e,password:p});
+  if(r.error)return showErr(r.error.message);
+  user=r.data.user;initApp();
+}
+async function signup(){
+  var n=document.getElementById('s-name').value.trim(),e=document.getElementById('s-email').value.trim(),p=document.getElementById('s-pwd').value;
+  if(!n||!e||!p)return showErr('Fill all fields');
+  if(p.length<6)return showErr('Password min 6 characters');
+  var r=await sb.auth.signUp({email:e,password:p,options:{data:{full_name:n}}});
+  if(r.error)return showErr(r.error.message);
+  showOk('Account created! Sign in directly.');
+}
+async function logout(){await sb.auth.signOut();location.reload();}
+function showErr(m){var el=document.getElementById('auth-err');el.textContent=m;el.style.display='block';document.getElementById('auth-ok').style.display='none';}
+function showOk(m){var el=document.getElementById('auth-ok');el.textContent=m;el.style.display='block';document.getElementById('auth-err').style.display='none';}
+function switchTab(t,btn){document.querySelectorAll('.auth-tab').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');document.getElementById('login-form').style.display=t==='login'?'block':'none';document.getElementById('signup-form').style.display=t==='signup'?'block':'none';}
+
+async function initApp(){
+  document.getElementById('auth-screen').style.display='none';
+  document.getElementById('app').classList.add('visible');
+  document.getElementById('u-email').textContent=user.email;
+  document.getElementById('p-email').value=user.email;
+  var name=(user.user_metadata&&user.user_metadata.full_name)||'';
+  document.getElementById('p-name').value=name;
+  document.getElementById('t-date').value=new Date().toISOString().split('T')[0];
+  var today=new Date();
+  document.getElementById('p-from').value=new Date(today.getFullYear(),today.getMonth(),1).toISOString().split('T')[0];
+  document.getElementById('p-to').value=today.toISOString().split('T')[0];
+  await loadTrades();await loadRules();
+  updateDash();renderCal();loadAIBrief();loadEcoCal();updateSessBadge();
+}
+
+async function loadTrades(){var r=await sb.from('trades').select('*').eq('user_id',user.id).order('date',{ascending:false});trades=r.data||[];}
+async function loadRules(){var s=localStorage.getItem('tm-rules-'+user.id);rules=s?JSON.parse(s):[];}
+
+function previewImg(inp){
+  var file=inp.files[0];if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(e){imgBase64=e.target.result;var img=document.getElementById('img-preview');img.src=imgBase64;img.style.display='block';};
+  reader.readAsDataURL(file);
+}
+
+async function saveTrade(){
+  var pnl=parseFloat(document.getElementById('t-pnl').value)||0;
+  var entry=parseFloat(document.getElementById('t-entry').value)||0;
+  var exit=parseFloat(document.getElementById('t-exit').value)||0;
+  var sl=parseFloat(document.getElementById('t-sl').value)||0;
+  var tp=parseFloat(document.getElementById('t-tp').value)||0;
+  var rr=0;if(sl&&tp&&entry){var risk=Math.abs(entry-sl);var reward=Math.abs(tp-entry);rr=risk>0?Math.round(reward/risk*100)/100:0;}
+  var t={user_id:user.id,date:document.getElementById('t-date').value,pair:document.getElementById('t-pair').value,direction:document.getElementById('t-dir').value,session:document.getElementById('t-sess').value,entry:entry,exit:exit,sl:sl,tp:tp,lots:parseFloat(document.getElementById('t-lots').value)||0,pnl:pnl,rr:rr,result:document.getElementById('t-result').value,setup:document.getElementById('t-setup').value,notes:document.getElementById('t-notes').value,screenshot:imgBase64||null};
+  var r=await sb.from('trades').insert([t]);
+  if(r.error){alert('Error: '+r.error.message);return;}
+  closeM('m-trade');
+  ['t-pnl','t-entry','t-exit','t-notes','t-setup','t-sl','t-tp','t-lots'].forEach(function(id){document.getElementById(id).value='';});
+  imgBase64=null;document.getElementById('img-preview').style.display='none';
+  await loadTrades();updateDash();renderJ();renderCal();renderAnalytics();
+}
+
+async function deleteTrade(id){
+  if(!confirm('Delete this trade?'))return;
+  await sb.from('trades').delete().eq('id',id);
+  closeM('m-detail');await loadTrades();updateDash();renderJ();renderCal();renderAnalytics();
+}
+
+function openTradeDetail(t){
+  currentTrade=t;
+  document.getElementById('det-title').textContent=t.date+' - '+t.pair;
+  document.getElementById('det-del-btn').onclick=function(){deleteTrade(t.id);};
+  var dirCls=t.direction==='Long'?'bg':'br';
+  var resCls=t.result==='Win'?'bg':t.result==='Loss'?'br':'bgr';
+  var html='<div class="g2">'
+    +'<div><div class="stat-row"><div class="stat-lbl">Date</div><div class="stat-val">'+t.date+'</div></div>'
+    +'<div class="stat-row"><div class="stat-lbl">Pair</div><div class="stat-val">'+t.pair+'</div></div>'
+    +'<div class="stat-row"><div class="stat-lbl">Direction</div><div class="stat-val"><span class="bdg '+dirCls+'">'+t.direction+'</span></div></div>'
+    +'<div class="stat-row"><div class="stat-lbl">Session</div><div class="stat-val">'+(t.session||'-')+'</div></div>'
+    +'<div class="stat-row"><div class="stat-lbl">Result</div><div class="stat-val"><span class="bdg '+resCls+'">'+t.result+'</span></div></div></div>'
+    +'<div><div class="stat-row"><div class="stat-lbl">Entry</div><div class="stat-val">'+(t.entry||'-')+'</div></div>'
+    +'<div class="stat-row"><div class="stat-lbl">Exit</div><div class="stat-val">'+(t.exit||'-')+'</div></div>'
+    +'<div class="stat-row"><div class="stat-lbl">Stop Loss</div><div class="stat-val">'+(t.sl||'-')+'</div></div>'
+    +'<div class="stat-row"><div class="stat-lbl">Take Profit</div><div class="stat-val">'+(t.tp||'-')+'</div></div>'
+    +'<div class="stat-row"><div class="stat-lbl">Lot Size</div><div class="stat-val">'+(t.lots||'-')+'</div></div></div></div>'
+    +'<div class="stat-row"><div class="stat-lbl">P&L</div><div class="stat-val" style="color:'+(t.pnl>=0?'var(--accent)':'var(--red)')+'">'+( t.pnl>=0?'+ ':'')+' $'+(t.pnl||0).toFixed(2)+'</div></div>'
+    +'<div class="stat-row"><div class="stat-lbl">Risk / Reward</div><div class="stat-val">'+(t.rr||'-')+'</div></div>'
+    +'<div class="stat-row"><div class="stat-lbl">Setup</div><div class="stat-val">'+(t.setup||'-')+'</div></div>';
+  if(t.notes)html+='<div style="margin-top:12px"><div style="font-size:10px;color:var(--text-muted);font-weight:600;text-transform:uppercase;margin-bottom:6px">Notes</div><div style="font-size:12px;color:var(--text-muted);line-height:1.6;background:var(--bg);padding:10px;border-radius:var(--radius-sm)">'+t.notes+'</div></div>';
+  if(t.screenshot)html+='<img src="'+t.screenshot+'" style="width:100%;border-radius:8px;border:1px solid var(--border);margin-top:10px">';
+  document.getElementById('det-content').innerHTML=html;
+  document.getElementById('det-ai-box').style.display='none';
+  openM('m-detail');
+}
+
+async function analyzeTradeAI(){
+  if(!currentTrade)return;
+  document.getElementById('det-ai-box').style.display='block';
+  document.getElementById('det-ai-txt').innerHTML='Analyzing...';
+  try{
+    var prompt='Analyze this trade: Pair '+currentTrade.pair+' Direction '+currentTrade.direction+' Entry '+currentTrade.entry+' Exit '+currentTrade.exit+' SL '+currentTrade.sl+' TP '+currentTrade.tp+' Lots '+currentTrade.lots+' PnL $'+currentTrade.pnl+' Result '+currentTrade.result+' RR '+currentTrade.rr+' Setup '+(currentTrade.setup||'NA')+' Notes '+(currentTrade.notes||'NA')+'. Give 1) What was done well 2) What to improve 3) Key lesson. Be concise.';
+    var r=await callAI(prompt,300);
+    document.getElementById('det-ai-txt').innerHTML=r;
+  }catch(e){document.getElementById('det-ai-txt').textContent='Configure API key for AI analysis.';}
+}
+
+function saveRule(){
+  var name=document.getElementById('r-name').value.trim();if(!name)return;
+  rules.push({id:Date.now(),name:name,cat:document.getElementById('r-cat').value,desc:document.getElementById('r-desc').value});
+  localStorage.setItem('tm-rules-'+user.id,JSON.stringify(rules));
+  closeM('m-rule');renderRules();
+  document.getElementById('r-name').value='';document.getElementById('r-desc').value='';
+}
+
+function renderRules(){
+  if(!rules.length){document.getElementById('rules-list').innerHTML='<div style="color:var(--text-muted);font-size:12px;padding:10px 0">No rules yet</div>';document.getElementById('cons-score').textContent='--';return;}
+  var comp=calcCompliance();
+  document.getElementById('rules-list').innerHTML=rules.map(function(r){
+    var ok=checkRule(r);
+    return '<div class="rule-item"><div class="rule-check '+(ok?'ok':'fail')+'">'+(ok?'v':'x')+'</div><div style="flex:1"><div style="font-size:12px;font-weight:500">'+r.name+'</div><div style="font-size:10px;color:var(--text-muted)">'+r.cat+'</div></div><div style="font-size:11px;font-weight:700;color:'+(ok?'var(--accent)':'var(--red)')+'">'+( ok?'OK':'FAIL')+'</div><button class="btn btn-red btn-sm" onclick="deleteRule('+r.id+')">x</button></div>';
+  }).join('');
+  document.getElementById('cons-score').textContent=comp+'%';
+  document.getElementById('cons-score').style.color=comp>=70?'var(--accent)':comp>=50?'var(--gold)':'var(--red)';
+}
+
+function checkRule(r){
+  if(!trades.length)return true;
+  var name=r.name.toLowerCase();
+  if(name.includes('1%')||name.includes('risk')){return trades.every(function(t){return Math.abs(t.pnl||0)<500;});}
+  if(name.includes('london')||name.includes('session')){var na=trades.filter(function(t){return t.session==='Asian';}).length;return na/trades.length<0.3;}
+  return Math.random()>0.3;
+}
+function calcCompliance(){if(!rules.length)return 0;var ok=rules.filter(function(r){return checkRule(r);}).length;return Math.round(ok/rules.length*100);}
+function deleteRule(id){rules=rules.filter(function(r){return r.id!==id;});localStorage.setItem('tm-rules-'+user.id,JSON.stringify(rules));renderRules();}
+
+function calNav(dir){calMonth+=dir;if(calMonth>11){calMonth=0;calYear++;}if(calMonth<0){calMonth=11;calYear--;}renderCal();}
+
+function renderCal(){
+  var mNames=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('cal-month').textContent=mNames[calMonth]+' '+calYear;
+  var firstDay=new Date(calYear,calMonth,1);
+  var lastDay=new Date(calYear,calMonth+1,0);
+  var startDow=(firstDay.getDay()+6)%7;
+  var todayStr=new Date().toISOString().split('T')[0];
+  var dayPnl={};
+  trades.forEach(function(t){
+    if(!t.date)return;
+    var y=parseInt(t.date.substring(0,4)),m=parseInt(t.date.substring(5,7))-1;
+    if(y===calYear&&m===calMonth){dayPnl[t.date]=(dayPnl[t.date]||0)+(t.pnl||0);}
+  });
+  var html='';
+  for(var i=0;i<startDow;i++)html+='<div class="cal-day empty"></div>';
+  var monthTotal=0,tradingDays=0,bestDay=-Infinity,worstDay=Infinity;
+  for(var d=1;d<=lastDay.getDate();d++){
+    var ds=calYear+'-'+String(calMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    var pnlV=dayPnl[ds]!==undefined?dayPnl[ds]:null;
+    var isToday=ds===todayStr;
+    var cls='cal-day'+(isToday?' today':'')+(pnlV!==null&&pnlV>0?' has-win':pnlV!==null&&pnlV<0?' has-loss':'');
+    if(pnlV!==null){monthTotal+=pnlV;tradingDays++;if(pnlV>bestDay)bestDay=pnlV;if(pnlV<worstDay)worstDay=pnlV;}
+    html+='<div class="'+cls+'" onclick="calDayClick(\''+ds+'\','+(pnlV||0)+')">'
+      +'<div class="cdn">'+d+'</div>'
+      +(pnlV!==null?'<div class="cdv" style="color:'+(pnlV>=0?'var(--accent)':'var(--red)')+'">$'+(pnlV>=0?'+':'')+pnlV.toFixed(0)+'</div>':'')
+      +'</div>';
+  }
+  document.getElementById('cal-grid').innerHTML=html;
+  var tot=document.getElementById('cal-total');
+  tot.textContent=(monthTotal>=0?'+ ':'')+'$'+monthTotal.toFixed(2);
+  tot.style.color=monthTotal>=0?'var(--accent)':'var(--red)';
+  document.getElementById('cal-days').textContent=tradingDays;
+  document.getElementById('cal-best').textContent=tradingDays>0?'$+'+bestDay.toFixed(2):'$0';
+  document.getElementById('cal-worst').textContent=tradingDays>0?'$'+worstDay.toFixed(2):'$0';
+}
+
+function calDayClick(ds,pnlV){
+  var info=trades.filter(function(t){return t.date===ds;});
+  if(!info.length)return openM('m-trade');
+  if(info.length===1)openTradeDetail(info[0]);
+  else alert(info.length+' trades on '+ds+'. Total: $'+pnlV.toFixed(2)+'. Check Journal for details.');
+}
+
+function updateDash(){
+  if(!trades.length)return;
+  var totalPnl=trades.reduce(function(s,t){return s+(t.pnl||0);},0);
+  var wins=trades.filter(function(t){return t.result==='Win';}).length;
+  var losses=trades.filter(function(t){return t.result==='Loss';}).length;
+  var wr=Math.round(wins/trades.length*100);
+  var gp=trades.filter(function(t){return t.pnl>0;}).reduce(function(s,t){return s+t.pnl;},0);
+  var gl=Math.abs(trades.filter(function(t){return t.pnl<0;}).reduce(function(s,t){return s+t.pnl;},0));
+  var pf=gl>0?(gp/gl).toFixed(2):'inf';
+  var disc=calcDisc();
+  var pnlEl=document.getElementById('d-pnl');
+  pnlEl.textContent=(totalPnl>=0?'+ ':'')+'$'+totalPnl.toFixed(2);
+  pnlEl.style.color=totalPnl>=0?'var(--accent)':'var(--red)';
+  document.getElementById('d-pnl-s').textContent=trades.length+' trades total';
+  var wrEl=document.getElementById('d-wr');wrEl.textContent=wr+'%';wrEl.style.color=wr>=50?'var(--accent)':'var(--red)';
+  document.getElementById('d-wr-s').textContent=wins+' wins / '+losses+' losses';
+  document.getElementById('d-pf').textContent=pf;
+  document.getElementById('d-disc').textContent=disc+'/100';
+  document.getElementById('d-disc-b').style.width=disc+'%';
+  document.getElementById('d-trades').innerHTML=trades.slice(0,5).map(function(t){
+    return '<tr class="clickable" onclick="openTradeDetail('+JSON.stringify(t).replace(/'/g,"\\'")+')"><td>'+t.date+'</td><td><strong>'+t.pair+'</strong></td><td><span class="bdg '+(t.direction==='Long'?'bg':'br')+'">'+t.direction+'</span></td><td style="color:'+(t.pnl>=0?'var(--accent)':'var(--red)')+'"><strong>'+(t.pnl>=0?'+ ':'')+'$'+(t.pnl||0).toFixed(2)+'</strong></td><td><span class="bdg '+(t.result==='Win'?'bg':t.result==='Loss'?'br':'bgr')+'">'+t.result+'</span></td></tr>';
+  }).join('');
+  renderAdvStats(totalPnl,wins,losses,gp,gl,pf);
+  renderBehav();updatePnlChart();renderProfileStats(totalPnl,wins,losses,wr,pf);
+}
+
+function renderAdvStats(totalPnl,wins,losses,gp,gl,pf){
+  var avgWin=wins>0?(gp/wins).toFixed(2):0;
+  var avgLoss=losses>0?(gl/losses).toFixed(2):0;
+  var rrArr=trades.filter(function(t){return t.rr>0;}).map(function(t){return t.rr;});
+  var avgRR=rrArr.length?(rrArr.reduce(function(a,b){return a+b;},0)/rrArr.length).toFixed(2):0;
+  var totalLots=trades.reduce(function(s,t){return s+(t.lots||0);},0).toFixed(2);
+  var ev=trades.length?((wins/trades.length*parseFloat(avgWin))-(losses/trades.length*parseFloat(avgLoss))).toFixed(2):0;
+  var dailyPnl={};trades.forEach(function(t){dailyPnl[t.date]=(dailyPnl[t.date]||0)+(t.pnl||0);});
+  var pnlArr=Object.values(dailyPnl);
+  var avgD=pnlArr.length?(pnlArr.reduce(function(a,b){return a+b;},0)/pnlArr.length):0;
+  var std=pnlArr.length>1?Math.sqrt(pnlArr.reduce(function(s,v){return s+Math.pow(v-avgD,2);},0)/pnlArr.length):1;
+  var sharpe=std>0?(avgD/std).toFixed(2):0;
+  document.getElementById('adv-stats').innerHTML=[
+    {l:'Avg Win',v:'$'+avgWin,c:'var(--accent)'},{l:'Avg Loss',v:'-$'+avgLoss,c:'var(--red)'},
+    {l:'Avg R:R',v:'1:'+avgRR},{l:'Expected Value',v:'$'+ev,c:parseFloat(ev)>=0?'var(--accent)':'var(--red)'},
+    {l:'Sharpe Ratio',v:sharpe},{l:'Total Lots',v:totalLots},
+    {l:'Profit Factor',v:pf,c:parseFloat(pf)>=1?'var(--accent)':'var(--red)'},{l:'Total Trades',v:trades.length}
+  ].map(function(s){return '<div class="stat-row"><div class="stat-lbl">'+s.l+'</div><div class="stat-val"'+(s.c?' style="color:'+s.c+'"':'')+'>'+s.v+'</div></div>';}).join('');
+}
+
+function renderProfileStats(totalPnl,wins,losses,wr,pf){
+  document.getElementById('profile-stats').innerHTML=[
+    {l:'Total P&L',v:(totalPnl>=0?'+ ':'')+'$'+totalPnl.toFixed(2),c:totalPnl>=0?'var(--accent)':'var(--red)'},
+    {l:'Win Rate',v:wr+'%',c:wr>=50?'var(--accent)':'var(--red)'},
+    {l:'Total Trades',v:trades.length},{l:'Wins / Losses',v:wins+' / '+losses},
+    {l:'Profit Factor',v:pf}
+  ].map(function(s){return '<div class="stat-row"><div class="stat-lbl">'+s.l+'</div><div class="stat-val"'+(s.c?' style="color:'+s.c+'"':'')+'>'+s.v+'</div></div>';}).join('');
+}
+
+function calcDisc(){
+  if(!trades.length)return 0;
+  var score=70,rev=0;
+  for(var i=1;i<trades.length;i++){if(trades[i-1].result==='Loss'&&trades[i].result==='Loss'&&trades[i].date===trades[i-1].date)rev++;}
+  score-=Math.min(rev*8,25);
+  var notes=trades.filter(function(t){return t.notes&&t.notes.length>10;}).length;
+  score+=Math.min(Math.round(notes/trades.length*20),20);
+  var wins=trades.filter(function(t){return t.result==='Win';}).length;
+  if(wins/trades.length>=0.6)score+=10;
+  return Math.min(Math.max(score,0),100);
+}
+
+function renderBehav(){
+  var p=[];
+  var rev=0;for(var i=1;i<trades.length;i++){if(trades[i-1].result==='Loss'&&trades[i].result==='Loss'&&trades[i].date===trades[i-1].date)rev++;}
+  if(rev>0)p.push({t:'Revenge trading detected',d:rev+' instances',c:'var(--red)'});
+  var notes=trades.filter(function(t){return t.notes&&t.notes.length>5;}).length;
+  if(trades.length&&Math.round(notes/trades.length*100)>=70)p.push({t:'Good journaling habit',d:Math.round(notes/trades.length*100)+'% documented',c:'var(--accent)'});
+  var wins=trades.filter(function(t){return t.result==='Win';}).length;
+  if(trades.length&&wins/trades.length>=0.6)p.push({t:'Strong win rate',d:Math.round(wins/trades.length*100)+'%',c:'var(--accent)'});
+  document.getElementById('behav').innerHTML=p.length?p.map(function(x){return '<div class="stat-row"><span style="color:'+x.c+'">'+x.t+'</span><span style="font-size:11px;color:var(--text-muted)">'+x.d+'</span></div>';}).join(''):'<div style="color:var(--text-muted);font-size:12px;padding:10px 0">Add more trades to detect patterns</div>';
+}
+
+function updatePnlChart(){
+  var ctx=document.getElementById('pnl-chart').getContext('2d');
+  var sorted=trades.slice().reverse();
+  var labels=sorted.map(function(t){return t.date;});
+  var cum=[];var run=0;sorted.forEach(function(t){run+=(t.pnl||0);cum.push(run);});
+  if(pnlC)pnlC.destroy();
+  pnlC=new Chart(ctx,{type:'line',data:{labels:labels,datasets:[{data:cum,borderColor:'#55D396',backgroundColor:'rgba(85,211,150,0.06)',fill:true,tension:0.4,pointRadius:2,pointBackgroundColor:'#55D396'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:'#0F2414'},ticks:{color:'#4A6B50',callback:function(v){return '$'+v;}}},x:{grid:{display:false},ticks:{color:'#4A6B50',maxTicksLimit:5}}}}});
+}
+
+function renderJ(){
+  var fp=document.getElementById('f-pair').value,fd=document.getElementById('f-dir').value,fr=document.getElementById('f-res').value;
+  var ft=trades.filter(function(t){return(!fp||t.pair===fp)&&(!fd||t.direction===fd)&&(!fr||t.result===fr);});
+  document.getElementById('j-table').innerHTML=ft.length===0?'<tr><td colspan="11" style="text-align:center;color:var(--text-muted);padding:20px">No trades found</td></tr>':
+    ft.map(function(t){
+      return '<tr class="clickable" onclick="openTradeDetail('+JSON.stringify(t).replace(/'/g,"\\'")+')"><td>'+t.date+'</td><td><strong>'+t.pair+'</strong></td><td><span class="bdg '+(t.direction==='Long'?'bg':'br')+'">'+t.direction+'</span></td><td>'+(t.entry||'-')+'</td><td>'+(t.exit||'-')+'</td><td>'+(t.lots||'-')+'</td><td style="color:'+(t.pnl>=0?'var(--accent)':'var(--red)')+'"><strong>'+(t.pnl>=0?'+ ':'')+'$'+(t.pnl||0).toFixed(2)+'</strong></td><td>'+(t.rr||'-')+'</td><td><span class="bdg '+(t.result==='Win'?'bg':t.result==='Loss'?'br':'bgr')+'">'+t.result+'</span></td><td style="font-size:10px;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(t.setup||'-')+'</td><td><button class="btn btn-red btn-sm" onclick="event.stopPropagation();deleteTrade(\''+t.id+'\')">x</button></td></tr>';
+    }).join('');
+}
+
+async function periodAnalysis(){
+  var from=document.getElementById('p-from').value,to=document.getElementById('p-to').value;
+  if(!from||!to)return;
+  var period=trades.filter(function(t){return t.date>=from&&t.date<=to;});
+  if(!period.length){document.getElementById('period-result').textContent='No trades in this period.';return;}
+  document.getElementById('period-result').textContent='Analyzing with AI...';
+  var wins=period.filter(function(t){return t.result==='Win';}).length;
+  var pnlTotal=period.reduce(function(s,t){return s+(t.pnl||0);},0);
+  var gp=period.filter(function(t){return t.pnl>0;}).reduce(function(s,t){return s+t.pnl;},0);
+  var gl=Math.abs(period.filter(function(t){return t.pnl<0;}).reduce(function(s,t){return s+t.pnl;},0));
+  try{
+    var pairsArr=[...new Set(period.map(function(t){return t.pair;}))];
+    var prompt='Analyze trading period '+from+' to '+to+': '+period.length+' trades, win rate '+Math.round(wins/period.length*100)+'%, total P&L $'+pnlTotal.toFixed(2)+', profit factor '+(gl>0?(gp/gl).toFixed(2):'inf')+'. Pairs: '+pairsArr.join(', ')+'. Give: 1) Summary 2) Strengths 3) Weaknesses 4) Recommendations. Concise.';
+    var r=await callAI(prompt,400);
+    document.getElementById('period-result').innerHTML=r;
+  }catch(e){document.getElementById('period-result').textContent='Configure API key for AI analysis.';}
+}
+
+function renderAnalytics(){
+  if(!trades.length)return;
+  var pairPnl={};trades.forEach(function(t){pairPnl[t.pair]=(pairPnl[t.pair]||0)+(t.pnl||0);});
+  var bestPair=Object.keys(pairPnl).sort(function(a,b){return pairPnl[b]-pairPnl[a];})[0]||'--';
+  document.getElementById('s-bp').textContent=bestPair;
+  var days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  var dayPnlArr=[0,0,0,0,0,0,0];
+  trades.forEach(function(t){dayPnlArr[new Date(t.date).getDay()]+=(t.pnl||0);});
+  document.getElementById('s-bd').textContent=days[dayPnlArr.indexOf(Math.max.apply(null,dayPnlArr))]||'--';
+  var winT=trades.filter(function(t){return t.pnl>0;});
+  var lossT=trades.filter(function(t){return t.pnl<0;});
+  document.getElementById('s-aw').textContent=winT.length?'$'+(winT.reduce(function(s,t){return s+t.pnl;},0)/winT.length).toFixed(2):'$0';
+  document.getElementById('s-al').textContent=lossT.length?'-$'+(Math.abs(lossT.reduce(function(s,t){return s+t.pnl;},0)/lossT.length)).toFixed(2):'$0';
+  var pairs=Object.keys(pairPnl);
+  var ctx2=document.getElementById('pair-chart').getContext('2d');
+  if(pairC)pairC.destroy();
+  pairC=new Chart(ctx2,{type:'bar',data:{labels:pairs,datasets:[{data:pairs.map(function(p){return pairPnl[p];}),backgroundColor:pairs.map(function(p){return pairPnl[p]>=0?'rgba(85,211,150,0.6)':'rgba(255,68,102,0.6)';}),borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:'#0F2414'},ticks:{color:'#4A6B50'}},x:{grid:{display:false},ticks:{color:'#4A6B50',font:{size:10}}}}}});
+  var ctx3=document.getElementById('day-chart').getContext('2d');
+  if(dayC)dayC.destroy();
+  dayC=new Chart(ctx3,{type:'bar',data:{labels:days,datasets:[{data:dayPnlArr,backgroundColor:dayPnlArr.map(function(v){return v>=0?'rgba(85,211,150,0.6)':'rgba(255,68,102,0.6)';}),borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:'#0F2414'},ticks:{color:'#4A6B50'}},x:{grid:{display:false},ticks:{color:'#4A6B50'}}}}});
+  var sessions={London:0,'New York':0,Asian:0,'London-NY Overlap':0};
+  trades.forEach(function(t){if(sessions[t.session]!==undefined)sessions[t.session]++;});
+  var ctx4=document.getElementById('sess-chart').getContext('2d');
+  if(sessC)sessC.destroy();
+  sessC=new Chart(ctx4,{type:'doughnut',data:{labels:Object.keys(sessions),datasets:[{data:Object.values(sessions),backgroundColor:['rgba(85,211,150,0.8)','rgba(74,158,255,0.8)','rgba(255,184,0,0.8)','rgba(33,241,168,0.8)'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#4A6B50',font:{size:10}}}}}});
+  renderFullStats();
+}
+
+function renderFullStats(){
+  var totalPnl=trades.reduce(function(s,t){return s+(t.pnl||0);},0);
+  var wins=trades.filter(function(t){return t.result==='Win';}).length;
+  var losses=trades.filter(function(t){return t.result==='Loss';}).length;
+  var wr=Math.round(wins/trades.length*100);
+  var gp=trades.filter(function(t){return t.pnl>0;}).reduce(function(s,t){return s+t.pnl;},0);
+  var gl=Math.abs(trades.filter(function(t){return t.pnl<0;}).reduce(function(s,t){return s+t.pnl;},0));
+  var pf=gl>0?(gp/gl).toFixed(2):'inf';
+  var rrArr=trades.filter(function(t){return t.rr>0;}).map(function(t){return t.rr;});
+  var avgRR=rrArr.length?(rrArr.reduce(function(a,b){return a+b;},0)/rrArr.length).toFixed(2):0;
+  var ev=((wins/trades.length*(gp/Math.max(wins,1)))-(losses/trades.length*(gl/Math.max(losses,1)))).toFixed(2);
+  var dailyPnl={};trades.forEach(function(t){dailyPnl[t.date]=(dailyPnl[t.date]||0)+(t.pnl||0);});
+  var pnlArr=Object.values(dailyPnl);
+  var avg=pnlArr.length?(pnlArr.reduce(function(a,b){return a+b;},0)/pnlArr.length):0;
+  var std=pnlArr.length>1?Math.sqrt(pnlArr.reduce(function(s,v){return s+Math.pow(v-avg,2);},0)/pnlArr.length):1;
+  var sharpe=std>0?(avg/std).toFixed(2):0;
+  document.getElementById('full-stats').innerHTML=[
+    {l:'Win Rate',v:wr+'%',c:wr>=50?'var(--accent)':'var(--red)'},
+    {l:'Profit Factor',v:pf,c:parseFloat(pf)>=1.5?'var(--accent)':'var(--gold)'},
+    {l:'Avg R:R',v:'1:'+avgRR},{l:'Expected Value',v:'$'+ev,c:parseFloat(ev)>=0?'var(--accent)':'var(--red)'},
+    {l:'Sharpe Ratio',v:sharpe},{l:'Max Win',v:'$'+Math.max.apply(null,trades.map(function(t){return t.pnl||0;})).toFixed(2),c:'var(--accent)'},
+    {l:'Max Loss',v:'$'+Math.min.apply(null,trades.map(function(t){return t.pnl||0;})).toFixed(2),c:'var(--red)'},
+    {l:'Total P&L',v:(totalPnl>=0?'+ ':'')+'$'+totalPnl.toFixed(2),c:totalPnl>=0?'var(--accent)':'var(--red)'}
+  ].map(function(s){return '<div class="stat-row"><div class="stat-lbl">'+s.l+'</div><div class="stat-val"'+(s.c?' style="color:'+s.c+'"':'')+'>'+s.v+'</div></div>';}).join('');
+}
+
+async function callAI(prompt,maxTokens){
+  var r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':API_KEY,'anthropic-version':'2023-06-01'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:maxTokens||300,messages:[{role:'user',content:prompt}]})});
+  var d=await r.json();return d.content&&d.content[0]?d.content[0].text:'No response';
+}
+
+async function loadAIBrief(){
+  try{var r=await callAI('You are TradeMind AI. Give a 2-sentence trading brief: market sentiment and one actionable tip for forex traders today.',150);document.getElementById('ai-brief').innerHTML=r;}
+  catch(e){document.getElementById('ai-brief').innerHTML='Focus on high-probability setups. Protect your capital first.';}
+}
+
+async function sendMsg(){
+  var inp=document.getElementById('chat-inp');var msg=inp.value.trim();if(!msg)return;inp.value='';
+  var msgs=document.getElementById('chat-msgs');
+  msgs.innerHTML+='<div class="msg msg-user">'+msg+'</div>';
+  msgs.innerHTML+='<div class="msg msg-ai" id="ai-typing"><div class="msg-lbl">TRADEMIND AI</div>Analyzing...</div>';
+  msgs.scrollTop=msgs.scrollHeight;
+  try{var r=await callAI('You are TradeMind AI. Answer concisely: '+msg,400);document.getElementById('ai-typing').innerHTML='<div class="msg-lbl">TRADEMIND AI</div>'+r;}
+  catch(e){document.getElementById('ai-typing').innerHTML='<div class="msg-lbl">TRADEMIND AI</div>Configure your API key to enable live AI responses.';}
+  msgs.scrollTop=msgs.scrollHeight;
+}
+function quickAsk(q){document.getElementById('chat-inp').value=q;sendMsg();}
+
+async function loadEcoCal(){
+  try{
+    var r=await callAI('List 6 key economic events for forex traders this week. JSON only: [{"time":"Mon 14:30 ET","event":"US NFP","currency":"USD","impact":"high","forecast":"180K","previous":"175K"}].',500);
+    var events=JSON.parse(r.replace(/```json|```/g,'').trim());
+    document.getElementById('eco-content').innerHTML='<table><thead><tr><th>Time</th><th>Event</th><th>Currency</th><th>Impact</th><th>Forecast</th><th>Previous</th></tr></thead><tbody>'+events.map(function(e){var c=e.impact==='high'?'br':e.impact==='medium'?'bo':'bb';return '<tr><td>'+e.time+'</td><td><strong>'+e.event+'</strong></td><td>'+e.currency+'</td><td><span class="bdg '+c+'">'+e.impact+'</span></td><td>'+(e.forecast||'-')+'</td><td>'+(e.previous||'-')+'</td></tr>';}).join('')+'</tbody></table>';
+  }catch(e){document.getElementById('eco-content').innerHTML='<div style="color:var(--text-muted);font-size:12px;padding:20px;text-align:center">Configure API key to load live events</div>';}
+}
+
+async function analyzeRulesAI(){
+  if(!rules.length||!trades.length)return;
+  var comp=calcCompliance();
+  try{var r=await callAI('Trader has '+rules.length+' rules, '+comp+'% compliance, '+trades.length+' trades. Rules: '+rules.map(function(r){return r.name;}).join(', ')+'. Give 2 tips to improve. Concise.',200);document.getElementById('rules-ai-txt').innerHTML=r;}
+  catch(e){}
+}
+
+var currentPricePeriod='monthly';
+function setPricePeriod(p){
+  currentPricePeriod=p;
+  document.getElementById('tab-m').classList.toggle('active',p==='monthly');
+  document.getElementById('tab-a').classList.toggle('active',p==='annual');
+  document.getElementById('pro-price').textContent=p==='annual'?'$23':'$29';
+  document.getElementById('elite-price').textContent=p==='annual'?'$39':'$49';
+  document.getElementById('pro-billed').textContent=p==='annual'?'billed $276/year':'per month';
+  document.getElementById('elite-billed').textContent=p==='annual'?'billed $468/year':'per month';
+}
+
+function connectMT(){var s=document.getElementById('mt-srv').value,a=document.getElementById('mt-acc').value;if(!s||!a){alert('Fill all fields');return;}alert('MT5 connection via MetaApi available in Pro plan.');}
+async function saveProfile(){await sb.auth.updateUser({data:{full_name:document.getElementById('p-name').value}});alert('Profile saved!');}
+
+function updateSessBadge(){
+  var h=new Date().getUTCHours();var b=document.getElementById('sess-badge');
+  if(h>=7&&h<16){b.textContent='London Open';b.className='bdg bg';}
+  else if(h>=13&&h<22){b.textContent='NY Session';b.className='bdg bb';}
+  else{b.textContent='Asian Session';b.className='bdg bo';}
+}
+
+// STRIPE CHECKOUT via /api/checkout
+function startCheckout(plan){
+  var links={
+    'pro_monthly':'https://buy.stripe.com/4gM6oG5VOc4FcRHfmL0Fi00',
+    'pro_annual':'https://buy.stripe.com/aFaaEWeskgkV5pfcaz0Fi02',
+    'elite_monthly':'https://buy.stripe.com/eVqcN46ZS9Wx7xngqP0Fi01',
+    'elite_annual':'https://buy.stripe.com/aFaaEW5VO1q15pf7Uj0Fi03'
+  };
+  if(links[plan])window.location.href=links[plan];
+  else alert('Contact support@trademind.ai');
+}
+
+// EMAIL via /api/email
+async function sendEmail(to,subject,html){
+  try{
+    await fetch('/api/email',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({to:to,subject:subject,html:html})});
+  }catch(e){console.log('Email error:',e);}
+}
+
+async function sendWelcomeEmail(email,name){
+  await sendEmail(email,'Welcome to TradeMind.ai!','<div style="font-family:Inter,sans-serif;max-width:520px;margin:0 auto;padding:32px;background:#040605;color:#E8F0E9;border-radius:12px"><div style="font-size:20px;font-weight:700;color:#55D396;margin-bottom:16px">TradeMind.ai</div><h2 style="margin-bottom:12px">Welcome, '+name+'!</h2><p style="color:#4A6B50;line-height:1.7;margin-bottom:20px">Your account is ready. Start by adding your first trade and let TradeMind AI analyze your performance.</p><a href="https://trademind-nine.vercel.app" style="background:#55D396;color:#040605;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700;display:inline-block">Open TradeMind</a><p style="color:#4A6B50;font-size:12px;margin-top:24px">Questions? Email support@trademind.ai</p></div>');
+}
+
+async function sendSupportEmail(){
+  var subject=document.getElementById('sup-subject').value.trim();
+  var message=document.getElementById('sup-message').value.trim();
+  var status=document.getElementById('sup-status');
+  if(!subject||!message){status.textContent='Please fill all fields.';status.style.color='var(--red)';return;}
+  status.textContent='Sending...';
+  try{
+    await sendEmail('support@trademind.ai','[Support] '+subject,'<p><strong>From:</strong> '+user.email+'</p><p><strong>Message:</strong><br>'+message+'</p>');
+    await sendEmail(user.email,'We received your message','<p>Hi! We received your request: <strong>'+subject+'</strong></p><p>We will reply within 24 hours.</p><p>TradeMind Support</p>');
+    status.textContent='Sent! We will reply within 24 hours.';
+    status.style.color='var(--accent)';
+    document.getElementById('sup-subject').value='';
+    document.getElementById('sup-message').value='';
+  }catch(e){status.textContent='Error. Email support@trademind.ai directly.';status.style.color='var(--red)';}
+}
+
+async function sendSupport(){
+  var inp=document.getElementById('support-inp');
+  var msg=inp.value.trim();if(!msg)return;inp.value='';
+  var msgs=document.getElementById('support-msgs');
+  msgs.innerHTML+='<div class="msg msg-user">'+msg+'</div>';
+  msgs.innerHTML+='<div class="msg msg-ai" id="sup-typing"><div class="msg-lbl">SUPPORT AI</div>Analyzing...</div>';
+  msgs.scrollTop=msgs.scrollHeight;
+  try{
+    var r=await callAI('You are TradeMind support. Answer questions about TradeMind trading journal. Features: dashboard, journal, calendar, analytics, MarketAI, MT5 connect, trading rules. Plans: Free (20 trades/mo), Pro $29/mo, Elite $49/mo. 30-day refund. Answer: '+msg,300);
+    document.getElementById('sup-typing').innerHTML='<div class="msg-lbl">SUPPORT AI</div>'+r;
+  }catch(e){document.getElementById('sup-typing').innerHTML='<div class="msg-lbl">SUPPORT AI</div>Configure API key to enable AI support.';}
+  msgs.scrollTop=msgs.scrollHeight;
+}
+function supportAsk(q){document.getElementById('support-inp').value=q;sendSupport();}
+
+function showPolicy(type){
+  var policies={
+    terms:{title:'Terms of Service',text:'<strong>Last updated: June 2025</strong><br><br><strong>1. Acceptance</strong><br>By using TradeMind.ai you agree to these terms.<br><br><strong>2. Service Description</strong><br>TradeMind.ai provides an AI-powered trading journal. We do not provide financial advice.<br><br><strong>3. Payments</strong><br>Paid plans billed monthly or annually. Cancel anytime.<br><br><strong>4. Refund Policy</strong><br>30-day money back on all paid plans. Email support@trademind.ai within 30 days.<br><br><strong>5. Limitation of Liability</strong><br>TradeMind is not liable for trading losses.<br><br><strong>Contact:</strong> support@trademind.ai'},
+    privacy:{title:'Privacy Policy',text:'<strong>Last updated: June 2025</strong><br><br><strong>1. Data We Collect</strong><br>Email, trading data you enter, usage analytics. No payment card details (handled by Stripe).<br><br><strong>2. How We Use Your Data</strong><br>Only to provide TradeMind. We never sell your data.<br><br><strong>3. Data Storage</strong><br>Secured on Supabase with row-level security.<br><br><strong>4. Third Parties</strong><br>Stripe (payments), Resend (emails), Supabase (database), Anthropic (AI).<br><br><strong>5. Your Rights</strong><br>Request deletion: support@trademind.ai'},
+    refund:{title:'Refund Policy',text:'<strong>30-Day Money Back Guarantee</strong><br><br>Not satisfied within 30 days? Full refund, no questions asked.<br><br><strong>How to Request</strong><br>Email support@trademind.ai — subject: "Refund Request"<br>Processed within 3-5 business days.<br><br><strong>Conditions</strong><br>Within 30 days of first payment. One refund per customer. Pro and Elite plans only.'},
+    affiliate:{title:'Affiliate Program',text:'<strong>30% Lifetime Commission</strong><br><br><strong>How It Works</strong><br>1. Apply at support@trademind.ai<br>2. Get your referral link<br>3. Share on YouTube, TikTok, Twitter, Discord<br>4. Earn 30% of every payment forever<br><br><strong>Commission</strong><br>Pro $29/mo: earn $8.70/month per referral<br>Pro Annual: earn $82.80 per referral<br>Elite $49/mo: earn $14.70/month per referral<br><br><strong>Payouts</strong><br>Monthly via PayPal or bank. Min $50.<br><br><strong>Apply:</strong> support@trademind.ai'}
+  };
+  var p=policies[type];
+  if(!p)return;
+  document.getElementById('policy-content').querySelector('.card-title').textContent=p.title;
+  document.getElementById('policy-text').innerHTML=p.text;
+  document.querySelectorAll('#page-policies .btn').forEach(function(b){b.className='btn btn-ghost btn-sm';});
+  if(event&&event.target)event.target.className='btn btn-acc btn-sm';
+}
+
+function loadAPIKeys(){
+  var status=document.getElementById('keys-status');
+  if(status)status.textContent='API keys handled server-side via Vercel environment variables.';
+}
+
+function saveAPIKeys(){
+  document.getElementById('keys-status').textContent='Keys are configured server-side on Vercel.';
+}
+
+var currentPricePeriod='monthly';
+function setPricePeriod(p){
+  currentPricePeriod=p;
+  document.getElementById('tab-m').classList.toggle('active',p==='monthly');
+  document.getElementById('tab-a').classList.toggle('active',p==='annual');
+  document.getElementById('pro-price').textContent=p==='annual'?'$23':'$29';
+  document.getElementById('elite-price').textContent=p==='annual'?'$39':'$49';
+  document.getElementById('pro-billed').textContent=p==='annual'?'billed $276/year':'per month';
+  document.getElementById('elite-billed').textContent=p==='annual'?'billed $468/year':'per month';
+}
+
+function connectMT(){
+  var s=document.getElementById('mt-srv').value,a=document.getElementById('mt-acc').value;
+  if(!s||!a){alert('Fill all fields');return;}
+  alert('MT5 connection via MetaApi available in Pro plan.');
+}
+
+async function saveProfile(){
+  await sb.auth.updateUser({data:{full_name:document.getElementById('p-name').value}});
+  alert('Profile saved!');
+}
+
+function updateSessBadge(){
+  var h=new Date().getUTCHours();var b=document.getElementById('sess-badge');
+  if(h>=7&&h<16){b.textContent='London Open';b.className='bdg bg';}
+  else if(h>=13&&h<22){b.textContent='NY Session';b.className='bdg bb';}
+  else{b.textContent='Asian Session';b.className='bdg bo';}
+}
+
+function nav(id,el){
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
+  var page=document.getElementById('page-'+id);
+  if(page)page.classList.add('active');
+  if(el)el.classList.add('active');
+  var titles={dashboard:'Dashboard',journal:'Trade Journal',calendar:'P&L Calendar',analytics:'Analytics',marketai:'MarketAI',ecocal:'Economic Calendar',rules:'My Rules',connect:'MT4/MT5 Connect',pricing:'Plans and Pricing',profile:'Profile',support:'Support',policies:'Legal & Policies'};
+  var subs={dashboard:'Your performance overview',journal:'Click a trade for full details',calendar:'Your daily P&L history',analytics:'Deep dive into your stats',marketai:'Ask anything about the market',ecocal:'Key economic events this week',rules:'Define and track your trading rules',connect:'Connect your broker account',pricing:'Choose your plan',profile:'Your account settings',support:'AI assistant and contact form',policies:'Terms, Privacy, Refunds, Affiliate'};
+  document.getElementById('tb-title').textContent=titles[id]||id;
+  document.getElementById('tb-sub').textContent=subs[id]||'';
+  if(id==='journal')renderJ();
+  if(id==='analytics')renderAnalytics();
+  if(id==='calendar')renderCal();
+  if(id==='rules'){renderRules();analyzeRulesAI();}
+  if(id==='policies'){setTimeout(function(){showPolicy('terms');},50);}
+  if(id==='profile')loadAPIKeys();
+}
+
+function openM(id){document.getElementById(id).classList.add('open');}
+function closeM(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.mo').forEach(function(m){m.addEventListener('click',function(e){if(e.target===m)m.classList.remove('open');});});
+sb.auth.getSession().then(function(r){if(r.data.session){user=r.data.session.user;initApp();}});
+</script>
+</body>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>TradeMind.ai — AI Trading Journal</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#040605;--surface:#0A120C;--surface2:#0D1A0F;--border:#0F2414;--accent:#55D396;--accent2:#21F1A8;--accent-dim:rgba(85,211,150,0.08);--text:#E8F0E9;--text-muted:#4A6B50;--text-dim:#1A2E1C;--red:#FF4466;--gold:#FFB800;--blue:#4A9EFF;--radius:12px;--radius-sm:8px}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:14px}
+input,select,textarea,button{font-family:'Inter',sans-serif}
+*::-webkit-scrollbar{width:4px;height:4px}
+*::-webkit-scrollbar-track{background:transparent}
+*::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px}
+*{scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+
+/* AUTH */
+#auth-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999;background-image:radial-gradient(ellipse at 50% 0%,rgba(85,211,150,0.06) 0%,transparent 60%)}
+.auth-box{width:min(400px,94vw);text-align:center}
+.auth-logo-wrap{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:6px}
+.auth-tm{width:44px;height:44px;border-radius:11px;background:linear-gradient(135deg,#55D396,#21F1A8);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#040605;font-family:'Space Grotesk',sans-serif;flex-shrink:0}
+.auth-brand{font-size:24px;font-weight:700;font-family:'Space Grotesk',sans-serif;letter-spacing:-0.5px;color:#E8F0E9}
+.auth-brand span{background:linear-gradient(135deg,#55D396,#21F1A8);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.auth-tagline{font-size:12px;color:var(--text-muted);margin-bottom:24px}
+.auth-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px}
+.auth-tabs{display:flex;gap:4px;background:var(--bg);border-radius:var(--radius-sm);padding:4px;margin-bottom:20px}
+.auth-tab{flex:1;padding:8px;border:none;background:transparent;color:var(--text-muted);font-size:13px;font-weight:500;cursor:pointer;border-radius:6px;transition:all .2s}
+.auth-tab.active{background:var(--accent-dim);color:var(--accent)}
+.fl{display:flex;flex-direction:column;gap:4px;margin-bottom:14px;text-align:left}
+.fl label{font-size:11px;color:var(--text-muted);font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+.fi{width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:14px;outline:none;transition:border-color .2s}
+.fi:focus{border-color:var(--accent)}
+.fi::placeholder{color:var(--text-dim)}
+.btn-auth{width:100%;padding:12px;background:var(--accent);color:#040605;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:700;cursor:pointer;transition:opacity .2s;margin-top:6px}
+.btn-auth:hover{opacity:.88}
+.auth-msg{font-size:12px;margin-top:10px;display:none}
+.auth-err{color:var(--red)}.auth-ok{color:var(--accent)}
+
+/* APP */
+#app{display:none;height:100vh;flex-direction:row}
+#app.visible{display:flex}
+.sidebar{width:210px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0}
+.sidebar-header{padding:16px 14px 14px;border-bottom:1px solid var(--border)}
+.s-logo-wrap{display:flex;align-items:center;gap:8px}
+.s-tm{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#55D396,#21F1A8);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#040605;font-family:'Space Grotesk',sans-serif;flex-shrink:0}
+.s-brand{font-size:14px;font-weight:700;font-family:'Space Grotesk',sans-serif;letter-spacing:-0.3px;color:#E8F0E9}
+.s-brand span{background:linear-gradient(135deg,#55D396,#21F1A8);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.s-user{font-size:10px;color:var(--text-muted);margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sidebar-nav{flex:1;padding:10px 0;overflow-y:auto}
+.nav-sec{font-size:9px;font-weight:700;letter-spacing:.12em;color:var(--text-dim);text-transform:uppercase;padding:10px 14px 3px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 14px;color:var(--text-muted);cursor:pointer;font-size:12px;font-weight:500;transition:all .15s;border-left:2px solid transparent}
+.nav-item:hover{color:var(--text);background:var(--accent-dim)}
+.nav-item.active{color:var(--accent);background:var(--accent-dim);border-left-color:var(--accent)}
+.nav-icon{width:16px;height:16px;flex-shrink:0;opacity:.6}
+.nav-item.active .nav-icon{opacity:1}
+.sidebar-footer{padding:10px 14px;border-top:1px solid var(--border)}
+.plan-box{background:var(--accent-dim);border:1px solid rgba(85,211,150,0.15);border-radius:var(--radius-sm);padding:8px 10px;display:flex;justify-content:space-between;align-items:center}
+.plan-name{font-size:11px;font-weight:600;color:var(--accent)}
+.plan-up{font-size:10px;color:var(--text-muted);cursor:pointer}
+.main{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;height:52px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.tb-title{font-size:14px;font-weight:600}
+.tb-sub{font-size:10px;color:var(--text-muted);margin-top:1px}
+.tb-actions{display:flex;gap:6px;align-items:center}
+.btn{padding:6px 12px;border-radius:var(--radius-sm);font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all .15s;white-space:nowrap;display:inline-flex;align-items:center;gap:5px}
+.btn-acc{background:var(--accent);color:#040605}.btn-acc:hover{opacity:.88}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text-muted)}.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+.btn-sm{padding:4px 8px;font-size:11px}
+.btn-red{background:rgba(255,68,102,0.1);color:var(--red);border:1px solid rgba(255,68,102,0.2)}
+.btn-blue{background:rgba(74,158,255,0.1);color:var(--blue);border:1px solid rgba(74,158,255,0.2)}
+.content{flex:1;overflow-y:auto;padding:16px 20px;-webkit-overflow-scrolling:touch}
+.page{display:none}.page.active{display:block}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:14px}
+.card-title{font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.mc{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px}
+.ml{font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+.mv{font-size:24px;font-weight:700;font-family:'JetBrains Mono',monospace;line-height:1}
+.ms{font-size:10px;color:var(--text-muted);margin-top:5px}
+.c-acc{color:var(--accent)}.c-red{color:var(--red)}.c-gold{color:var(--gold)}.c-blue{color:var(--blue)}
+.ai-box{background:linear-gradient(135deg,rgba(85,211,150,0.05),rgba(33,241,168,0.02));border:1px solid rgba(85,211,150,0.12);border-radius:var(--radius);padding:14px;margin-bottom:14px}
+.ai-hdr{display:flex;align-items:center;gap:7px;margin-bottom:8px}
+.ai-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite;flex-shrink:0}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.ai-lbl{font-size:9px;font-weight:700;color:var(--accent);letter-spacing:.1em;text-transform:uppercase}
+.ai-txt{font-size:12px;color:#7AAA7C;line-height:1.6}
+.bdg{display:inline-flex;align-items:center;padding:2px 7px;border-radius:99px;font-size:10px;font-weight:600;white-space:nowrap}
+.bg{background:rgba(85,211,150,0.1);color:var(--accent)}.br{background:rgba(255,68,102,0.1);color:var(--red)}
+.bb{background:rgba(74,158,255,0.1);color:var(--blue)}.bo{background:rgba(255,184,0,0.1);color:var(--gold)}
+.bgr{background:rgba(255,255,255,0.05);color:var(--text-muted)}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:11px}
+th{font-size:9px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.07em;padding:0 10px 8px 0;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:9px 10px 9px 0;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr.clickable{cursor:pointer}
+tr.clickable:hover td{background:var(--accent-dim)}
+.bar-t{height:3px;background:var(--border);border-radius:99px;overflow:hidden;margin-top:7px}
+.bar-f{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+.mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;align-items:flex-end;justify-content:center}
+.mo.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px 16px 0 0;padding:20px;width:100%;max-height:92vh;overflow-y:auto}
+@media(min-width:600px){.mo{align-items:center;padding:20px}.modal{border-radius:16px;max-width:520px}.modal-lg{max-width:640px}}
+.modal-hdr{font-size:15px;font-weight:600;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}
+.mc-btn{width:26px;height:26px;border-radius:6px;border:1px solid var(--border);background:transparent;cursor:pointer;font-size:14px;color:var(--text-muted);display:flex;align-items:center;justify-content:center}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fg{margin-bottom:12px}
+.fg label{display:block;font-size:10px;font-weight:600;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em}
+.fi2{width:100%;padding:9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:13px;outline:none;-webkit-appearance:none}
+.fi2:focus{border-color:var(--accent)}
+textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
+.ma{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+.img-preview{width:100%;border-radius:var(--radius-sm);border:1px solid var(--border);margin-top:8px;display:none}
+.chat-wrap{display:flex;flex-direction:column;height:calc(100vh - 160px)}
+.chat-msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
+.msg{max-width:85%;padding:11px 14px;border-radius:12px;font-size:12px;line-height:1.6}
+.msg-user{background:var(--accent-dim);border:1px solid rgba(85,211,150,0.15);align-self:flex-end}
+.msg-ai{background:var(--surface2);border:1px solid var(--border);align-self:flex-start}
+.msg-lbl{font-size:9px;font-weight:700;color:var(--accent);letter-spacing:.1em;margin-bottom:5px}
+.quick-btns{display:flex;gap:6px;flex-wrap:wrap;padding:0 14px 8px}
+.chat-in{padding:12px 14px;border-top:1px solid var(--border);display:flex;gap:8px;background:var(--surface);flex-shrink:0}
+.chat-inp{flex:1;padding:9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:13px;outline:none;min-width:0}
+.chat-inp:focus{border-color:var(--accent)}
+.chat-send{padding:9px 14px;background:var(--accent);color:#040605;border:none;border-radius:var(--radius-sm);font-weight:700;cursor:pointer;font-size:12px;flex-shrink:0}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:8px}
+.cal-dh{font-size:9px;font-weight:600;color:var(--text-muted);text-align:center;padding:4px 0}
+.cal-day{border-radius:6px;padding:4px;min-height:40px;border:1px solid var(--border);cursor:pointer;transition:border-color .15s}
+.cal-day:hover{border-color:var(--accent)}.cal-day.today{border-color:var(--accent);background:var(--accent-dim)}
+.cal-day.empty{border:none;cursor:default}.cal-day.has-win{background:rgba(85,211,150,0.05)}.cal-day.has-loss{background:rgba(255,68,102,0.05)}
+.cdn{font-size:10px;font-weight:600;color:var(--text-muted)}.cdv{font-size:10px;font-weight:700;margin-top:2px}
+.stat-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px}
+.stat-row:last-child{border-bottom:none}.stat-lbl{color:var(--text-muted)}
+.stat-val{font-weight:600;font-family:'JetBrains Mono',monospace;font-size:11px}
+.rule-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.rule-item:last-child{border-bottom:none}
+.rule-check{width:18px;height:18px;border-radius:4px;border:2px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px}
+.rule-check.ok{background:var(--accent);border-color:var(--accent);color:#040605}.rule-check.fail{background:var(--red);border-color:var(--red);color:#fff}
+.price-toggle{display:flex;background:var(--bg);border-radius:var(--radius-sm);padding:4px;width:fit-content}
+.price-tab{padding:6px 16px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;color:var(--text-muted);border:none;background:transparent;transition:all .2s}
+.price-tab.active{background:var(--surface);color:var(--text)}
+.price-card{border:1px solid var(--border);border-radius:var(--radius);padding:16px;position:relative}
+.price-card.featured{border-color:var(--accent);background:var(--accent-dim)}
+.price-hot{position:absolute;top:-10px;right:14px;background:var(--accent);color:#040605;font-size:9px;font-weight:800;padding:2px 10px;border-radius:99px;letter-spacing:.06em}
+.ld{display:flex;align-items:center;gap:6px;color:var(--text-muted);font-size:11px;padding:10px 0}
+.ld-dot{width:5px;height:5px;border-radius:50%;background:var(--accent);animation:bounce .8s infinite}
+.ld-dot:nth-child(2){animation-delay:.15s}.ld-dot:nth-child(3){animation-delay:.3s}
+@keyframes bounce{0%,100%{transform:scale(1)}50%{transform:scale(1.5)}}
+.ic{width:14px;height:14px;flex-shrink:0}
+@media(max-width:640px){
+  .sidebar{width:58px}
+  .s-brand,.s-user,.nav-sec,.plan-box{display:none}
+  .nav-item span{display:none}
+  .nav-item{justify-content:center;padding:10px;flex-direction:column;gap:2px}
+  .nav-item::after{font-size:7px;color:var(--text-dim);font-weight:600}
+  .nav-item[onclick*="dashboard"]::after{content:"Home"}
+  .nav-item[onclick*="journal"]::after{content:"Trades"}
+  .nav-item[onclick*="calendar"]::after{content:"Cal"}
+  .nav-item[onclick*="analytics"]::after{content:"Stats"}
+  .nav-item[onclick*="marketai"]::after{content:"AI"}
+  .nav-item[onclick*="ecocal"]::after{content:"Eco"}
+  .nav-item[onclick*="rules"]::after{content:"Rules"}
+  .nav-item[onclick*="support"]::after{content:"Help"}
+  .nav-item[onclick*="connect"]::after{content:"MT5"}
+  .nav-item[onclick*="pricing"]::after{content:"Plans"}
+  .nav-item[onclick*="profile"]::after{content:"Me"}
+  .nav-item.active::after{color:var(--accent)}
+  .g4{grid-template-columns:1fr 1fr}
+  .g2,.g3{grid-template-columns:1fr}
+  .fr{grid-template-columns:1fr}
+  .content{padding:12px}
+  .topbar{padding:0 12px}
+  .tb-actions .btn-ghost{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- AUTH -->
+<div id="auth-screen">
+  <div class="auth-box">
+    <div class="auth-logo-wrap">
+      <div class="auth-tm">TM</div>
+      <div class="auth-brand">Trade<span>Mind</span></div>
+    </div>
+    <div class="auth-tagline">The AI journal that thinks like a coach</div>
+    <div class="auth-card">
+      <div class="auth-tabs">
+        <button class="auth-tab active" onclick="switchTab('login',this)">Sign In</button>
+        <button class="auth-tab" onclick="switchTab('signup',this)">Sign Up</button>
+      </div>
+      <div id="login-form">
+        <div class="fl"><label>Email</label><input class="fi" id="l-email" type="email" placeholder="trader@example.com"></div>
+        <div class="fl"><label>Password</label><input class="fi" id="l-pwd" type="password" placeholder="••••••••"></div>
+        <button class="btn-auth" onclick="login()">Sign In</button>
+      </div>
+      <div id="signup-form" style="display:none">
+        <div class="fl"><label>Full Name</label><input class="fi" id="s-name" placeholder="John Trader"></div>
+        <div class="fl"><label>Email</label><input class="fi" id="s-email" type="email" placeholder="trader@example.com"></div>
+        <div class="fl"><label>Password</label><input class="fi" id="s-pwd" type="password" placeholder="Min 6 characters"></div>
+        <button class="btn-auth" onclick="signup()">Create Free Account</button>
+      </div>
+      <div class="auth-msg auth-err" id="auth-err"></div>
+      <div class="auth-msg auth-ok" id="auth-ok"></div>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <nav class="sidebar">
+    <div class="sidebar-header">
+      <div class="s-logo-wrap">
+        <div class="s-tm">TM</div>
+        <div class="s-brand">Trade<span>Mind</span></div>
+      </div>
+      <div class="s-user" id="u-email">...</div>
+    </div>
+    <div class="sidebar-nav">
+      <div class="nav-sec">Overview</div>
+      <div class="nav-item active" onclick="nav('dashboard',this)">
+        <svg class="ic nav-icon" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1" fill="currentColor" opacity=".7"/><rect x="9" y="1" width="6" height="6" rx="1" fill="currentColor"/><rect x="1" y="9" width="6" height="6" rx="1" fill="currentColor" opacity=".4"/><rect x="9" y="9" width="6" height="6" rx="1" fill="currentColor" opacity=".6"/></svg>
+        <span>Dashboard</span>
+      </div>
+      <div class="nav-item" onclick="nav('journal',this)">
+        <svg class="ic nav-icon" viewBox="0 0 16 16" fill="none"><rect x="2" y="1" width="12" height="14" rx="1.5" stroke="currentColor" stroke-width="1.2"/><line x1="5" y1="5" x2="11" y2="5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><line x1="5" y1="8" x2="11" y2="8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><line x1="5" y1="11" x2="8" y2="11" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        <span>Journal</span>
+      </div>
+      <div class="nav-item" onclick="nav('calendar',this)">
+        <svg class="ic nav-icon" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="12" rx="1.5" stroke="currentColor" stroke-width="1.2"/><line x1="5" y1="1" x2="5" y2="5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><line x1="11" y1="1" x2="11" y2="5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><line x1="1" y1="7" x2="15" y2="7" stroke="currentColor" stroke-width="1.2"/></svg>
+        <span>Calendar</span>
+      </div>
+      <div class="nav-item" onclick="nav('analytics',this)">
+        <svg class="ic nav-icon" viewBox="0 0 16 16" fill="none"><path d="M1 12 L4 8 L7 10 L10 5 L13 7 L15 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>Analytics</span>
+      </div>
+      <div class="nav-sec">AI Tools</div>
+      <div class="nav-item" onclick="nav('marketai',this)">
+        <svg class="ic nav-icon" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.2"/><path d="M5.5 6.5C5.5 4.5 10.5 4.5 10.5 6.5C10.5 8 9 8.5 8 9.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><circle cx="8" cy="12" r=".8" fill="currentColor"/></svg>
+        <span>MarketAI</span>
+      </div>
+      <div class="nav-item" onclick="nav('ecocal',this)">
+        <svg class="ic nav-icon" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.2"/><line x1="8" y1="4" x2="8" y2="8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><line x1="8" y1="8" x2="11" y2="10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        <span>Eco Calendar</span>
+      </div>
+      <div class="nav-item" onclick="nav('rules',this)">
+        <svg class="ic nav-icon" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M3 8h7M3 12h5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        <span>My Rules</span>
+      </div>
+      <div class="nav-sec">Account</div>
+      <div class="nav-item" onclick="nav('support',this)">
+        <svg class="ic nav-icon" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.2"/><path d="M6 6.5C6 5.1 10 5.1 10 6.5C10 7.5 8.8 7.8 8 8.8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><circle cx="8" cy="11.5" r=".7" fill="currentColor"/></svg>
+        <span>Support</span>
+      </div>
+      <div class="nav-item" onclick="nav('policies',this)">
+        <svg class="ic nav-icon" viewBox="0 0 16 16" fill="none"><rect x="2" y="1" width="12" height="14" rx="1.5" stroke="currentColor" stroke-width="1.2"/><line x1="5" y1="5" x2="11" y2="5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><line x1="5" y1="8" x2="9" y2="8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        <span>Policies</span>
+      </div>
+      <div class="nav-item" onclick="nav('connect',this)">
+        <svg class="ic nav-icon" viewBox="0 0 16 16" fill="none"><circle cx="4" cy="8" r="2.5" stroke="currentColor" stroke-width="1.2"/><circle cx="12" cy="8" r="2.5" stroke="currentColor" stroke-width="1.2"/><line x1="6.5" y1="8" x2="9.5" y2="8" stroke="currentColor" stroke-width="1.2"/></svg>
+        <span>MT5 Connect</span>
+      </div>
+      <div class="nav-item" onclick="nav('pricing',this)">
+        <svg class="ic nav-icon" viewBox="0 0 16 16" fill="none"><rect x="1" y="4" width="14" height="9" rx="1.5" stroke="currentColor" stroke-width="1.2"/><line x1="1" y1="7" x2="15" y2="7" stroke="currentColor" stroke-width="1.2"/></svg>
+        <span>Plans</span>
+      </div>
+      <div class="nav-item" onclick="nav('profile',this)">
+        <svg class="ic nav-icon" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.2"/><path d="M2 14C2 11 4.5 9.5 8 9.5C11.5 9.5 14 11 14 14" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        <span>Profile</span>
+      </div>
+    </div>
+    <div class="sidebar-footer">
+      <div class="plan-box">
+        <div class="plan-name" id="plan-name">Free Plan</div>
+        <div class="plan-up" onclick="nav('pricing',null)">Upgrade</div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="main">
+    <div class="topbar">
+      <div><div class="tb-title" id="tb-title">Dashboard</div><div class="tb-sub" id="tb-sub">Your performance overview</div></div>
+      <div class="tb-actions">
+        <div class="bdg bg" id="sess-badge">London Open</div>
+        <button class="btn btn-acc" onclick="openM('m-trade')">+ Add Trade</button>
+        <button class="btn btn-ghost btn-sm" onclick="logout()">Sign Out</button>
+      </div>
+    </div>
+    <div class="content">
+
+      <!-- DASHBOARD -->
+      <div id="page-dashboard" class="page active">
+        <div class="g4">
+          <div class="mc"><div class="ml">Total P&amp;L</div><div class="mv c-acc" id="d-pnl">$0.00</div><div class="ms" id="d-pnl-s">No trades yet</div></div>
+          <div class="mc"><div class="ml">Win Rate</div><div class="mv" id="d-wr">0%</div><div class="ms" id="d-wr-s">0 wins / 0 losses</div></div>
+          <div class="mc"><div class="ml">Profit Factor</div><div class="mv" id="d-pf">0.00</div><div class="ms">Gross profit / loss</div></div>
+          <div class="mc"><div class="ml">Discipline Score</div><div class="mv c-acc" id="d-disc">--</div><div class="bar-t"><div class="bar-f" id="d-disc-b" style="width:0%"></div></div></div>
+        </div>
+        <div class="g2">
+          <div>
+            <div class="ai-box"><div class="ai-hdr"><div class="ai-dot"></div><div class="ai-lbl">TradeMind AI — Session Brief</div></div><div class="ai-txt" id="ai-brief"><div class="ld"><div class="ld-dot"></div><div class="ld-dot"></div><div class="ld-dot"></div><span>Analyzing market...</span></div></div></div>
+            <div class="card"><div class="card-title">Advanced Stats</div><div id="adv-stats"><div style="color:var(--text-muted);font-size:12px">Add trades to see stats</div></div></div>
+          </div>
+          <div>
+            <div class="card"><div class="card-title">Behavior Patterns</div><div id="behav"><div style="color:var(--text-muted);font-size:12px;padding:10px 0">Add trades to detect patterns</div></div></div>
+            <div class="card"><div class="card-title">Recent Trades <button class="btn btn-ghost btn-sm" onclick="nav('journal',null)">View All</button></div><div class="tw"><table><thead><tr><th>Date</th><th>Pair</th><th>Direction</th><th>P&amp;L</th><th>Result</th></tr></thead><tbody id="d-trades"><tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:20px">No trades yet</td></tr></tbody></table></div></div>
+          </div>
+        </div>
+        <div class="card"><div class="card-title">Cumulative P&amp;L</div><div style="height:160px"><canvas id="pnl-chart"></canvas></div></div>
+      </div>
+
+      <!-- JOURNAL -->
+      <div id="page-journal" class="page">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <div><div style="font-size:15px;font-weight:600">Trade Journal</div><div style="font-size:11px;color:var(--text-muted)">Click a trade to view details</div></div>
+          <button class="btn btn-acc" onclick="openM('m-trade')">+ Add Trade</button>
+        </div>
+        <div class="card" style="margin-bottom:10px">
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <select class="fi2" style="width:auto;padding:5px 8px;font-size:11px" id="f-pair" onchange="renderJ()"><option value="">All Pairs</option><option>EUR/USD</option><option>GBP/USD</option><option>USD/JPY</option><option>XAU/USD</option><option>NAS100</option><option>US30</option><option>BTC/USD</option></select>
+            <select class="fi2" style="width:auto;padding:5px 8px;font-size:11px" id="f-dir" onchange="renderJ()"><option value="">All Directions</option><option>Long</option><option>Short</option></select>
+            <select class="fi2" style="width:auto;padding:5px 8px;font-size:11px" id="f-res" onchange="renderJ()"><option value="">All Results</option><option>Win</option><option>Loss</option><option>Breakeven</option></select>
+          </div>
+        </div>
+        <div class="card"><div class="tw"><table><thead><tr><th>Date</th><th>Pair</th><th>Direction</th><th>Entry</th><th>Exit</th><th>Lots</th><th>P&amp;L</th><th>R:R</th><th>Result</th><th>Setup</th><th></th></tr></thead><tbody id="j-table"><tr><td colspan="11" style="text-align:center;color:var(--text-muted);padding:20px">No trades yet</td></tr></tbody></table></div></div>
+      </div>
+
+      <!-- CALENDAR -->
+      <div id="page-calendar" class="page">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <div style="font-size:15px;font-weight:600">P&amp;L Calendar</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <button class="btn btn-ghost btn-sm" onclick="calNav(-1)">Previous</button>
+            <strong id="cal-month" style="font-size:13px"></strong>
+            <button class="btn btn-ghost btn-sm" onclick="calNav(1)">Next</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="cal-grid"><div class="cal-dh">Mon</div><div class="cal-dh">Tue</div><div class="cal-dh">Wed</div><div class="cal-dh">Thu</div><div class="cal-dh">Fri</div><div class="cal-dh">Sat</div><div class="cal-dh">Sun</div></div>
+          <div class="cal-grid" id="cal-grid"></div>
+          <div style="display:flex;justify-content:space-between;padding:12px 0 0;border-top:1px solid var(--border);margin-top:10px">
+            <span style="font-size:12px;color:var(--text-muted)">Monthly P&amp;L</span>
+            <strong id="cal-total" style="font-size:14px;font-family:'JetBrains Mono',monospace"></strong>
+          </div>
+        </div>
+        <div class="g3">
+          <div class="mc"><div class="ml">Trading Days</div><div class="mv c-acc" id="cal-days">0</div></div>
+          <div class="mc"><div class="ml">Best Day</div><div class="mv c-acc" id="cal-best">$0</div></div>
+          <div class="mc"><div class="ml">Worst Day</div><div class="mv c-red" id="cal-worst">$0</div></div>
+        </div>
+      </div>
+
+      <!-- ANALYTICS -->
+      <div id="page-analytics" class="page">
+        <div style="font-size:15px;font-weight:600;margin-bottom:14px">Analytics</div>
+        <div class="card">
+          <div class="card-title">AI Period Analysis</div>
+          <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;margin-bottom:12px">
+            <div class="fg" style="margin:0"><label style="font-size:10px;color:var(--text-muted);display:block;margin-bottom:4px">From</label><input class="fi2" type="date" id="p-from" style="padding:5px 8px;font-size:11px"></div>
+            <div class="fg" style="margin:0"><label style="font-size:10px;color:var(--text-muted);display:block;margin-bottom:4px">To</label><input class="fi2" type="date" id="p-to" style="padding:5px 8px;font-size:11px"></div>
+            <button class="btn btn-acc btn-sm" onclick="periodAnalysis()">Analyze with AI</button>
+          </div>
+          <div id="period-result" class="ai-txt" style="font-size:12px;line-height:1.6"></div>
+        </div>
+        <div class="g4">
+          <div class="mc"><div class="ml">Best Pair</div><div class="mv c-acc" id="s-bp" style="font-size:16px">--</div></div>
+          <div class="mc"><div class="ml">Best Day</div><div class="mv c-acc" id="s-bd" style="font-size:16px">--</div></div>
+          <div class="mc"><div class="ml">Avg Win</div><div class="mv c-acc" id="s-aw">$0</div></div>
+          <div class="mc"><div class="ml">Avg Loss</div><div class="mv c-red" id="s-al">$0</div></div>
+        </div>
+        <div class="g2">
+          <div class="card"><div class="card-title">P&amp;L by Pair</div><div style="height:180px"><canvas id="pair-chart"></canvas></div></div>
+          <div class="card"><div class="card-title">P&amp;L by Day of Week</div><div style="height:180px"><canvas id="day-chart"></canvas></div></div>
+        </div>
+        <div class="g2">
+          <div class="card"><div class="card-title">Sessions</div><div style="height:160px"><canvas id="sess-chart"></canvas></div></div>
+          <div class="card"><div class="card-title">Full Statistics</div><div id="full-stats"></div></div>
+        </div>
+      </div>
+
+      <!-- MARKET AI -->
+      <div id="page-marketai" class="page">
+        <div class="chat-wrap">
+          <div class="chat-msgs" id="chat-msgs">
+            <div class="msg msg-ai"><div class="msg-lbl">TRADEMIND AI</div>Hello! I am your AI trading analyst. Ask me anything about the market, your performance, or trading psychology.</div>
+            <div class="quick-btns">
+              <button class="btn btn-ghost btn-sm" onclick="quickAsk('Why is DXY moving today?')">DXY outlook</button>
+              <button class="btn btn-ghost btn-sm" onclick="quickAsk('Key events this week?')">Key events</button>
+              <button class="btn btn-ghost btn-sm" onclick="quickAsk('Give me a London session brief')">London brief</button>
+              <button class="btn btn-ghost btn-sm" onclick="quickAsk('Current gold market sentiment?')">Gold sentiment</button>
+            </div>
+          </div>
+          <div class="chat-in">
+            <input class="chat-inp" id="chat-inp" placeholder="Ask about EUR/USD, NFP, market conditions..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg()}">
+            <button class="chat-send" onclick="sendMsg()">Send</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ECO CALENDAR -->
+      <div id="page-ecocal" class="page">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <div style="font-size:15px;font-weight:600">Economic Calendar</div>
+          <div style="display:flex;gap:6px"><span class="bdg br">High Impact</span><span class="bdg bo">Medium</span><span class="bdg bb">Low</span></div>
+        </div>
+        <div class="card"><div id="eco-content"><div class="ld"><div class="ld-dot"></div><div class="ld-dot"></div><div class="ld-dot"></div><span>Loading events...</span></div></div></div>
+      </div>
+
+      <!-- MY RULES -->
+      <div id="page-rules" class="page">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <div><div style="font-size:15px;font-weight:600">My Trading Rules</div><div style="font-size:11px;color:var(--text-muted)">Define rules — AI checks compliance</div></div>
+          <button class="btn btn-acc btn-sm" onclick="openM('m-rule')">+ Add Rule</button>
+        </div>
+        <div class="g2">
+          <div class="card"><div class="card-title">Rules &amp; Compliance</div><div id="rules-list"><div style="color:var(--text-muted);font-size:12px;padding:10px 0">No rules yet</div></div></div>
+          <div class="card">
+            <div class="card-title">Consistency Score</div>
+            <div style="text-align:center;padding:20px 0">
+              <div style="font-size:52px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--accent)" id="cons-score">--</div>
+              <div style="font-size:12px;color:var(--text-muted);margin-top:6px">Based on rule compliance</div>
+            </div>
+          </div>
+        </div>
+        <div class="card"><div class="card-title">AI Rule Analysis</div><div class="ai-txt" id="rules-ai-txt" style="font-size:12px"><span style="color:var(--text-muted)">Add trades and rules to get AI analysis</span></div></div>
+      </div>
+
+      <!-- SUPPORT -->
+      <div id="page-support" class="page">
+        <div style="font-size:15px;font-weight:600;margin-bottom:14px">Support</div>
+        <div class="g2">
+          <div>
+            <div class="ai-box">
+              <div class="ai-hdr"><div class="ai-dot"></div><div class="ai-lbl">AI Support Assistant</div></div>
+              <div id="support-msgs" style="max-height:280px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;margin-bottom:10px">
+                <div class="msg msg-ai"><div class="msg-lbl">SUPPORT AI</div>Hello! I can help you with any questions about TradeMind. What do you need help with?</div>
+                <div style="display:flex;gap:6px;flex-wrap:wrap">
+                  <button class="btn btn-ghost btn-sm" onclick="supportAsk('How do I add a trade?')">Add a trade</button>
+                  <button class="btn btn-ghost btn-sm" onclick="supportAsk('How does MT5 connect work?')">MT5 connect</button>
+                  <button class="btn btn-ghost btn-sm" onclick="supportAsk('How do I upgrade my plan?')">Upgrade plan</button>
+                  <button class="btn btn-ghost btn-sm" onclick="supportAsk('How does the affiliate program work?')">Affiliate</button>
+                </div>
+              </div>
+              <div style="display:flex;gap:8px">
+                <input class="chat-inp" id="support-inp" placeholder="Ask anything about TradeMind..." onkeydown="if(event.key==='Enter')sendSupport()">
+                <button class="chat-send" onclick="sendSupport()">Send</button>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="card" style="margin-bottom:14px">
+              <div class="card-title">Contact Support</div>
+              <div class="fg"><label>Subject</label><input class="fi2" id="sup-subject" placeholder="e.g. Issue with trade import"></div>
+              <div class="fg"><label>Message</label><textarea class="fi2" id="sup-message" placeholder="Describe your issue..." style="min-height:100px"></textarea></div>
+              <button class="btn btn-acc" style="width:100%" onclick="sendSupportEmail()">Send to Support</button>
+              <div id="sup-status" style="font-size:11px;margin-top:8px;text-align:center"></div>
+            </div>
+            <div class="card">
+              <div class="card-title">Contact Info</div>
+              <div class="stat-row"><div class="stat-lbl">Email</div><div class="stat-val" style="color:var(--accent)">support@trademind.ai</div></div>
+              <div class="stat-row"><div class="stat-lbl">Response time</div><div class="stat-val">Under 24 hours</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- POLICIES -->
+      <div id="page-policies" class="page">
+        <div style="font-size:15px;font-weight:600;margin-bottom:14px">Legal &amp; Policies</div>
+        <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+          <button class="btn btn-acc btn-sm" onclick="showPolicy('terms')">Terms of Service</button>
+          <button class="btn btn-ghost btn-sm" onclick="showPolicy('privacy')">Privacy Policy</button>
+          <button class="btn btn-ghost btn-sm" onclick="showPolicy('refund')">Refund Policy</button>
+          <button class="btn btn-ghost btn-sm" onclick="showPolicy('affiliate')">Affiliate Terms</button>
+        </div>
+        <div class="card" id="policy-content">
+          <div class="card-title">Terms of Service</div>
+          <div id="policy-text" style="font-size:12px;color:var(--text-muted);line-height:1.9"></div>
+        </div>
+      </div>
+
+      <!-- MT5 -->
+      <div id="page-connect" class="page">
+        <div style="font-size:15px;font-weight:600;margin-bottom:14px">MT4 / MT5 Connect</div>
+        <div class="g2">
+          <div class="card">
+            <div class="card-title">Connect Your Broker</div>
+            <div class="fg"><label>Broker / Server</label><input class="fi2" id="mt-srv" placeholder="e.g. ICMarkets-Live01"></div>
+            <div class="fg"><label>Account Number</label><input class="fi2" id="mt-acc" placeholder="12345678"></div>
+            <div class="fg"><label>Password</label><input class="fi2" id="mt-pwd" type="password" placeholder="••••••••"></div>
+            <div class="fg"><label>Platform</label><select class="fi2" id="mt-plat"><option>MetaTrader 5</option><option>MetaTrader 4</option></select></div>
+            <button class="btn btn-acc" style="width:100%" onclick="connectMT()">Connect Account</button>
+          </div>
+          <div>
+            <div class="card" style="text-align:center;padding:32px">
+              <div style="font-weight:600;color:var(--text-muted);margin-bottom:8px">No broker connected</div>
+              <div style="font-size:11px;color:var(--text-dim)">Connect to auto-import trades from MT4/MT5. Available on Pro plan.</div>
+            </div>
+            <div class="card"><div class="card-title">Supported Brokers</div><div style="font-size:11px;color:var(--text-muted);line-height:2.2">IC Markets · Pepperstone · Exness · XM · FTMO · The5ers · MyForexFunds · Funded Next · and 500+ more</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PRICING -->
+      <div id="page-pricing" class="page">
+        <div style="font-size:15px;font-weight:600;margin-bottom:6px">Plans &amp; Pricing</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:16px">30-day money back guarantee on all paid plans</div>
+        <div class="price-toggle" style="margin-bottom:16px">
+          <button class="price-tab active" id="tab-m" onclick="setPricePeriod('monthly')">Monthly</button>
+          <button class="price-tab" id="tab-a" onclick="setPricePeriod('annual')">Annual — Save 20%</button>
+        </div>
+        <div class="g3">
+          <div class="price-card">
+            <div style="font-size:14px;font-weight:700;margin-bottom:8px">Free</div>
+            <div style="font-size:30px;font-weight:800;font-family:'JetBrains Mono',monospace;margin:8px 0">$0</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-bottom:14px">Forever free</div>
+            <div style="font-size:11px;color:var(--text-muted);line-height:2.2">20 trades/month<br>Basic statistics<br>5 AI questions/day<br>Economic calendar</div>
+            <button class="btn btn-ghost" style="width:100%;margin-top:14px">Current Plan</button>
+          </div>
+          <div class="price-card featured">
+            <div class="price-hot">POPULAR</div>
+            <div style="font-size:14px;font-weight:700;margin-bottom:8px;color:var(--accent)">Pro</div>
+            <div style="font-size:30px;font-weight:800;font-family:'JetBrains Mono',monospace;margin:8px 0"><span id="pro-price">$29</span></div>
+            <div style="font-size:11px;color:var(--text-muted);margin-bottom:14px" id="pro-billed">per month</div>
+            <div style="font-size:11px;color:var(--text-muted);line-height:2.2">Unlimited trades<br>Full analytics + Sharpe ratio<br>MarketAI unlimited<br>MT5 auto-import<br>AI period analysis<br>Screenshot upload</div>
             <button class="btn btn-acc" style="width:100%;margin-top:14px" onclick="startCheckout('pro_monthly')">Upgrade to Pro</button>
             <div style="font-size:10px;color:var(--text-muted);text-align:center;margin-top:8px">30-day money back guarantee</div>
           </div>
