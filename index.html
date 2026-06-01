@@ -9,16 +9,14 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#040605;--surface:#0A120C;--surface2:#0D1A0F;--border:#0F2414;
-  --accent:#55D396;--accent2:#21F1A8;--accent-dim:rgba(85,211,150,0.08);
-  --text:#E8F0E9;--text-muted:#4A6B50;--text-dim:#1A2E1C;
-  --red:#FF4466;--gold:#FFB800;--blue:#4A9EFF;
-  --radius:12px;--radius-sm:8px;
-}
+:root{--bg:#040605;--surface:#0A120C;--surface2:#0D1A0F;--border:#0F2414;--accent:#55D396;--accent2:#21F1A8;--accent-dim:rgba(85,211,150,0.08);--text:#E8F0E9;--text-muted:#4A6B50;--text-dim:#1A2E1C;--red:#FF4466;--gold:#FFB800;--blue:#4A9EFF;--radius:12px;--radius-sm:8px}
 html,body{height:100%;overflow:hidden}
 body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:14px}
 input,select,textarea,button{font-family:'Inter',sans-serif}
+*::-webkit-scrollbar{width:4px;height:4px}
+*::-webkit-scrollbar-track{background:transparent}
+*::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px}
+*{scrollbar-width:thin;scrollbar-color:var(--border) transparent}
 
 /* AUTH */
 #auth-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999;background-image:radial-gradient(ellipse at 50% 0%,rgba(85,211,150,0.06) 0%,transparent 60%)}
@@ -45,8 +43,6 @@ input,select,textarea,button{font-family:'Inter',sans-serif}
 /* APP */
 #app{display:none;height:100vh;flex-direction:row}
 #app.visible{display:flex}
-
-/* SIDEBAR */
 .sidebar{width:210px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0}
 .sidebar-header{padding:16px 14px 14px;border-bottom:1px solid var(--border)}
 .s-logo-wrap{display:flex;align-items:center;gap:8px}
@@ -65,72 +61,48 @@ input,select,textarea,button{font-family:'Inter',sans-serif}
 .plan-box{background:var(--accent-dim);border:1px solid rgba(85,211,150,0.15);border-radius:var(--radius-sm);padding:8px 10px;display:flex;justify-content:space-between;align-items:center}
 .plan-name{font-size:11px;font-weight:600;color:var(--accent)}
 .plan-up{font-size:10px;color:var(--text-muted);cursor:pointer}
-
-/* MAIN */
 .main{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}
 .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;height:52px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .tb-title{font-size:14px;font-weight:600}
 .tb-sub{font-size:10px;color:var(--text-muted);margin-top:1px}
 .tb-actions{display:flex;gap:6px;align-items:center}
 .btn{padding:6px 12px;border-radius:var(--radius-sm);font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all .15s;white-space:nowrap;display:inline-flex;align-items:center;gap:5px}
-.btn-acc{background:var(--accent);color:#040605}
-.btn-acc:hover{opacity:.88}
-.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text-muted)}
-.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+.btn-acc{background:var(--accent);color:#040605}.btn-acc:hover{opacity:.88}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text-muted)}.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
 .btn-sm{padding:4px 8px;font-size:11px}
 .btn-red{background:rgba(255,68,102,0.1);color:var(--red);border:1px solid rgba(255,68,102,0.2)}
 .btn-blue{background:rgba(74,158,255,0.1);color:var(--blue);border:1px solid rgba(74,158,255,0.2)}
-
-/* CONTENT */
-.content{flex:1;overflow-y:auto;padding:16px 20px;-webkit-overflow-scrolling:touch;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
-.page{display:none}
-.page.active{display:block}
-
-/* CARDS */
+.content{flex:1;overflow-y:auto;padding:16px 20px;-webkit-overflow-scrolling:touch}
+.page{display:none}.page.active{display:block}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:14px}
 .card-title{font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
 .g4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
 .g3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
-
-/* METRICS */
 .mc{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px}
 .ml{font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
 .mv{font-size:24px;font-weight:700;font-family:'JetBrains Mono',monospace;line-height:1}
 .ms{font-size:10px;color:var(--text-muted);margin-top:5px}
 .c-acc{color:var(--accent)}.c-red{color:var(--red)}.c-gold{color:var(--gold)}.c-blue{color:var(--blue)}
-
-/* AI BOX */
 .ai-box{background:linear-gradient(135deg,rgba(85,211,150,0.05),rgba(33,241,168,0.02));border:1px solid rgba(85,211,150,0.12);border-radius:var(--radius);padding:14px;margin-bottom:14px}
 .ai-hdr{display:flex;align-items:center;gap:7px;margin-bottom:8px}
 .ai-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite;flex-shrink:0}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 .ai-lbl{font-size:9px;font-weight:700;color:var(--accent);letter-spacing:.1em;text-transform:uppercase}
 .ai-txt{font-size:12px;color:#7AAA7C;line-height:1.6}
-.ai-hi{color:var(--accent);font-weight:500}
-
-/* BADGE */
 .bdg{display:inline-flex;align-items:center;padding:2px 7px;border-radius:99px;font-size:10px;font-weight:600;white-space:nowrap}
-.bg{background:rgba(85,211,150,0.1);color:var(--accent)}
-.br{background:rgba(255,68,102,0.1);color:var(--red)}
-.bb{background:rgba(74,158,255,0.1);color:var(--blue)}
-.bo{background:rgba(255,184,0,0.1);color:var(--gold)}
+.bg{background:rgba(85,211,150,0.1);color:var(--accent)}.br{background:rgba(255,68,102,0.1);color:var(--red)}
+.bb{background:rgba(74,158,255,0.1);color:var(--blue)}.bo{background:rgba(255,184,0,0.1);color:var(--gold)}
 .bgr{background:rgba(255,255,255,0.05);color:var(--text-muted)}
-
-/* TABLE */
-.tw{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tw{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:11px}
 th{font-size:9px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.07em;padding:0 10px 8px 0;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
 td{padding:9px 10px 9px 0;border-bottom:1px solid var(--border);vertical-align:middle}
 tr:last-child td{border-bottom:none}
 tr.clickable{cursor:pointer}
 tr.clickable:hover td{background:var(--accent-dim)}
-
-/* BAR */
 .bar-t{height:3px;background:var(--border);border-radius:99px;overflow:hidden;margin-top:7px}
 .bar-f{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--accent2))}
-
-/* MODAL */
 .mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;align-items:flex-end;justify-content:center}
 .mo.open{display:flex}
 .modal{background:var(--surface);border:1px solid var(--border);border-radius:16px 16px 0 0;padding:20px;width:100%;max-height:92vh;overflow-y:auto}
@@ -145,8 +117,6 @@ tr.clickable:hover td{background:var(--accent-dim)}
 textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
 .ma{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
 .img-preview{width:100%;border-radius:var(--radius-sm);border:1px solid var(--border);margin-top:8px;display:none}
-
-/* CHAT */
 .chat-wrap{display:flex;flex-direction:column;height:calc(100vh - 160px)}
 .chat-msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
 .msg{max-width:85%;padding:11px 14px;border-radius:12px;font-size:12px;line-height:1.6}
@@ -158,57 +128,36 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
 .chat-inp{flex:1;padding:9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:13px;outline:none;min-width:0}
 .chat-inp:focus{border-color:var(--accent)}
 .chat-send{padding:9px 14px;background:var(--accent);color:#040605;border:none;border-radius:var(--radius-sm);font-weight:700;cursor:pointer;font-size:12px;flex-shrink:0}
-
-/* CALENDAR */
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:8px}
 .cal-dh{font-size:9px;font-weight:600;color:var(--text-muted);text-align:center;padding:4px 0}
 .cal-day{border-radius:6px;padding:4px;min-height:40px;border:1px solid var(--border);cursor:pointer;transition:border-color .15s}
-.cal-day:hover{border-color:var(--accent)}
-.cal-day.today{border-color:var(--accent);background:var(--accent-dim)}
-.cal-day.empty{border:none;cursor:default}
-.cal-day.has-win{background:rgba(85,211,150,0.05)}
-.cal-day.has-loss{background:rgba(255,68,102,0.05)}
-.cdn{font-size:10px;font-weight:600;color:var(--text-muted)}
-.cdv{font-size:10px;font-weight:700;margin-top:2px}
-
-/* STATS */
+.cal-day:hover{border-color:var(--accent)}.cal-day.today{border-color:var(--accent);background:var(--accent-dim)}
+.cal-day.empty{border:none;cursor:default}.cal-day.has-win{background:rgba(85,211,150,0.05)}.cal-day.has-loss{background:rgba(255,68,102,0.05)}
+.cdn{font-size:10px;font-weight:600;color:var(--text-muted)}.cdv{font-size:10px;font-weight:700;margin-top:2px}
 .stat-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px}
-.stat-row:last-child{border-bottom:none}
-.stat-lbl{color:var(--text-muted)}
+.stat-row:last-child{border-bottom:none}.stat-lbl{color:var(--text-muted)}
 .stat-val{font-weight:600;font-family:'JetBrains Mono',monospace;font-size:11px}
-
-/* RULES */
 .rule-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
 .rule-item:last-child{border-bottom:none}
 .rule-check{width:18px;height:18px;border-radius:4px;border:2px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px}
-.rule-check.ok{background:var(--accent);border-color:var(--accent);color:#040605}
-.rule-check.fail{background:var(--red);border-color:var(--red);color:#fff}
-
-/* PRICING */
+.rule-check.ok{background:var(--accent);border-color:var(--accent);color:#040605}.rule-check.fail{background:var(--red);border-color:var(--red);color:#fff}
 .price-toggle{display:flex;background:var(--bg);border-radius:var(--radius-sm);padding:4px;width:fit-content}
 .price-tab{padding:6px 16px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;color:var(--text-muted);border:none;background:transparent;transition:all .2s}
 .price-tab.active{background:var(--surface);color:var(--text)}
 .price-card{border:1px solid var(--border);border-radius:var(--radius);padding:16px;position:relative}
 .price-card.featured{border-color:var(--accent);background:var(--accent-dim)}
 .price-hot{position:absolute;top:-10px;right:14px;background:var(--accent);color:#040605;font-size:9px;font-weight:800;padding:2px 10px;border-radius:99px;letter-spacing:.06em}
-
-/* LOADING */
 .ld{display:flex;align-items:center;gap:6px;color:var(--text-muted);font-size:11px;padding:10px 0}
 .ld-dot{width:5px;height:5px;border-radius:50%;background:var(--accent);animation:bounce .8s infinite}
-.ld-dot:nth-child(2){animation-delay:.15s}
-.ld-dot:nth-child(3){animation-delay:.3s}
+.ld-dot:nth-child(2){animation-delay:.15s}.ld-dot:nth-child(3){animation-delay:.3s}
 @keyframes bounce{0%,100%{transform:scale(1)}50%{transform:scale(1.5)}}
-
-/* SVG ICONS */
 .ic{width:14px;height:14px;flex-shrink:0}
-
-/* MOBILE */
 @media(max-width:640px){
   .sidebar{width:58px}
-  .s-logo-wrap .s-brand,.s-user,.nav-sec,.plan-box{display:none}
+  .s-brand,.s-user,.nav-sec,.plan-box{display:none}
   .nav-item span{display:none}
-  .nav-item{justify-content:center;padding:10px;flex-direction:column;gap:3px;min-height:48px}
-  .nav-item::after{font-size:7px;color:var(--text-dim);font-weight:600;letter-spacing:.04em}
+  .nav-item{justify-content:center;padding:10px;flex-direction:column;gap:2px}
+  .nav-item::after{font-size:7px;color:var(--text-dim);font-weight:600}
   .nav-item[onclick*="dashboard"]::after{content:"Home"}
   .nav-item[onclick*="journal"]::after{content:"Trades"}
   .nav-item[onclick*="calendar"]::after{content:"Cal"}
@@ -216,6 +165,7 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
   .nav-item[onclick*="marketai"]::after{content:"AI"}
   .nav-item[onclick*="ecocal"]::after{content:"Eco"}
   .nav-item[onclick*="rules"]::after{content:"Rules"}
+  .nav-item[onclick*="support"]::after{content:"Help"}
   .nav-item[onclick*="connect"]::after{content:"MT5"}
   .nav-item[onclick*="pricing"]::after{content:"Plans"}
   .nav-item[onclick*="profile"]::after{content:"Me"}
@@ -225,13 +175,8 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
   .fr{grid-template-columns:1fr}
   .content{padding:12px}
   .topbar{padding:0 12px}
+  .tb-actions .btn-ghost{display:none}
 }
-
-/* Scrollbar styling */
-.content::-webkit-scrollbar{width:4px}
-.content::-webkit-scrollbar-track{background:transparent}
-.content::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px}
-.content::-webkit-scrollbar-thumb:hover{background:var(--text-dim)}
 </style>
 </head>
 <body>
@@ -250,7 +195,7 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
         <button class="auth-tab" onclick="switchTab('signup',this)">Sign Up</button>
       </div>
       <div id="login-form">
-        <div class="fl"><label>Email</label><input class="fi" id="l-email" type="email" placeholder="trader@example.com" autocomplete="email"></div>
+        <div class="fl"><label>Email</label><input class="fi" id="l-email" type="email" placeholder="trader@example.com"></div>
         <div class="fl"><label>Password</label><input class="fi" id="l-pwd" type="password" placeholder="••••••••"></div>
         <button class="btn-auth" onclick="login()">Sign In</button>
       </div>
@@ -279,53 +224,53 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
     <div class="sidebar-nav">
       <div class="nav-sec">Overview</div>
       <div class="nav-item active" onclick="nav('dashboard',this)">
-        <svg class="ic" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1" fill="currentColor" opacity=".7"/><rect x="9" y="1" width="6" height="6" rx="1" fill="currentColor"/><rect x="1" y="9" width="6" height="6" rx="1" fill="currentColor" opacity=".4"/><rect x="9" y="9" width="6" height="6" rx="1" fill="currentColor" opacity=".6"/></svg>
+        <svg class="ic nav-icon" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1" fill="currentColor" opacity=".7"/><rect x="9" y="1" width="6" height="6" rx="1" fill="currentColor"/><rect x="1" y="9" width="6" height="6" rx="1" fill="currentColor" opacity=".4"/><rect x="9" y="9" width="6" height="6" rx="1" fill="currentColor" opacity=".6"/></svg>
         <span>Dashboard</span>
       </div>
       <div class="nav-item" onclick="nav('journal',this)">
-        <svg class="ic" viewBox="0 0 16 16" fill="none"><rect x="2" y="1" width="12" height="14" rx="1.5" stroke="currentColor" stroke-width="1.2"/><line x1="5" y1="5" x2="11" y2="5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><line x1="5" y1="8" x2="11" y2="8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><line x1="5" y1="11" x2="8" y2="11" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        <svg class="ic nav-icon" viewBox="0 0 16 16" fill="none"><rect x="2" y="1" width="12" height="14" rx="1.5" stroke="currentColor" stroke-width="1.2"/><line x1="5" y1="5" x2="11" y2="5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><line x1="5" y1="8" x2="11" y2="8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><line x1="5" y1="11" x2="8" y2="11" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
         <span>Journal</span>
       </div>
       <div class="nav-item" onclick="nav('calendar',this)">
-        <svg class="ic" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="12" rx="1.5" stroke="currentColor" stroke-width="1.2"/><line x1="5" y1="1" x2="5" y2="5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><line x1="11" y1="1" x2="11" y2="5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><line x1="1" y1="7" x2="15" y2="7" stroke="currentColor" stroke-width="1.2"/></svg>
+        <svg class="ic nav-icon" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="12" rx="1.5" stroke="currentColor" stroke-width="1.2"/><line x1="5" y1="1" x2="5" y2="5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><line x1="11" y1="1" x2="11" y2="5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><line x1="1" y1="7" x2="15" y2="7" stroke="currentColor" stroke-width="1.2"/></svg>
         <span>Calendar</span>
       </div>
       <div class="nav-item" onclick="nav('analytics',this)">
-        <svg class="ic" viewBox="0 0 16 16" fill="none"><path d="M1 12 L4 8 L7 10 L10 5 L13 7 L15 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <svg class="ic nav-icon" viewBox="0 0 16 16" fill="none"><path d="M1 12 L4 8 L7 10 L10 5 L13 7 L15 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         <span>Analytics</span>
       </div>
       <div class="nav-sec">AI Tools</div>
       <div class="nav-item" onclick="nav('marketai',this)">
-        <svg class="ic" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.2"/><path d="M5.5 6.5 C5.5 4.5 10.5 4.5 10.5 6.5 C10.5 8 9 8.5 8 9.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><circle cx="8" cy="12" r=".8" fill="currentColor"/></svg>
+        <svg class="ic nav-icon" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.2"/><path d="M5.5 6.5C5.5 4.5 10.5 4.5 10.5 6.5C10.5 8 9 8.5 8 9.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><circle cx="8" cy="12" r=".8" fill="currentColor"/></svg>
         <span>MarketAI</span>
       </div>
       <div class="nav-item" onclick="nav('ecocal',this)">
-        <svg class="ic" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.2"/><line x1="8" y1="4" x2="8" y2="8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><line x1="8" y1="8" x2="11" y2="10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        <svg class="ic nav-icon" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.2"/><line x1="8" y1="4" x2="8" y2="8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><line x1="8" y1="8" x2="11" y2="10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
         <span>Eco Calendar</span>
       </div>
       <div class="nav-item" onclick="nav('rules',this)">
-        <svg class="ic" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M3 8h7M3 12h5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        <svg class="ic nav-icon" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M3 8h7M3 12h5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
         <span>My Rules</span>
       </div>
       <div class="nav-sec">Account</div>
       <div class="nav-item" onclick="nav('support',this)">
-        <svg class="ic" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.2"/><path d="M6 6.5C6 5.1 10 5.1 10 6.5C10 7.5 8.8 7.8 8 8.8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><circle cx="8" cy="11.5" r=".7" fill="currentColor"/></svg>
+        <svg class="ic nav-icon" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.2"/><path d="M6 6.5C6 5.1 10 5.1 10 6.5C10 7.5 8.8 7.8 8 8.8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><circle cx="8" cy="11.5" r=".7" fill="currentColor"/></svg>
         <span>Support</span>
       </div>
       <div class="nav-item" onclick="nav('policies',this)">
-        <svg class="ic" viewBox="0 0 16 16" fill="none"><rect x="2" y="1" width="12" height="14" rx="1.5" stroke="currentColor" stroke-width="1.2"/><line x1="5" y1="5" x2="11" y2="5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><line x1="5" y1="8" x2="11" y2="8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><line x1="5" y1="11" x2="8" y2="11" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        <svg class="ic nav-icon" viewBox="0 0 16 16" fill="none"><rect x="2" y="1" width="12" height="14" rx="1.5" stroke="currentColor" stroke-width="1.2"/><line x1="5" y1="5" x2="11" y2="5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><line x1="5" y1="8" x2="9" y2="8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
         <span>Policies</span>
       </div>
       <div class="nav-item" onclick="nav('connect',this)">
-        <svg class="ic" viewBox="0 0 16 16" fill="none"><circle cx="4" cy="8" r="2.5" stroke="currentColor" stroke-width="1.2"/><circle cx="12" cy="8" r="2.5" stroke="currentColor" stroke-width="1.2"/><line x1="6.5" y1="8" x2="9.5" y2="8" stroke="currentColor" stroke-width="1.2"/></svg>
+        <svg class="ic nav-icon" viewBox="0 0 16 16" fill="none"><circle cx="4" cy="8" r="2.5" stroke="currentColor" stroke-width="1.2"/><circle cx="12" cy="8" r="2.5" stroke="currentColor" stroke-width="1.2"/><line x1="6.5" y1="8" x2="9.5" y2="8" stroke="currentColor" stroke-width="1.2"/></svg>
         <span>MT5 Connect</span>
       </div>
       <div class="nav-item" onclick="nav('pricing',this)">
-        <svg class="ic" viewBox="0 0 16 16" fill="none"><rect x="1" y="4" width="14" height="9" rx="1.5" stroke="currentColor" stroke-width="1.2"/><line x1="1" y1="7" x2="15" y2="7" stroke="currentColor" stroke-width="1.2"/></svg>
+        <svg class="ic nav-icon" viewBox="0 0 16 16" fill="none"><rect x="1" y="4" width="14" height="9" rx="1.5" stroke="currentColor" stroke-width="1.2"/><line x1="1" y1="7" x2="15" y2="7" stroke="currentColor" stroke-width="1.2"/></svg>
         <span>Plans</span>
       </div>
       <div class="nav-item" onclick="nav('profile',this)">
-        <svg class="ic" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.2"/><path d="M2 14 C2 11 4.5 9.5 8 9.5 C11.5 9.5 14 11 14 14" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        <svg class="ic nav-icon" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.2"/><path d="M2 14C2 11 4.5 9.5 8 9.5C11.5 9.5 14 11 14 14" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
         <span>Profile</span>
       </div>
     </div>
@@ -339,23 +284,22 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
 
   <div class="main">
     <div class="topbar">
-      <div><div class="tb-title" id="tb-title">Dashboard</div><div class="tb-sub" id="tb-sub">Performance overview</div></div>
+      <div><div class="tb-title" id="tb-title">Dashboard</div><div class="tb-sub" id="tb-sub">Your performance overview</div></div>
       <div class="tb-actions">
         <div class="bdg bg" id="sess-badge">London Open</div>
         <button class="btn btn-acc" onclick="openM('m-trade')">+ Add Trade</button>
         <button class="btn btn-ghost btn-sm" onclick="logout()">Sign Out</button>
       </div>
     </div>
-
     <div class="content">
 
       <!-- DASHBOARD -->
       <div id="page-dashboard" class="page active">
         <div class="g4">
-          <div class="mc"><div class="ml">Total P&L</div><div class="mv c-acc" id="d-pnl">$0.00</div><div class="ms" id="d-pnl-s">No trades yet</div></div>
+          <div class="mc"><div class="ml">Total P&amp;L</div><div class="mv c-acc" id="d-pnl">$0.00</div><div class="ms" id="d-pnl-s">No trades yet</div></div>
           <div class="mc"><div class="ml">Win Rate</div><div class="mv" id="d-wr">0%</div><div class="ms" id="d-wr-s">0 wins / 0 losses</div></div>
           <div class="mc"><div class="ml">Profit Factor</div><div class="mv" id="d-pf">0.00</div><div class="ms">Gross profit / loss</div></div>
-          <div class="mc"><div class="ml">Discipline Score</div><div class="mv c-acc" id="d-disc">—</div><div class="bar-t"><div class="bar-f" id="d-disc-b" style="width:0%"></div></div></div>
+          <div class="mc"><div class="ml">Discipline Score</div><div class="mv c-acc" id="d-disc">--</div><div class="bar-t"><div class="bar-f" id="d-disc-b" style="width:0%"></div></div></div>
         </div>
         <div class="g2">
           <div>
@@ -364,10 +308,10 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
           </div>
           <div>
             <div class="card"><div class="card-title">Behavior Patterns</div><div id="behav"><div style="color:var(--text-muted);font-size:12px;padding:10px 0">Add trades to detect patterns</div></div></div>
-            <div class="card"><div class="card-title">Recent Trades <button class="btn btn-ghost btn-sm" onclick="nav('journal',null)">View All</button></div><div class="tw"><table><thead><tr><th>Date</th><th>Pair</th><th>Direction</th><th>P&L</th><th>Result</th></tr></thead><tbody id="d-trades"><tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:20px">No trades yet</td></tr></tbody></table></div></div>
+            <div class="card"><div class="card-title">Recent Trades <button class="btn btn-ghost btn-sm" onclick="nav('journal',null)">View All</button></div><div class="tw"><table><thead><tr><th>Date</th><th>Pair</th><th>Direction</th><th>P&amp;L</th><th>Result</th></tr></thead><tbody id="d-trades"><tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:20px">No trades yet</td></tr></tbody></table></div></div>
           </div>
         </div>
-        <div class="card"><div class="card-title">Cumulative P&L</div><div style="height:160px"><canvas id="pnl-chart"></canvas></div></div>
+        <div class="card"><div class="card-title">Cumulative P&amp;L</div><div style="height:160px"><canvas id="pnl-chart"></canvas></div></div>
       </div>
 
       <!-- JOURNAL -->
@@ -383,13 +327,13 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
             <select class="fi2" style="width:auto;padding:5px 8px;font-size:11px" id="f-res" onchange="renderJ()"><option value="">All Results</option><option>Win</option><option>Loss</option><option>Breakeven</option></select>
           </div>
         </div>
-        <div class="card"><div class="tw"><table><thead><tr><th>Date</th><th>Pair</th><th>Direction</th><th>Entry</th><th>Exit</th><th>Lots</th><th>P&L</th><th>R:R</th><th>Result</th><th>Setup</th><th></th></tr></thead><tbody id="j-table"><tr><td colspan="11" style="text-align:center;color:var(--text-muted);padding:20px">No trades yet</td></tr></tbody></table></div></div>
+        <div class="card"><div class="tw"><table><thead><tr><th>Date</th><th>Pair</th><th>Direction</th><th>Entry</th><th>Exit</th><th>Lots</th><th>P&amp;L</th><th>R:R</th><th>Result</th><th>Setup</th><th></th></tr></thead><tbody id="j-table"><tr><td colspan="11" style="text-align:center;color:var(--text-muted);padding:20px">No trades yet</td></tr></tbody></table></div></div>
       </div>
 
       <!-- CALENDAR -->
       <div id="page-calendar" class="page">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-          <div style="font-size:15px;font-weight:600">P&L Calendar</div>
+          <div style="font-size:15px;font-weight:600">P&amp;L Calendar</div>
           <div style="display:flex;gap:8px;align-items:center">
             <button class="btn btn-ghost btn-sm" onclick="calNav(-1)">Previous</button>
             <strong id="cal-month" style="font-size:13px"></strong>
@@ -400,7 +344,7 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
           <div class="cal-grid"><div class="cal-dh">Mon</div><div class="cal-dh">Tue</div><div class="cal-dh">Wed</div><div class="cal-dh">Thu</div><div class="cal-dh">Fri</div><div class="cal-dh">Sat</div><div class="cal-dh">Sun</div></div>
           <div class="cal-grid" id="cal-grid"></div>
           <div style="display:flex;justify-content:space-between;padding:12px 0 0;border-top:1px solid var(--border);margin-top:10px">
-            <span style="font-size:12px;color:var(--text-muted)">Monthly P&L</span>
+            <span style="font-size:12px;color:var(--text-muted)">Monthly P&amp;L</span>
             <strong id="cal-total" style="font-size:14px;font-family:'JetBrains Mono',monospace"></strong>
           </div>
         </div>
@@ -424,14 +368,14 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
           <div id="period-result" class="ai-txt" style="font-size:12px;line-height:1.6"></div>
         </div>
         <div class="g4">
-          <div class="mc"><div class="ml">Best Pair</div><div class="mv c-acc" id="s-bp" style="font-size:16px">—</div></div>
-          <div class="mc"><div class="ml">Best Day</div><div class="mv c-acc" id="s-bd" style="font-size:16px">—</div></div>
+          <div class="mc"><div class="ml">Best Pair</div><div class="mv c-acc" id="s-bp" style="font-size:16px">--</div></div>
+          <div class="mc"><div class="ml">Best Day</div><div class="mv c-acc" id="s-bd" style="font-size:16px">--</div></div>
           <div class="mc"><div class="ml">Avg Win</div><div class="mv c-acc" id="s-aw">$0</div></div>
           <div class="mc"><div class="ml">Avg Loss</div><div class="mv c-red" id="s-al">$0</div></div>
         </div>
         <div class="g2">
-          <div class="card"><div class="card-title">P&L by Pair</div><div style="height:180px"><canvas id="pair-chart"></canvas></div></div>
-          <div class="card"><div class="card-title">P&L by Day of Week</div><div style="height:180px"><canvas id="day-chart"></canvas></div></div>
+          <div class="card"><div class="card-title">P&amp;L by Pair</div><div style="height:180px"><canvas id="pair-chart"></canvas></div></div>
+          <div class="card"><div class="card-title">P&amp;L by Day of Week</div><div style="height:180px"><canvas id="day-chart"></canvas></div></div>
         </div>
         <div class="g2">
           <div class="card"><div class="card-title">Sessions</div><div style="height:160px"><canvas id="sess-chart"></canvas></div></div>
@@ -443,7 +387,7 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
       <div id="page-marketai" class="page">
         <div class="chat-wrap">
           <div class="chat-msgs" id="chat-msgs">
-            <div class="msg msg-ai"><div class="msg-lbl">TRADEMIND AI</div>Hello! I am your AI trading analyst. Ask me anything about the market, your performance, economic events, or trading psychology.</div>
+            <div class="msg msg-ai"><div class="msg-lbl">TRADEMIND AI</div>Hello! I am your AI trading analyst. Ask me anything about the market, your performance, or trading psychology.</div>
             <div class="quick-btns">
               <button class="btn btn-ghost btn-sm" onclick="quickAsk('Why is DXY moving today?')">DXY outlook</button>
               <button class="btn btn-ghost btn-sm" onclick="quickAsk('Key events this week?')">Key events</button>
@@ -474,17 +418,70 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
           <button class="btn btn-acc btn-sm" onclick="openM('m-rule')">+ Add Rule</button>
         </div>
         <div class="g2">
-          <div class="card"><div class="card-title">Rules & Compliance</div><div id="rules-list"><div style="color:var(--text-muted);font-size:12px;padding:10px 0">No rules yet — add your first rule</div></div></div>
+          <div class="card"><div class="card-title">Rules &amp; Compliance</div><div id="rules-list"><div style="color:var(--text-muted);font-size:12px;padding:10px 0">No rules yet</div></div></div>
           <div class="card">
             <div class="card-title">Consistency Score</div>
             <div style="text-align:center;padding:20px 0">
-              <div style="font-size:52px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--accent)" id="cons-score">—</div>
+              <div style="font-size:52px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--accent)" id="cons-score">--</div>
               <div style="font-size:12px;color:var(--text-muted);margin-top:6px">Based on rule compliance</div>
             </div>
-            <div id="cons-detail"></div>
           </div>
         </div>
         <div class="card"><div class="card-title">AI Rule Analysis</div><div class="ai-txt" id="rules-ai-txt" style="font-size:12px"><span style="color:var(--text-muted)">Add trades and rules to get AI analysis</span></div></div>
+      </div>
+
+      <!-- SUPPORT -->
+      <div id="page-support" class="page">
+        <div style="font-size:15px;font-weight:600;margin-bottom:14px">Support</div>
+        <div class="g2">
+          <div>
+            <div class="ai-box">
+              <div class="ai-hdr"><div class="ai-dot"></div><div class="ai-lbl">AI Support Assistant</div></div>
+              <div id="support-msgs" style="max-height:280px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;margin-bottom:10px">
+                <div class="msg msg-ai"><div class="msg-lbl">SUPPORT AI</div>Hello! I can help you with any questions about TradeMind. What do you need help with?</div>
+                <div style="display:flex;gap:6px;flex-wrap:wrap">
+                  <button class="btn btn-ghost btn-sm" onclick="supportAsk('How do I add a trade?')">Add a trade</button>
+                  <button class="btn btn-ghost btn-sm" onclick="supportAsk('How does MT5 connect work?')">MT5 connect</button>
+                  <button class="btn btn-ghost btn-sm" onclick="supportAsk('How do I upgrade my plan?')">Upgrade plan</button>
+                  <button class="btn btn-ghost btn-sm" onclick="supportAsk('How does the affiliate program work?')">Affiliate</button>
+                </div>
+              </div>
+              <div style="display:flex;gap:8px">
+                <input class="chat-inp" id="support-inp" placeholder="Ask anything about TradeMind..." onkeydown="if(event.key==='Enter')sendSupport()">
+                <button class="chat-send" onclick="sendSupport()">Send</button>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="card" style="margin-bottom:14px">
+              <div class="card-title">Contact Support</div>
+              <div class="fg"><label>Subject</label><input class="fi2" id="sup-subject" placeholder="e.g. Issue with trade import"></div>
+              <div class="fg"><label>Message</label><textarea class="fi2" id="sup-message" placeholder="Describe your issue..." style="min-height:100px"></textarea></div>
+              <button class="btn btn-acc" style="width:100%" onclick="sendSupportEmail()">Send to Support</button>
+              <div id="sup-status" style="font-size:11px;margin-top:8px;text-align:center"></div>
+            </div>
+            <div class="card">
+              <div class="card-title">Contact Info</div>
+              <div class="stat-row"><div class="stat-lbl">Email</div><div class="stat-val" style="color:var(--accent)">support@trademind.ai</div></div>
+              <div class="stat-row"><div class="stat-lbl">Response time</div><div class="stat-val">Under 24 hours</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- POLICIES -->
+      <div id="page-policies" class="page">
+        <div style="font-size:15px;font-weight:600;margin-bottom:14px">Legal &amp; Policies</div>
+        <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+          <button class="btn btn-acc btn-sm" onclick="showPolicy('terms')">Terms of Service</button>
+          <button class="btn btn-ghost btn-sm" onclick="showPolicy('privacy')">Privacy Policy</button>
+          <button class="btn btn-ghost btn-sm" onclick="showPolicy('refund')">Refund Policy</button>
+          <button class="btn btn-ghost btn-sm" onclick="showPolicy('affiliate')">Affiliate Terms</button>
+        </div>
+        <div class="card" id="policy-content">
+          <div class="card-title">Terms of Service</div>
+          <div id="policy-text" style="font-size:12px;color:var(--text-muted);line-height:1.9"></div>
+        </div>
       </div>
 
       <!-- MT5 -->
@@ -501,18 +498,17 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
           </div>
           <div>
             <div class="card" style="text-align:center;padding:32px">
-              <svg width="48" height="48" viewBox="0 0 48 48" fill="none" style="margin:0 auto 12px"><circle cx="24" cy="24" r="22" stroke="#0F2414" stroke-width="2"/><circle cx="16" cy="24" r="5" stroke="#4A6B50" stroke-width="1.5"/><circle cx="32" cy="24" r="5" stroke="#4A6B50" stroke-width="1.5"/><line x1="21" y1="24" x2="27" y2="24" stroke="#4A6B50" stroke-width="1.5"/></svg>
-              <div style="font-weight:600;color:var(--text-muted)">No broker connected</div>
-              <div style="font-size:11px;color:var(--text-dim);margin-top:6px">Connect to auto-import trades from MT4/MT5</div>
+              <div style="font-weight:600;color:var(--text-muted);margin-bottom:8px">No broker connected</div>
+              <div style="font-size:11px;color:var(--text-dim)">Connect to auto-import trades from MT4/MT5. Available on Pro plan.</div>
             </div>
-            <div class="card"><div class="card-title">Supported Brokers</div><div style="font-size:11px;color:var(--text-muted);line-height:2.2">IC Markets · Pepperstone · Exness · XM · FTMO · The5ers · MyForexFunds · Funded Next · Tradeify · and 500+ more</div></div>
+            <div class="card"><div class="card-title">Supported Brokers</div><div style="font-size:11px;color:var(--text-muted);line-height:2.2">IC Markets · Pepperstone · Exness · XM · FTMO · The5ers · MyForexFunds · Funded Next · and 500+ more</div></div>
           </div>
         </div>
       </div>
 
       <!-- PRICING -->
       <div id="page-pricing" class="page">
-        <div style="font-size:15px;font-weight:600;margin-bottom:6px">Plans & Pricing</div>
+        <div style="font-size:15px;font-weight:600;margin-bottom:6px">Plans &amp; Pricing</div>
         <div style="font-size:12px;color:var(--text-muted);margin-bottom:16px">30-day money back guarantee on all paid plans</div>
         <div class="price-toggle" style="margin-bottom:16px">
           <button class="price-tab active" id="tab-m" onclick="setPricePeriod('monthly')">Monthly</button>
@@ -531,7 +527,7 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
             <div style="font-size:14px;font-weight:700;margin-bottom:8px;color:var(--accent)">Pro</div>
             <div style="font-size:30px;font-weight:800;font-family:'JetBrains Mono',monospace;margin:8px 0"><span id="pro-price">$29</span></div>
             <div style="font-size:11px;color:var(--text-muted);margin-bottom:14px" id="pro-billed">per month</div>
-            <div style="font-size:11px;color:var(--text-muted);line-height:2.2">Unlimited trades<br>Full analytics + Sharpe ratio<br>MarketAI unlimited<br>MT5 auto-import<br>AI period analysis<br>Screenshot upload<br>Trading rules + score</div>
+            <div style="font-size:11px;color:var(--text-muted);line-height:2.2">Unlimited trades<br>Full analytics + Sharpe ratio<br>MarketAI unlimited<br>MT5 auto-import<br>AI period analysis<br>Screenshot upload</div>
             <button class="btn btn-acc" style="width:100%;margin-top:14px" onclick="startCheckout('pro_monthly')">Upgrade to Pro</button>
             <div style="font-size:10px;color:var(--text-muted);text-align:center;margin-top:8px">30-day money back guarantee</div>
           </div>
@@ -539,14 +535,14 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
             <div style="font-size:14px;font-weight:700;margin-bottom:8px">Elite</div>
             <div style="font-size:30px;font-weight:800;font-family:'JetBrains Mono',monospace;margin:8px 0"><span id="elite-price">$49</span></div>
             <div style="font-size:11px;color:var(--text-muted);margin-bottom:14px" id="elite-billed">per month</div>
-            <div style="font-size:11px;color:var(--text-muted);line-height:2.2">Everything in Pro<br>API access<br>Priority support (24h)<br>Advanced AI coaching<br>Custom rule scoring<br>White-label option</div>
+            <div style="font-size:11px;color:var(--text-muted);line-height:2.2">Everything in Pro<br>API access<br>Priority support (24h)<br>Advanced AI coaching<br>Custom rule scoring</div>
             <button class="btn btn-acc" style="width:100%;margin-top:14px" onclick="startCheckout('elite_monthly')">Upgrade to Elite</button>
             <div style="font-size:10px;color:var(--text-muted);text-align:center;margin-top:8px">30-day money back guarantee</div>
           </div>
         </div>
         <div class="card" style="margin-top:14px">
           <div class="card-title">Refund Policy</div>
-          <div style="font-size:12px;color:var(--text-muted);line-height:1.8">We offer a <strong style="color:var(--text)">30-day money back guarantee</strong> on all paid plans. If you are not satisfied for any reason within the first 30 days, contact us at <span style="color:var(--accent)">support@trademind.ai</span> and we will refund you immediately — no questions asked.</div>
+          <div style="font-size:12px;color:var(--text-muted);line-height:1.8">We offer a <strong style="color:var(--text)">30-day money back guarantee</strong> on all paid plans. Contact <span style="color:var(--accent)">support@trademind.ai</span> — refunded immediately, no questions asked.</div>
         </div>
       </div>
 
@@ -562,16 +558,12 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
             <div class="fg"><label>Account Currency</label><select class="fi2" id="p-curr"><option>USD</option><option>EUR</option><option>GBP</option></select></div>
             <button class="btn btn-acc btn-sm" onclick="saveProfile()">Save Changes</button>
           </div>
-          <div class="card" style="margin-top:14px">
-            <div class="card-title">API Configuration</div>
-            <div style="font-size:11px;color:var(--text-muted);margin-bottom:12px">Your keys are stored locally on your device only — never sent to our servers.</div>
-            <div class="fg"><label>Anthropic API Key</label><input class="fi2" id="cfg-anthropic" type="password" placeholder="sk-ant-..."></div>
-            <div class="fg"><label>Resend API Key (emails)</label><input class="fi2" id="cfg-resend" type="password" placeholder="re_..."></div>
-            <div class="fg"><label>Stripe Publishable Key</label><input class="fi2" id="cfg-stripe-pk" type="password" placeholder="pk_live_..."></div>
-            <button class="btn btn-acc btn-sm" onclick="saveAPIKeys()">Save API Keys</button>
-            <div id="keys-status" style="font-size:11px;margin-top:8px;color:var(--accent)"></div>
-          </div>
           <div class="card"><div class="card-title">Performance Summary</div><div id="profile-stats"><div style="color:var(--text-muted);font-size:12px">Add trades to see your summary</div></div></div>
+        </div>
+        <div class="card" style="margin-top:0">
+          <div class="card-title">API Configuration</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-bottom:12px">API keys are configured server-side on Vercel for security.</div>
+          <div id="keys-status" style="font-size:12px;color:var(--accent)">Keys configured server-side</div>
         </div>
       </div>
 
@@ -579,63 +571,7 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
   </div>
 </div>
 
-
-      <!-- POLICIES -->
-      <div id="page-policies" class="page">
-        <div style="font-size:15px;font-weight:600;margin-bottom:14px">Legal & Policies</div>
-        <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
-          <button class="btn btn-acc btn-sm" onclick="showPolicy('terms')">Terms of Service</button>
-          <button class="btn btn-ghost btn-sm" onclick="showPolicy('privacy')">Privacy Policy</button>
-          <button class="btn btn-ghost btn-sm" onclick="showPolicy('refund')">Refund Policy</button>
-          <button class="btn btn-ghost btn-sm" onclick="showPolicy('affiliate')">Affiliate Terms</button>
-        </div>
-        <div class="card" id="policy-content">
-          <div class="card-title">Terms of Service</div>
-          <div id="policy-text" style="font-size:12px;color:var(--text-muted);line-height:1.9"></div>
-        </div>
-      </div>
-
-      <!-- SUPPORT -->
-      <div id="page-support" class="page">
-        <div style="font-size:15px;font-weight:600;margin-bottom:14px">Support</div>
-        <div class="g2">
-          <div>
-            <div class="ai-box" style="margin-bottom:14px">
-              <div class="ai-hdr"><div class="ai-dot"></div><div class="ai-lbl">AI Support Assistant</div></div>
-              <div class="chat-msgs" id="support-msgs" style="height:300px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:0;margin-bottom:10px">
-                <div class="msg msg-ai"><div class="msg-lbl">SUPPORT AI</div>Hello! I can help you with any questions about TradeMind. What do you need help with?</div>
-                <div style="display:flex;gap:6px;flex-wrap:wrap">
-                  <button class="btn btn-ghost btn-sm" onclick="supportAsk('How do I add a trade?')">Add a trade</button>
-                  <button class="btn btn-ghost btn-sm" onclick="supportAsk('How does MT5 connect work?')">MT5 connect</button>
-                  <button class="btn btn-ghost btn-sm" onclick="supportAsk('How do I upgrade my plan?')">Upgrade plan</button>
-                  <button class="btn btn-ghost btn-sm" onclick="supportAsk('How does the affiliate program work?')">Affiliate program</button>
-                </div>
-              </div>
-              <div style="display:flex;gap:8px">
-                <input class="chat-inp" id="support-inp" placeholder="Ask anything about TradeMind..." onkeydown="if(event.key==='Enter')sendSupport()">
-                <button class="chat-send" onclick="sendSupport()">Send</button>
-              </div>
-            </div>
-          </div>
-          <div>
-            <div class="card" style="margin-bottom:14px">
-              <div class="card-title">Contact Support</div>
-              <div class="fg"><label>Subject</label><input class="fi2" id="sup-subject" placeholder="e.g. Issue with trade import"></div>
-              <div class="fg"><label>Message</label><textarea class="fi2" id="sup-message" placeholder="Describe your issue in detail..." style="min-height:100px"></textarea></div>
-              <button class="btn btn-acc" style="width:100%" onclick="sendSupportEmail()">Send to Support</button>
-              <div id="sup-status" style="font-size:11px;margin-top:8px;text-align:center"></div>
-            </div>
-            <div class="card">
-              <div class="card-title">Resources</div>
-              <div class="stat-row"><div class="stat-lbl">Email</div><div class="stat-val" style="color:var(--accent)">support@trademind.ai</div></div>
-              <div class="stat-row"><div class="stat-lbl">Response time</div><div class="stat-val">Under 24 hours</div></div>
-              <div class="stat-row"><div class="stat-lbl">Version</div><div class="stat-val">TradeMind v2.0</div></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- MODALS -->
+<!-- MODALS -->
 <div id="m-trade" class="mo">
   <div class="modal">
     <div class="modal-hdr">Add Trade <button class="mc-btn" onclick="closeM('m-trade')">x</button></div>
@@ -657,13 +593,13 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
     </div>
     <div class="fr">
       <div class="fg"><label>Lot Size</label><input class="fi2" id="t-lots" type="number" step="0.01" placeholder="0.10"></div>
-      <div class="fg"><label>P&L ($)</label><input class="fi2" id="t-pnl" type="number" placeholder="150 or -80"></div>
+      <div class="fg"><label>P&amp;L ($)</label><input class="fi2" id="t-pnl" type="number" placeholder="150 or -80"></div>
     </div>
     <div class="fr">
       <div class="fg"><label>Result</label><select class="fi2" id="t-result"><option>Win</option><option>Loss</option><option>Breakeven</option></select></div>
-      <div class="fg"><label>Setup / Strategy</label><input class="fi2" id="t-setup" placeholder="Break and Retest"></div>
+      <div class="fg"><label>Setup</label><input class="fi2" id="t-setup" placeholder="Break and Retest"></div>
     </div>
-    <div class="fg"><label>Notes & Analysis</label><textarea class="fi2" id="t-notes" placeholder="Why did you take this trade? Emotions? Lessons learned..."></textarea></div>
+    <div class="fg"><label>Notes</label><textarea class="fi2" id="t-notes" placeholder="Why this trade? Emotions? Lessons learned..."></textarea></div>
     <div class="fg"><label>Screenshot (optional)</label><input class="fi2" id="t-img" type="file" accept="image/*" onchange="previewImg(this)"><img id="img-preview" class="img-preview"></div>
     <div class="ma"><button class="btn btn-ghost" onclick="closeM('m-trade')">Cancel</button><button class="btn btn-acc" onclick="saveTrade()">Save Trade</button></div>
   </div>
@@ -683,7 +619,7 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
     <div class="modal-hdr">Add Trading Rule <button class="mc-btn" onclick="closeM('m-rule')">x</button></div>
     <div class="fg"><label>Rule Name</label><input class="fi2" id="r-name" placeholder="e.g. Never risk more than 1%"></div>
     <div class="fg"><label>Category</label><select class="fi2" id="r-cat"><option>Risk Management</option><option>Entry Rules</option><option>Exit Rules</option><option>Psychology</option><option>Session Rules</option></select></div>
-    <div class="fg"><label>Description</label><textarea class="fi2" id="r-desc" placeholder="Describe this rule in detail..."></textarea></div>
+    <div class="fg"><label>Description</label><textarea class="fi2" id="r-desc" placeholder="Describe this rule..."></textarea></div>
     <div class="ma"><button class="btn btn-ghost" onclick="closeM('m-rule')">Cancel</button><button class="btn btn-acc" onclick="saveRule()">Add Rule</button></div>
   </div>
 </div>
@@ -692,7 +628,21 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
 var SB_URL='https://ucyblsicfuoappzlurvs.supabase.co';
 var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjeWJsc2ljZnVvYXBwemx1cnZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxOTgyODAsImV4cCI6MjA5NTc3NDI4MH0.AIW-9Ee2gYRiyKw2x4qY9lE9yspGz_9vO1FGh4kfVfE';
 var SUPPORT_EMAIL='support@trademind.ai';
-var API_KEY=''; // Handled server-side via /api/chat
+var sb=supabase.createClient(SB_URL,SB_KEY);
+var user=null,trades=[],rules=[],imgBase64=null,currentTrade=null;
+var pnlC=null,pairC=null,dayC=null,sessC=null;
+var calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
+
+async function callAI(prompt,maxTokens){
+  var r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'user',content:prompt}],max_tokens:maxTokens||500})});
+  if(!r.ok)throw new Error('API error '+r.status);
+  var d=await r.json();
+  if(d.error)throw new Error(d.error);
+  return d.content&&d.content[0]&&d.content[0].text?d.content[0].text:'No response';
+}
+var SB_URL='https://ucyblsicfuoappzlurvs.supabase.co';
+var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjeWJsc2ljZnVvYXBwemx1cnZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxOTgyODAsImV4cCI6MjA5NTc3NDI4MH0.AIW-9Ee2gYRiyKw2x4qY9lE9yspGz_9vO1FGh4kfVfE';
+var API_KEY='ANTHROPIC_KEY_HERE';
 var sb=supabase.createClient(SB_URL,SB_KEY);
 var user=null,trades=[],rules=[],imgBase64=null,currentTrade=null;
 var pnlC=null,pairC=null,dayC=null,sessC=null;
@@ -712,7 +662,6 @@ async function signup(){
   var r=await sb.auth.signUp({email:e,password:p,options:{data:{full_name:n}}});
   if(r.error)return showErr(r.error.message);
   showOk('Account created! Sign in directly.');
-  sendWelcomeEmail(e, n);
 }
 async function logout(){await sb.auth.signOut();location.reload();}
 function showErr(m){var el=document.getElementById('auth-err');el.textContent=m;el.style.display='block';document.getElementById('auth-ok').style.display='none';}
@@ -730,7 +679,7 @@ async function initApp(){
   var today=new Date();
   document.getElementById('p-from').value=new Date(today.getFullYear(),today.getMonth(),1).toISOString().split('T')[0];
   document.getElementById('p-to').value=today.toISOString().split('T')[0];
-  await loadTrades();await loadRules();loadAPIKeys();
+  await loadTrades();await loadRules();
   updateDash();renderCal();loadAIBrief();loadEcoCal();updateSessBadge();
 }
 
@@ -1046,8 +995,8 @@ function renderFullStats(){
   ].map(function(s){return '<div class="stat-row"><div class="stat-lbl">'+s.l+'</div><div class="stat-val"'+(s.c?' style="color:'+s.c+'"':'')+'>'+s.v+'</div></div>';}).join('');
 }
 
-async function callAI(prompt,maxTokens,system){
-  var r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'user',content:prompt}],max_tokens:maxTokens||300,system:system||''})});
+async function callAI(prompt,maxTokens){
+  var r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':API_KEY,'anthropic-version':'2023-06-01'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:maxTokens||300,messages:[{role:'user',content:prompt}]})});
   var d=await r.json();return d.content&&d.content[0]?d.content[0].text:'No response';
 }
 
@@ -1102,167 +1051,131 @@ function updateSessBadge(){
   else{b.textContent='Asian Session';b.className='bdg bo';}
 }
 
-function nav(id,el){
-  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
-  document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
-  var page=document.getElementById('page-'+id);
-  if(page)page.classList.add('active');
-  if(el)el.classList.add('active');
-  var titles={dashboard:'Dashboard',support:'Support',policies:'Legal & Policies',journal:'Trade Journal',calendar:'P&L Calendar',analytics:'Analytics',marketai:'MarketAI',ecocal:'Economic Calendar',rules:'My Rules',connect:'MT4/MT5 Connect',pricing:'Plans and Pricing',profile:'Profile'};
-  var subs={dashboard:'Your performance overview',support:'AI assistant + contact form',policies:'Terms, Privacy, Refunds, Affiliate',journal:'Click a trade for full details',calendar:'Your daily P&L history',analytics:'Deep dive into your stats',marketai:'Ask anything about the market',ecocal:'Key economic events this week',rules:'Define and track your trading rules',connect:'Connect your broker account',pricing:'Choose your plan',profile:'Your account settings'};
-  document.getElementById('tb-title').textContent=titles[id]||id;
-  document.getElementById('tb-sub').textContent=subs[id]||'';
-  if(id==='journal')renderJ();
-  if(id==='analytics')renderAnalytics();
-  if(id==='calendar')renderCal();
-  if(id==='rules'){renderRules();analyzeRulesAI();}
-  if(id==='policies')showPolicy('terms');
-  if(id==='profile')loadAPIKeys();
-}
-
-function openM(id){document.getElementById(id).classList.add('open');}
-function closeM(id){document.getElementById(id).classList.remove('open');}
-document.querySelectorAll('.mo').forEach(function(m){m.addEventListener('click',function(e){if(e.target===m)m.classList.remove('open');});});
-
-// STRIPE CHECKOUT
+// STRIPE CHECKOUT via /api/checkout
 async function startCheckout(plan){
   try{
     var r=await fetch('/api/checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({plan:plan,email:user.email})});
     var d=await r.json();
     if(d.url)window.location.href=d.url;
-    else alert('Checkout error. Contact support@trademind.ai');
+    else alert('Checkout unavailable. Contact support@trademind.ai');
   }catch(e){alert('Checkout unavailable. Contact support@trademind.ai');}
 }
 
-// RESEND EMAIL
+// EMAIL via /api/email
 async function sendEmail(to,subject,html){
   try{
-    var r=await fetch('/api/email',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({to:to,subject:subject,html:html})
-    });
-    return await r.json();
+    await fetch('/api/email',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({to:to,subject:subject,html:html})});
   }catch(e){console.log('Email error:',e);}
 }
 
-// WELCOME EMAIL on signup
 async function sendWelcomeEmail(email,name){
-  await sendEmail(email,'Welcome to TradeMind.ai!',
-    '<div style="font-family:Inter,sans-serif;max-width:520px;margin:0 auto;background:#040605;color:#E8F0E9;padding:32px;border-radius:12px">'
-    +'<div style="font-size:20px;font-weight:700;background:linear-gradient(135deg,#55D396,#21F1A8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:16px">TradeMind.ai</div>'
-    +'<h2 style="font-size:22px;margin-bottom:12px">Welcome, '+name+'!</h2>'
-    +'<p style="color:#4A6B50;line-height:1.7;margin-bottom:20px">Your account is ready. Start by adding your first trade and let TradeMind AI analyze your performance.</p>'
-    +'<a href="https://trademind-nine.vercel.app" style="background:#55D396;color:#040605;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700;display:inline-block">Open TradeMind</a>'
-    +'<p style="color:#4A6B50;font-size:12px;margin-top:24px">Questions? Reply to this email or contact support@trademind.ai</p>'
-    +'</div>');
+  await sendEmail(email,'Welcome to TradeMind.ai!','<div style="font-family:Inter,sans-serif;max-width:520px;margin:0 auto;padding:32px;background:#040605;color:#E8F0E9;border-radius:12px"><div style="font-size:20px;font-weight:700;color:#55D396;margin-bottom:16px">TradeMind.ai</div><h2 style="margin-bottom:12px">Welcome, '+name+'!</h2><p style="color:#4A6B50;line-height:1.7;margin-bottom:20px">Your account is ready. Start by adding your first trade and let TradeMind AI analyze your performance.</p><a href="https://trademind-nine.vercel.app" style="background:#55D396;color:#040605;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700;display:inline-block">Open TradeMind</a><p style="color:#4A6B50;font-size:12px;margin-top:24px">Questions? Email support@trademind.ai</p></div>');
 }
 
-// SUPPORT EMAIL
 async function sendSupportEmail(){
   var subject=document.getElementById('sup-subject').value.trim();
   var message=document.getElementById('sup-message').value.trim();
   var status=document.getElementById('sup-status');
   if(!subject||!message){status.textContent='Please fill all fields.';status.style.color='var(--red)';return;}
-  status.textContent='Sending...';status.style.color='var(--text-muted)';
+  status.textContent='Sending...';
   try{
-    await sendEmail(SUPPORT_EMAIL,'[TradeMind Support] '+subject,
-      '<p><strong>From:</strong> '+user.email+'</p><p><strong>Subject:</strong> '+subject+'</p><p><strong>Message:</strong><br>'+message.replace(/\n/g,'<br>')+'</p>');
-    await sendEmail(user.email,'We received your message — TradeMind Support',
-      '<div style="font-family:Inter,sans-serif;max-width:520px;margin:0 auto;padding:32px">'
-      +'<p>Hi! We received your support request:</p><p><strong>'+subject+'</strong></p>'
-      +'<p style="color:#666">We will get back to you within 24 hours.</p>'
-      +'<p style="color:#666;font-size:12px">TradeMind Support Team</p></div>');
-    status.textContent='Message sent! We will reply within 24 hours.';
+    await sendEmail('support@trademind.ai','[Support] '+subject,'<p><strong>From:</strong> '+user.email+'</p><p><strong>Message:</strong><br>'+message+'</p>');
+    await sendEmail(user.email,'We received your message','<p>Hi! We received your request: <strong>'+subject+'</strong></p><p>We will reply within 24 hours.</p><p>TradeMind Support</p>');
+    status.textContent='Sent! We will reply within 24 hours.';
     status.style.color='var(--accent)';
     document.getElementById('sup-subject').value='';
     document.getElementById('sup-message').value='';
-  }catch(e){status.textContent='Error sending. Try support@trademind.ai directly.';status.style.color='var(--red)';}
+  }catch(e){status.textContent='Error. Email support@trademind.ai directly.';status.style.color='var(--red)';}
 }
 
-// SUPPORT AI CHAT
 async function sendSupport(){
   var inp=document.getElementById('support-inp');
   var msg=inp.value.trim();if(!msg)return;inp.value='';
   var msgs=document.getElementById('support-msgs');
   msgs.innerHTML+='<div class="msg msg-user">'+msg+'</div>';
-  msgs.innerHTML+='<div class="msg msg-ai" id="sup-typing"><div class="msg-lbl">SUPPORT AI</div>...</div>';
+  msgs.innerHTML+='<div class="msg msg-ai" id="sup-typing"><div class="msg-lbl">SUPPORT AI</div>Analyzing...</div>';
   msgs.scrollTop=msgs.scrollHeight;
   try{
-    var r=await callAI('You are TradeMind support assistant. Answer questions about TradeMind trading journal app. Features: dashboard, journal, calendar, analytics, MarketAI, MT5 connect, trading rules. Plans: Free (20 trades/mo), Pro $29/mo, Elite $49/mo. 30-day refund. Answer this: '+msg,300);
+    var r=await callAI('You are TradeMind support. Answer questions about TradeMind trading journal. Features: dashboard, journal, calendar, analytics, MarketAI, MT5 connect, trading rules. Plans: Free (20 trades/mo), Pro $29/mo, Elite $49/mo. 30-day refund. Answer: '+msg,300);
     document.getElementById('sup-typing').innerHTML='<div class="msg-lbl">SUPPORT AI</div>'+r;
   }catch(e){document.getElementById('sup-typing').innerHTML='<div class="msg-lbl">SUPPORT AI</div>Configure API key to enable AI support.';}
   msgs.scrollTop=msgs.scrollHeight;
 }
 function supportAsk(q){document.getElementById('support-inp').value=q;sendSupport();}
 
-// POLICIES
 function showPolicy(type){
   var policies={
-    terms:{
-      title:'Terms of Service',
-      text:`<strong>Last updated: June 2025</strong><br><br>
-      <strong>1. Acceptance</strong><br>By using TradeMind.ai you agree to these terms. If you do not agree, do not use the service.<br><br>
-      <strong>2. Service Description</strong><br>TradeMind.ai provides an AI-powered trading journal and analytics platform. We do not provide financial advice. All trading decisions are your own responsibility.<br><br>
-      <strong>3. User Accounts</strong><br>You are responsible for maintaining the confidentiality of your account credentials. You must be 18+ to use TradeMind.<br><br>
-      <strong>4. Payments & Subscriptions</strong><br>Paid plans are billed monthly or annually. You can cancel at any time. Cancellation takes effect at the end of the current billing period.<br><br>
-      <strong>5. Refund Policy</strong><br>We offer a 30-day money back guarantee on all paid plans. Contact support@trademind.ai within 30 days of your first payment.<br><br>
-      <strong>6. Intellectual Property</strong><br>TradeMind.ai and all its content are owned by TradeMind. You may not copy, reproduce, or distribute any part of the service.<br><br>
-      <strong>7. Limitation of Liability</strong><br>TradeMind is not liable for any trading losses. The service is provided as-is without warranties of any kind.<br><br>
-      <strong>8. Dispute Resolution</strong><br>Any disputes will be resolved through binding arbitration. You waive the right to a jury trial.<br><br>
-      <strong>9. Contact</strong><br>support@trademind.ai`
-    },
-    privacy:{
-      title:'Privacy Policy',
-      text:`<strong>Last updated: June 2025</strong><br><br>
-      <strong>1. Data We Collect</strong><br>We collect your email, trading data you enter, and usage analytics. We never collect payment card details (handled by Stripe).<br><br>
-      <strong>2. How We Use Your Data</strong><br>Your data is used solely to provide the TradeMind service. We never sell your data to third parties.<br><br>
-      <strong>3. Data Storage</strong><br>Your data is stored securely on Supabase (PostgreSQL) with row-level security. Each user can only access their own data.<br><br>
-      <strong>4. Third Party Services</strong><br>We use Stripe (payments), Resend (emails), Supabase (database), and Anthropic (AI). Each has their own privacy policy.<br><br>
-      <strong>5. Your Rights</strong><br>You can request deletion of your data at any time by contacting support@trademind.ai.<br><br>
-      <strong>6. Cookies</strong><br>We use minimal cookies for authentication only. No advertising cookies.<br><br>
-      <strong>7. Contact</strong><br>support@trademind.ai`
-    },
-    refund:{
-      title:'Refund Policy',
-      text:`<strong>30-Day Money Back Guarantee</strong><br><br>
-      We are confident in TradeMind. If you are not satisfied for any reason within the first 30 days of your paid subscription, we will give you a full refund — no questions asked.<br><br>
-      <strong>How to Request a Refund</strong><br>Email us at support@trademind.ai with subject "Refund Request" and your account email. We will process your refund within 3-5 business days.<br><br>
-      <strong>Conditions</strong><br>
-      - Refunds are available within 30 days of the first payment only<br>
-      - One refund per customer<br>
-      - Applies to Pro and Elite plans<br><br>
-      <strong>Contact</strong><br>support@trademind.ai`
-    },
-    affiliate:{
-      title:'Affiliate Program',
-      text:`<strong>TradeMind Affiliate Program — 30% Lifetime Commission</strong><br><br>
-      <strong>How It Works</strong><br>
-      1. Sign up as an affiliate (contact support@trademind.ai)<br>
-      2. Get your unique referral link<br>
-      3. Share it on YouTube, TikTok, Twitter, Discord<br>
-      4. Earn 30% of every payment — forever<br><br>
-      <strong>Commission Structure</strong><br>
-      - Pro Monthly ($29): you earn $8.70/month per referral<br>
-      - Pro Annual ($276): you earn $82.80 per referral<br>
-      - Elite Monthly ($49): you earn $14.70/month per referral<br>
-      - Elite Annual ($468): you earn $140.40 per referral<br><br>
-      <strong>Payments</strong><br>Commissions are paid monthly via PayPal or bank transfer. Minimum payout: $50.<br><br>
-      <strong>Tracking</strong><br>Each affiliate gets a unique link. Conversions are tracked for 90 days after click.<br><br>
-      <strong>Apply</strong><br>Email support@trademind.ai with subject "Affiliate Application" and your platform/audience size.`
-    }
+    terms:{title:'Terms of Service',text:'<strong>Last updated: June 2025</strong><br><br><strong>1. Acceptance</strong><br>By using TradeMind.ai you agree to these terms.<br><br><strong>2. Service Description</strong><br>TradeMind.ai provides an AI-powered trading journal. We do not provide financial advice.<br><br><strong>3. Payments</strong><br>Paid plans billed monthly or annually. Cancel anytime.<br><br><strong>4. Refund Policy</strong><br>30-day money back on all paid plans. Email support@trademind.ai within 30 days.<br><br><strong>5. Limitation of Liability</strong><br>TradeMind is not liable for trading losses.<br><br><strong>Contact:</strong> support@trademind.ai'},
+    privacy:{title:'Privacy Policy',text:'<strong>Last updated: June 2025</strong><br><br><strong>1. Data We Collect</strong><br>Email, trading data you enter, usage analytics. No payment card details (handled by Stripe).<br><br><strong>2. How We Use Your Data</strong><br>Only to provide TradeMind. We never sell your data.<br><br><strong>3. Data Storage</strong><br>Secured on Supabase with row-level security.<br><br><strong>4. Third Parties</strong><br>Stripe (payments), Resend (emails), Supabase (database), Anthropic (AI).<br><br><strong>5. Your Rights</strong><br>Request deletion: support@trademind.ai'},
+    refund:{title:'Refund Policy',text:'<strong>30-Day Money Back Guarantee</strong><br><br>Not satisfied within 30 days? Full refund, no questions asked.<br><br><strong>How to Request</strong><br>Email support@trademind.ai — subject: "Refund Request"<br>Processed within 3-5 business days.<br><br><strong>Conditions</strong><br>Within 30 days of first payment. One refund per customer. Pro and Elite plans only.'},
+    affiliate:{title:'Affiliate Program',text:'<strong>30% Lifetime Commission</strong><br><br><strong>How It Works</strong><br>1. Apply at support@trademind.ai<br>2. Get your referral link<br>3. Share on YouTube, TikTok, Twitter, Discord<br>4. Earn 30% of every payment forever<br><br><strong>Commission</strong><br>Pro $29/mo: earn $8.70/month per referral<br>Pro Annual: earn $82.80 per referral<br>Elite $49/mo: earn $14.70/month per referral<br><br><strong>Payouts</strong><br>Monthly via PayPal or bank. Min $50.<br><br><strong>Apply:</strong> support@trademind.ai'}
   };
   var p=policies[type];
+  if(!p)return;
   document.getElementById('policy-content').querySelector('.card-title').textContent=p.title;
   document.getElementById('policy-text').innerHTML=p.text;
   document.querySelectorAll('#page-policies .btn').forEach(function(b){b.className='btn btn-ghost btn-sm';});
-  event.target.className='btn btn-acc btn-sm';
+  if(event&&event.target)event.target.className='btn btn-acc btn-sm';
 }
 
-// Update nav function to include new pages
-var _origNav=nav;
-sb.auth.getSession().then(function(r){if(r.data.session){user=r.data.session.user;initApp();}});
+function loadAPIKeys(){
+  var status=document.getElementById('keys-status');
+  if(status)status.textContent='API keys handled server-side via Vercel environment variables.';
+}
 
+function saveAPIKeys(){
+  document.getElementById('keys-status').textContent='Keys are configured server-side on Vercel.';
+}
+
+function setPricePeriod(p){
+  document.getElementById('tab-m').classList.toggle('active',p==='monthly');
+  document.getElementById('tab-a').classList.toggle('active',p==='annual');
+  document.getElementById('pro-price').textContent=p==='annual'?'$23':'$29';
+  document.getElementById('elite-price').textContent=p==='annual'?'$39':'$49';
+  document.getElementById('pro-billed').textContent=p==='annual'?'billed $276/year':'per month';
+  document.getElementById('elite-billed').textContent=p==='annual'?'billed $468/year':'per month';
+}
+
+function connectMT(){
+  var s=document.getElementById('mt-srv').value,a=document.getElementById('mt-acc').value;
+  if(!s||!a){alert('Fill all fields');return;}
+  alert('MT5 connection via MetaApi available in Pro plan.');
+}
+
+async function saveProfile(){
+  await sb.auth.updateUser({data:{full_name:document.getElementById('p-name').value}});
+  alert('Profile saved!');
+}
+
+function updateSessBadge(){
+  var h=new Date().getUTCHours();var b=document.getElementById('sess-badge');
+  if(h>=7&&h<16){b.textContent='London Open';b.className='bdg bg';}
+  else if(h>=13&&h<22){b.textContent='NY Session';b.className='bdg bb';}
+  else{b.textContent='Asian Session';b.className='bdg bo';}
+}
+
+function nav(id,el){
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
+  var page=document.getElementById('page-'+id);
+  if(page)page.classList.add('active');
+  if(el)el.classList.add('active');
+  var titles={dashboard:'Dashboard',journal:'Trade Journal',calendar:'P&L Calendar',analytics:'Analytics',marketai:'MarketAI',ecocal:'Economic Calendar',rules:'My Rules',connect:'MT4/MT5 Connect',pricing:'Plans and Pricing',profile:'Profile',support:'Support',policies:'Legal & Policies'};
+  var subs={dashboard:'Your performance overview',journal:'Click a trade for full details',calendar:'Your daily P&L history',analytics:'Deep dive into your stats',marketai:'Ask anything about the market',ecocal:'Key economic events this week',rules:'Define and track your trading rules',connect:'Connect your broker account',pricing:'Choose your plan',profile:'Your account settings',support:'AI assistant and contact form',policies:'Terms, Privacy, Refunds, Affiliate'};
+  document.getElementById('tb-title').textContent=titles[id]||id;
+  document.getElementById('tb-sub').textContent=subs[id]||'';
+  if(id==='journal')renderJ();
+  if(id==='analytics')renderAnalytics();
+  if(id==='calendar')renderCal();
+  if(id==='rules'){renderRules();analyzeRulesAI();}
+  if(id==='policies'){setTimeout(function(){showPolicy('terms');},50);}
+  if(id==='profile')loadAPIKeys();
+}
+
+function openM(id){document.getElementById(id).classList.add('open');}
+function closeM(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.mo').forEach(function(m){m.addEventListener('click',function(e){if(e.target===m)m.classList.remove('open');});});
+sb.auth.getSession().then(function(r){if(r.data.session){user=r.data.session.user;initApp();}});
 </script>
 </body>
 </html>
