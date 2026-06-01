@@ -713,6 +713,8 @@ async function initApp(){
   document.getElementById('p-to').value=today.toISOString().split('T')[0];
   await loadTrades();await loadRules();await loadSubscription();
   updateDash();renderCal();loadAIBrief();loadEcoCal();updateSessBadge();
+  // Keep worker warm
+  setInterval(function(){fetch('https://trademind-chat.shopapple090.workers.dev/').catch(function(){});},30000);
 }
 
 async function loadTrades(){var r=await sb.from('trades').select('*').eq('user_id',user.id).order('date',{ascending:false});trades=r.data||[];}
