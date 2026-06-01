@@ -680,47 +680,6 @@ async function callAI(prompt,maxTokens){
     throw new Error('Empty response');
   }catch(e){throw e;}
 }
-var SB_URL='https://ucyblsicfuoappzlurvs.supabase.co';
-var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjeWJsc2ljZnVvYXBwemx1cnZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxOTgyODAsImV4cCI6MjA5NTc3NDI4MH0.AIW-9Ee2gYRiyKw2x4qY9lE9yspGz_9vO1FGh4kfVfE';
-var API_KEY='ANTHROPIC_KEY_HERE';
-var sb=supabase.createClient(SB_URL,SB_KEY);
-var user=null,trades=[],rules=[],imgBase64=null,currentTrade=null;
-var pnlC=null,pairC=null,dayC=null,sessC=null;
-var calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
-var userPlan='free'; // 'free','pro','elite'
-var FREE_TRADE_LIMIT=20;
-var FREE_AI_LIMIT=5;
-var aiCallsToday=0;
-
-function checkAILimit(){
-  if(userPlan!=='free')return true;
-  var today=new Date().toISOString().split('T')[0];
-  var stored=JSON.parse(localStorage.getItem('tm_ai_calls')||'{"date":"","count":0}');
-  if(stored.date!==today){stored={date:today,count:0};}
-  aiCallsToday=stored.count;
-  if(aiCallsToday>=FREE_AI_LIMIT){
-    showUpgradeModal('You have used all 5 free AI questions today. Upgrade to Pro for unlimited AI access.');
-    return false;
-  }
-  stored.count++;
-  localStorage.setItem('tm_ai_calls',JSON.stringify(stored));
-  return true;
-}
-
-function checkTradeLimit(){
-  if(userPlan==='free'&&trades.length>=FREE_TRADE_LIMIT){
-    showUpgradeModal('You have reached the 20 trades limit on the Free plan. Upgrade to Pro for unlimited trades.');
-    return false;
-  }
-  return true;
-}
-
-function showUpgradeModal(msg){
-  var modal=document.getElementById('m-upgrade');
-  document.getElementById('upgrade-msg').textContent=msg;
-  modal.classList.add('open');
-}
-
 async function login(){
   var e=document.getElementById('l-email').value.trim(),p=document.getElementById('l-pwd').value;
   if(!e||!p)return showErr('Fill all fields');
@@ -1211,33 +1170,13 @@ function saveAPIKeys(){
 }
 
 var currentPricePeriod='monthly';
-function setPricePeriod(p){
-  currentPricePeriod=p;
-  document.getElementById('tab-m').classList.toggle('active',p==='monthly');
-  document.getElementById('tab-a').classList.toggle('active',p==='annual');
-  document.getElementById('pro-price').textContent=p==='annual'?'$23':'$29';
-  document.getElementById('elite-price').textContent=p==='annual'?'$39':'$49';
-  document.getElementById('pro-billed').textContent=p==='annual'?'billed $276/year':'per month';
-  document.getElementById('elite-billed').textContent=p==='annual'?'billed $468/year':'per month';
-}
 
-function connectMT(){
-  var s=document.getElementById('mt-srv').value,a=document.getElementById('mt-acc').value;
-  if(!s||!a){alert('Fill all fields');return;}
-  alert('MT5 connection via MetaApi available in Pro plan.');
-}
 
-async function saveProfile(){
-  await sb.auth.updateUser({data:{full_name:document.getElementById('p-name').value}});
-  alert('Profile saved!');
-}
 
-function updateSessBadge(){
-  var h=new Date().getUTCHours();var b=document.getElementById('sess-badge');
-  if(h>=7&&h<16){b.textContent='London Open';b.className='bdg bg';}
-  else if(h>=13&&h<22){b.textContent='NY Session';b.className='bdg bb';}
-  else{b.textContent='Asian Session';b.className='bdg bo';}
-}
+
+async 
+
+
 
 function nav(id,el){
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
