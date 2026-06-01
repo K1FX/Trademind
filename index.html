@@ -1073,7 +1073,14 @@ async function loadAIBrief(){
 }
 
 async function sendMsg(){
-  if(!checkAILimit())return;
+  if(userPlan==='free'){
+    var today=new Date().toISOString().split('T')[0];
+    var stored=JSON.parse(localStorage.getItem('tm_ai_calls')||'{"date":"","count":0}');
+    if(stored.date!==today){stored={date:today,count:0};}
+    if(stored.count>=FREE_AI_LIMIT){showUpgradeModal('You have used all 5 free AI questions today. Upgrade to Pro for unlimited AI.');return;}
+    stored.count++;
+    localStorage.setItem('tm_ai_calls',JSON.stringify(stored));
+  }
   var inp=document.getElementById('chat-inp');var msg=inp.value.trim();if(!msg)return;inp.value='';
   var msgs=document.getElementById('chat-msgs');
   msgs.innerHTML+='<div class="msg msg-user">'+msg+'</div>';
