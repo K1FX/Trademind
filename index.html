@@ -1223,7 +1223,7 @@ function closeM(id){document.getElementById(id).classList.remove('open');}
 document.querySelectorAll('.mo').forEach(function(m){m.addEventListener('click',function(e){if(e.target===m)m.classList.remove('open');});});
 async function loadSubscription(){
   try{
-    var r=await fetch('https://ucyblsicfuoappzlurvs.supabase.co/rest/v1/subscriptions?email=eq.'+user.email+'&select=plan,status',{
+    var r=await fetch('https://ucyblsicfuoappzlurvs.supabase.co/rest/v1/subscriptions?email=eq.'+user.email.toLowerCase()+'&select=plan,status',{
       headers:{
         'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjeWJsc2ljZnVvYXBwemx1cnZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxOTgyODAsImV4cCI6MjA5NTc3NDI4MH0.AIW-9Ee2gYRiyKw2x4qY9lE9yspGz_9vO1FGh4kfVfE',
         'Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjeWJsc2ljZnVvYXBwemx1cnZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxOTgyODAsImV4cCI6MjA5NTc3NDI4MH0.AIW-9Ee2gYRiyKw2x4qY9lE9yspGz_9vO1FGh4kfVfE'
