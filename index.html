@@ -634,11 +634,14 @@ var pnlC=null,pairC=null,dayC=null,sessC=null;
 var calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
 
 async function callAI(prompt,maxTokens){
-  var r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'user',content:prompt}],max_tokens:maxTokens||500})});
-  if(!r.ok)throw new Error('API error '+r.status);
-  var d=await r.json();
-  if(d.error)throw new Error(d.error);
-  return d.content&&d.content[0]&&d.content[0].text?d.content[0].text:'No response';
+  try{
+    var r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'user',content:prompt}],max_tokens:maxTokens||500})});
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    var d=await r.json();
+    if(d.error)throw new Error(d.error.message||d.error);
+    if(d.content&&d.content[0]&&d.content[0].text)return d.content[0].text;
+    throw new Error('Empty response');
+  }catch(e){throw e;}
 }
 var SB_URL='https://ucyblsicfuoappzlurvs.supabase.co';
 var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjeWJsc2ljZnVvYXBwemx1cnZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxOTgyODAsImV4cCI6MjA5NTc3NDI4MH0.AIW-9Ee2gYRiyKw2x4qY9lE9yspGz_9vO1FGh4kfVfE';
@@ -1052,13 +1055,15 @@ function updateSessBadge(){
 }
 
 // STRIPE CHECKOUT via /api/checkout
-async function startCheckout(plan){
-  try{
-    var r=await fetch('/api/checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({plan:plan,email:user.email})});
-    var d=await r.json();
-    if(d.url)window.location.href=d.url;
-    else alert('Checkout unavailable. Contact support@trademind.ai');
-  }catch(e){alert('Checkout unavailable. Contact support@trademind.ai');}
+function startCheckout(plan){
+  var links={
+    'pro_monthly':'https://buy.stripe.com/4gM6oG5VOc4FcRHfmL0Fi00',
+    'pro_annual':'https://buy.stripe.com/4gM6oG5VOc4FcRHfmL0Fi00',
+    'elite_monthly':'https://buy.stripe.com/eVqcN46ZS9Wx7xngqP0Fi01',
+    'elite_annual':'https://buy.stripe.com/eVqcN46ZS9Wx7xngqP0Fi01'
+  };
+  if(links[plan])window.location.href=links[plan];
+  else alert('Contact support@trademind.ai');
 }
 
 // EMAIL via /api/email
