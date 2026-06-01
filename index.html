@@ -1043,7 +1043,11 @@ async function sendMsg(){
     var today=new Date().toISOString().split('T')[0];
     var stored=JSON.parse(localStorage.getItem('tm_ai_calls')||'{"date":"","count":0}');
     if(stored.date!==today){stored={date:today,count:0};}
-    if(stored.count>=FREE_AI_LIMIT){showUpgradeModal('You have used all 5 free AI questions today. Upgrade to Pro for unlimited AI.');return;}
+    // Only block AFTER they have used their 5 questions
+    if(stored.count>=FREE_AI_LIMIT){
+      showUpgradeModal('You have used all '+FREE_AI_LIMIT+' free AI questions today. Upgrade to Pro for unlimited AI.');
+      return;
+    }
     stored.count++;
     localStorage.setItem('tm_ai_calls',JSON.stringify(stored));
   }
@@ -1223,19 +1227,25 @@ function closeM(id){document.getElementById(id).classList.remove('open');}
 document.querySelectorAll('.mo').forEach(function(m){m.addEventListener('click',function(e){if(e.target===m)m.classList.remove('open');});});
 async function loadSubscription(){
   try{
-    var r=await fetch('https://ucyblsicfuoappzlurvs.supabase.co/rest/v1/subscriptions?email=eq.'+user.email.toLowerCase()+'&select=plan,status',{
-      headers:{
-        'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjeWJsc2ljZnVvYXBwemx1cnZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxOTgyODAsImV4cCI6MjA5NTc3NDI4MH0.AIW-9Ee2gYRiyKw2x4qY9lE9yspGz_9vO1FGh4kfVfE',
-        'Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjeWJsc2ljZnVvYXBwemx1cnZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxOTgyODAsImV4cCI6MjA5NTc3NDI4MH0.AIW-9Ee2gYRiyKw2x4qY9lE9yspGz_9vO1FGh4kfVfE'
+    var sbHeaders={
+      'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjeWJsc2ljZnVvYXBwemx1cnZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxOTgyODAsImV4cCI6MjA5NTc3NDI4MH0.AIW-9Ee2gYRiyKw2x4qY9lE9yspGz_9vO1FGh4kfVfE',
+      'Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjeWJsc2ljZnVvYXBwemx1cnZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxOTgyODAsImV4cCI6MjA5NTc3NDI4MH0.AIW-9Ee2gYRiyKw2x4qY9lE9yspGz_9vO1FGh4kfVfE'
+    };
+    // Try with user_id first (most reliable)
+    var r1=await fetch('https://ucyblsicfuoappzlurvs.supabase.co/rest/v1/subscriptions?user_id=eq.'+user.id+'&select=plan,status',{headers:sbHeaders});
+    var d1=await r1.json();
+    if(d1&&d1.length>0&&d1[0].status==='active'){
+      userPlan=d1[0].plan||'free';
+    } else {
+      // Fallback: try with email (case insensitive)
+      var r2=await fetch('https://ucyblsicfuoappzlurvs.supabase.co/rest/v1/subscriptions?email=ilike.'+encodeURIComponent(user.email)+'&select=plan,status',{headers:sbHeaders});
+      var d2=await r2.json();
+      if(d2&&d2.length>0&&d2[0].status==='active'){
+        userPlan=d2[0].plan||'free';
+      } else {
+        userPlan='free';
       }
-    });
-    var data=await r.json();
-    if(data&&data.length>0&&data[0].status==='active'){
-      userPlan=data[0].plan||'free';
-    }else{
-      userPlan='free';
     }
-    // Update UI
     var planEl=document.getElementById('plan-name');
     if(planEl)planEl.textContent=userPlan.charAt(0).toUpperCase()+userPlan.slice(1)+' Plan';
   }catch(e){userPlan='free';}
