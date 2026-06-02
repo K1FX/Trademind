@@ -534,7 +534,7 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
                 <tbody id="csv-table"></tbody></table>
               </div>
             </div>
-            <button class="btn btn-acc" style="width:100%" id="csv-import-btn" onclick="importCSV()" style="display:none">Import Trades</button>
+            <button class="btn btn-acc" style="width:100%" id="csv-import-btn" onclick="importCSV()">Import Trades</button>
             <div id="csv-status" style="font-size:11px;margin-top:8px;text-align:center"></div>
           </div>
           <div>
@@ -1282,7 +1282,10 @@ function parseCSV(text){
 
 async function importCSV(){
   if(!csvTrades.length) return;
-  if(!checkTradeLimit()) return;
+  if(userPlan==='free'){
+    showUpgradeModal('MT5 CSV import is available on Pro and Elite plans. Upgrade to unlock automatic trade import.');
+    return;
+  }
   var btn = document.getElementById('csv-import-btn');
   var status = document.getElementById('csv-status');
   btn.textContent = 'Importing...';
