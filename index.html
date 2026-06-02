@@ -1388,32 +1388,14 @@ function deleteGoal(id){
   renderGoals();
 }
 
-// Handle magic link token in URL hash
-if(window.location.hash&&window.location.hash.includes('access_token')){
-  sb.auth.getSession().then(function(r){
-    if(r.data&&r.data.session){
-      user=r.data.session.user;
-      window.history.replaceState(null,'',window.location.pathname);
-      initApp();
-    }
-  });
-} else {
-  sb.auth.getSession().then(function(r){
-    if(r.data&&r.data.session&&r.data.session.user){
-      user=r.data.session.user;
-      initApp();
-    }
-  });
-}
-
 sb.auth.onAuthStateChange(function(event,session){
-  if(event==='SIGNED_IN'&&session&&session.user){
+  if((event==='SIGNED_IN'||event==='INITIAL_SESSION')&&session&&session.user){
     user=session.user;
     if(!document.getElementById('app').classList.contains('visible')){
       initApp();
     }
   }
-});;
+});
 </script>
 
 <div id="m-upgrade" class="mo">
