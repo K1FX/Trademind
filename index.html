@@ -1388,19 +1388,30 @@ function deleteGoal(id){
   renderGoals();
 }
 
-sb.auth.onAuthStateChange(function(event,session){
-  if((event==='SIGNED_IN'||event==='TOKEN_REFRESHED')&&session){
-    user=session.user;
-    var authScreen=document.getElementById('auth-screen');
-    if(authScreen&&authScreen.style.display!=='none'&&!document.getElementById('app').classList.contains('visible')){
+// Handle magic link token in URL hash
+if(window.location.hash&&window.location.hash.includes('access_token')){
+  sb.auth.getSession().then(function(r){
+    if(r.data&&r.data.session){
+      user=r.data.session.user;
+      window.history.replaceState(null,'',window.location.pathname);
       initApp();
     }
-  }
-});
-sb.auth.getSession().then(function(r){
-  if(r.data&&r.data.session&&r.data.session.user){
-    user=r.data.session.user;
-    initApp();
+  });
+} else {
+  sb.auth.getSession().then(function(r){
+    if(r.data&&r.data.session&&r.data.session.user){
+      user=r.data.session.user;
+      initApp();
+    }
+  });
+}
+
+sb.auth.onAuthStateChange(function(event,session){
+  if(event==='SIGNED_IN'&&session&&session.user){
+    user=session.user;
+    if(!document.getElementById('app').classList.contains('visible')){
+      initApp();
+    }
   }
 });;
 </script>
