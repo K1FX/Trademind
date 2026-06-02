@@ -510,8 +510,23 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
 
       <!-- MT5 -->
       <div id="page-connect" class="page">
-        <div style="font-size:15px;font-weight:600;margin-bottom:6px">MT4 / MT5 Import</div>
-        <div style="font-size:12px;color:var(--text-muted);margin-bottom:16px">Import your trades from MetaTrader 4 or 5 via CSV export</div>
+        <div style="font-size:15px;font-weight:600;margin-bottom:6px">MT4 / MT5 Connect</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:16px">Connect your broker account or import via CSV</div>
+        <!-- MetaApi Connection -->
+        <div class="card" style="margin-bottom:14px">
+          <div class="card-title">Live Connection — MetaApi <span class="bdg bo">Pro & Elite</span></div>
+          <div class="fr">
+            <div class="fg"><label>Login (Account Number)</label><input class="fi2" id="mt-login" placeholder="12345678"></div>
+            <div class="fg"><label>Password</label><input class="fi2" id="mt-pwd" type="password" placeholder="••••••••"></div>
+          </div>
+          <div class="fg"><label>Server</label><input class="fi2" id="mt-srv" placeholder="e.g. ICMarkets-Live01"></div>
+          <div class="fg"><label>Platform</label><select class="fi2" id="mt-plat"><option value="mt5">MetaTrader 5</option><option value="mt4">MetaTrader 4</option></select></div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-acc" style="flex:1" onclick="connectMT()">Connect Account</button>
+            <button class="btn btn-ghost" onclick="syncMTTrades()">Sync Trades</button>
+          </div>
+          <div id="mt-status" style="font-size:11px;margin-top:8px;text-align:center"></div>
+        </div>
         <div class="g2">
           <div class="card">
             <div class="card-title">Import from CSV</div>
