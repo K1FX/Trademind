@@ -736,7 +736,10 @@ async function logout(){await sb.auth.signOut();location.reload();}
 async function loginWithGoogle(){
   var r=await sb.auth.signInWithOAuth({
     provider:'google',
-    options:{redirectTo:'https://trademind-nine.vercel.app'}
+    options:{
+      redirectTo:'https://trademind-nine.vercel.app',
+      skipBrowserRedirect:false
+    }
   });
   if(r.error)showErr(r.error.message);
 }
@@ -1379,7 +1382,15 @@ function deleteGoal(id){
   renderGoals();
 }
 
-sb.auth.getSession().then(function(r){if(r.data.session){user=r.data.session.user;initApp();}});
+sb.auth.onAuthStateChange(function(event,session){
+  if(event==='SIGNED_IN'&&session){
+    user=session.user;
+    if(document.getElementById('auth-screen').style.display!=='none'){
+      initApp();
+    }
+  }
+});
+sb.auth.getSession().then(function(r){if(r.data&&r.data.session){user=r.data.session.user;initApp();}});;
 </script>
 
 <div id="m-upgrade" class="mo">
