@@ -1331,6 +1331,96 @@ async function importCSV(){
 }
 
 function connectMT(){var s=document.getElementById('mt-srv').value,a=document.getElementById('mt-acc').value;if(!s||!a){alert('Fill all fields');return;}alert('MT5 connection via MetaApi available in Pro plan.');}
+
+var METAAPI_TOKEN='eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI3MTFmMDgxMGI0NzAzOTc4OTgzM2EwNzk3OGNhNzkyNiIsImFjY2Vzc1J1bGVzIjpbeyJpZCI6InRyYWRpbmctYWNjb3VudC1tYW5hZ2VtZW50LWFwaSIsIm1ldGhvZHMiOlsidHJhZGluZy1hY2NvdW50LW1hbmFnZW1lbnQtYXBpOnJlc3Q6cHVibGljOio6KiJdLCJyb2xlcyI6WyJyZWFkZXIiLCJ3cml0ZXIiXSwicmVzb3VyY2VzIjpbIio6JFVTRVJfSUQkOioiXX1dLCJpZ25vcmVSYXRlTGltaXRzIjpmYWxzZSwidG9rZW5JZCI6IjIwMjEwMjEzIiwiaW1wZXJzb25hdGVkIjpmYWxzZSwicmVhbFVzZXJJZCI6IjcxMWYwODEwYjQ3MDM5Nzg5ODMzYTA3OTc4Y2E3OTI2IiwiaWF0IjoxNzgwNDI4ODkzLCJleHAiOjE3ODgyMDQ4OTN9.FNgRwqAdEpXh3T7sQdZVcL3nwU_6HDFlRiGQd4Hf3vbDMVh8slqsLP1RxEhlijpiknnd7V7dXG4o5fDd5FnNMlBUWkccgays2MTYlHwF5_jc5toYRX1ugHph5FA-RksYiuZXv_fTVfDEQkOh0XmZ3PzGAv--wpf2PY5P227YcDDPxgaPXBz0aeX-oQW-frCwFRyZE4MEdguXcdO6-YtJXgSLOWpZTsms2wf76LlvkmMOKdReiOWunmnVLAk95yTntzcWh0h7kU20VCujN3krTjSFStApgCyiXHTj0a9JYePpBdsa5_WEbWr2tzbYyQAOdo0aA8YZzK937WQHSQOmx-Beakfy6VcFjtJ8dQ7ccNti3QL90YS88MgRzEKNNf6IdC4u1r_3rNx4Qs91lJpvBy0D0CF3BLEvE8lxxrK8y4Vy2ZmXlmGNTMyoEDWtpoZ48DVtEcXIhwIN4-bGzRLVNMgKfkELb-OP0oQ-EaBRlKWgZloMLBwkOyib7zcqvCwmcdvjvKDIv-VzwoGgY23TvFO0LU3YdD-sryRVp8yFMiX9NFTVfr2JJx9e3K-A4qfIdQwxiZKznDDd_PkcJYZlELVYABUQOjGFtgYRO0LeowO3aESs0Q9E8NNkvu9yUdVOxf__C95dMFo7iDgTN1qzR11LwcPQRDKaYz1-ESedptA';
+var METAAPI_ACCOUNT_ID='03f148a4-4e69-4a31-8c25-992fb8471e49';
+var WORKER_URL='https://trademind-chat.shopapple090.workers.dev/';
+
+async function connectMT(){
+  if(userPlan==='free'){showUpgradeModal('MT5 live connection is available on Pro and Elite plans.');return;}
+  var login=document.getElementById('mt-login').value.trim();
+  var pwd=document.getElementById('mt-pwd').value;
+  var srv=document.getElementById('mt-srv').value.trim();
+  var plat=document.getElementById('mt-plat').value;
+  var status=document.getElementById('mt-status');
+  if(!login||!pwd||!srv){status.textContent='Please fill all fields.';status.style.color='var(--red)';return;}
+  status.textContent='Connecting...';status.style.color='var(--text-muted)';
+  try{
+    var r=await fetch(WORKER_URL,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        metaapi:true,
+        url:'https://mt-provisioning-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts',
+        method:'POST',
+        token:METAAPI_TOKEN,
+        data:{login:login,password:pwd,name:'TradeMind-'+login,server:srv,platform:plat,magic:123456,application:'MetaApi',type:'cloud-g2'}
+      })
+    });
+    var d=await r.json();
+    if(d.id){
+      localStorage.setItem('mt-account-'+user.id,d.id);
+      status.textContent='Connected! Click "Sync Trades" to import.';
+      status.style.color='var(--accent)';
+    } else {
+      status.textContent='Error: '+(d.message||d.error||JSON.stringify(d));
+      status.style.color='var(--red)';
+    }
+  }catch(e){
+    status.textContent='Error: '+e.message;
+    status.style.color='var(--red)';
+  }
+}
+
+async function syncMTTrades(){
+  if(userPlan==='free'){showUpgradeModal('MT5 sync is available on Pro and Elite plans.');return;}
+  var status=document.getElementById('mt-status');
+  var accountId=localStorage.getItem('mt-account-'+user.id)||METAAPI_ACCOUNT_ID;
+  status.textContent='Syncing trades...';status.style.color='var(--text-muted)';
+  try{
+    var r=await fetch(WORKER_URL,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        metaapi:true,
+        url:'https://metastats-api-v1.london.agiliumtrade.ai/users/current/accounts/'+accountId+'/historical-trades/0/100',
+        method:'GET',
+        token:METAAPI_TOKEN
+      })
+    });
+    var d=await r.json();
+    var mtTrades=d.trades||d||[];
+    if(!Array.isArray(mtTrades)||!mtTrades.length){status.textContent='No trades found. Make sure MT5 is connected.';status.style.color='var(--text-muted)';return;}
+    var imported=0;
+    for(var i=0;i<mtTrades.length;i++){
+      var t=mtTrades[i];
+      if(t.type!=='DEAL_TYPE_BUY'&&t.type!=='DEAL_TYPE_SELL')continue;
+      var trade={
+        user_id:user.id,
+        date:t.time?t.time.split('T')[0]:new Date().toISOString().split('T')[0],
+        pair:(t.symbol||'').toUpperCase(),
+        direction:t.type==='DEAL_TYPE_BUY'?'Long':'Short',
+        lots:t.volume||0,
+        pnl:t.profit||0,
+        entry:t.openPrice||0,
+        exit:t.closePrice||0,
+        sl:0,tp:0,rr:0,
+        result:(t.profit||0)>0?'Win':(t.profit||0)<0?'Loss':'Breakeven',
+        session:'London',setup:'MT Import',notes:'Imported from MetaTrader'
+      };
+      if(!trade.pair)continue;
+      var ins=await sb.from('trades').insert([trade]);
+      if(!ins.error)imported++;
+    }
+    await loadTrades();updateDash();renderJ();renderCal();
+    status.textContent=imported+' trades imported!';
+    status.style.color='var(--accent)';
+  }catch(e){
+    status.textContent='Error: '+e.message;
+    status.style.color='var(--red)';
+  }
+}
+
 async function saveProfile(){await sb.auth.updateUser({data:{full_name:document.getElementById('p-name').value}});alert('Profile saved!');}
 
 function updateSessBadge(){
