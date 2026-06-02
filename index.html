@@ -43,7 +43,7 @@ input,select,textarea,button{font-family:'Inter',sans-serif}
 
 /* APP */
 #app{display:none;height:100vh;flex-direction:row}
-#app.visible{display:flex}
+
 .sidebar{width:210px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0}
 .sidebar-header{padding:16px 14px 14px;border-bottom:1px solid var(--border)}
 .s-logo-wrap{display:flex;align-items:center;gap:8px}
@@ -182,8 +182,16 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
 </head>
 <body>
 
+<!-- LOADING -->
+<div id="loading-screen" style="position:fixed;inset:0;background:#040605;display:flex;align-items:center;justify-content:center;z-index:99999">
+  <div style="text-align:center">
+    <div style="width:44px;height:44px;border-radius:11px;background:linear-gradient(135deg,#55D396,#21F1A8);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#040605;font-family:Space Grotesk,sans-serif;margin:0 auto 12px">TM</div>
+    <div style="font-size:12px;color:#4A6B50">Loading...</div>
+  </div>
+</div>
+
 <!-- AUTH -->
-<div id="auth-screen">
+<div id="auth-screen" style="display:none">
   <div class="auth-box">
     <div class="auth-logo-wrap" style="cursor:pointer" onclick="window.open('https://trademind-landing.vercel.app','_blank')">
       <div class="auth-tm">TM</div>
@@ -231,7 +239,7 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
 </div>
 
 <!-- APP -->
-<div id="app">
+<div id="app" style="display:flex">
   <nav class="sidebar">
     <div class="sidebar-header">
       <div class="s-logo-wrap">
@@ -754,8 +762,10 @@ function showOk(m){var el=document.getElementById('auth-ok');el.textContent=m;el
 function switchTab(t,btn){document.querySelectorAll('.auth-tab').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');document.getElementById('login-form').style.display=t==='login'?'block':'none';document.getElementById('signup-form').style.display=t==='signup'?'block':'none';}
 
 async function initApp(){
+  document.getElementById('loading-screen').style.display='none';
   document.getElementById('auth-screen').style.display='none';
-  document.getElementById('app').classList.add('visible');
+  document.getElementById('app').style.display='flex';
+  
   document.getElementById('u-email').textContent=user.email;
   document.getElementById('p-email').value=user.email;
   var name=(user.user_metadata&&user.user_metadata.full_name)||'';
@@ -1398,11 +1408,17 @@ async function deleteGoal(id){
 sb.auth.onAuthStateChange(function(event,session){
   if(session&&session.user){
     user=session.user;
-    if(!document.getElementById('app').classList.contains('visible')){
+    var app=document.getElementById('app');
+    if(app.style.display==='none'||app.style.display===''){
       initApp();
     }
   } else if(event==='SIGNED_OUT'){
-    location.reload();
+    document.getElementById('loading-screen').style.display='none';
+    document.getElementById('auth-screen').style.display='flex';
+    document.getElementById('app').style.display='none';
+  } else if(event==='INITIAL_SESSION'&&!session){
+    document.getElementById('loading-screen').style.display='none';
+    document.getElementById('auth-screen').style.display='flex';
   }
 });
 </script>
