@@ -510,22 +510,52 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
 
       <!-- MT5 -->
       <div id="page-connect" class="page">
-        <div style="font-size:15px;font-weight:600;margin-bottom:14px">MT4 / MT5 Connect</div>
+        <div style="font-size:15px;font-weight:600;margin-bottom:6px">MT4 / MT5 Import</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:16px">Import your trades from MetaTrader 4 or 5 via CSV export</div>
         <div class="g2">
           <div class="card">
-            <div class="card-title">Connect Your Broker</div>
-            <div class="fg"><label>Broker / Server</label><input class="fi2" id="mt-srv" placeholder="e.g. ICMarkets-Live01"></div>
-            <div class="fg"><label>Account Number</label><input class="fi2" id="mt-acc" placeholder="12345678"></div>
-            <div class="fg"><label>Password</label><input class="fi2" id="mt-pwd" type="password" placeholder="••••••••"></div>
-            <div class="fg"><label>Platform</label><select class="fi2" id="mt-plat"><option>MetaTrader 5</option><option>MetaTrader 4</option></select></div>
-            <button class="btn btn-acc" style="width:100%" onclick="connectMT()">Connect Account</button>
+            <div class="card-title">Import from CSV</div>
+            <div style="font-size:12px;color:var(--text-muted);line-height:1.8;margin-bottom:14px">
+              <strong style="color:var(--text)">How to export from MT5:</strong><br>
+              1. Open MetaTrader 5<br>
+              2. Go to <strong style="color:var(--accent)">View → Terminal → History</strong><br>
+              3. Right-click → <strong style="color:var(--accent)">Save as Report</strong><br>
+              4. Choose <strong style="color:var(--accent)">Detailed Report (CSV)</strong><br>
+              5. Upload the file below
+            </div>
+            <div class="fg">
+              <label>Select CSV File</label>
+              <input class="fi2" type="file" id="csv-file" accept=".csv,.htm,.html" onchange="previewCSV(this)">
+            </div>
+            <div id="csv-preview" style="display:none;margin-bottom:12px">
+              <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px" id="csv-count"></div>
+              <div style="max-height:200px;overflow-y:auto;font-size:11px">
+                <table style="width:100%"><thead><tr><th>Date</th><th>Pair</th><th>Type</th><th>Lots</th><th>P&L</th></tr></thead>
+                <tbody id="csv-table"></tbody></table>
+              </div>
+            </div>
+            <button class="btn btn-acc" style="width:100%" id="csv-import-btn" onclick="importCSV()" style="display:none">Import Trades</button>
+            <div id="csv-status" style="font-size:11px;margin-top:8px;text-align:center"></div>
           </div>
           <div>
-            <div class="card" style="text-align:center;padding:32px">
-              <div style="font-weight:600;color:var(--text-muted);margin-bottom:8px">No broker connected</div>
-              <div style="font-size:11px;color:var(--text-dim)">Connect to auto-import trades from MT4/MT5. Available on Pro plan.</div>
+            <div class="card">
+              <div class="card-title">MT4 Export Guide</div>
+              <div style="font-size:12px;color:var(--text-muted);line-height:1.8">
+                <strong style="color:var(--text)">MetaTrader 4:</strong><br>
+                1. Open MT4<br>
+                2. <strong style="color:var(--accent)">Account History tab</strong><br>
+                3. Right-click → <strong style="color:var(--accent)">Save as Report</strong><br>
+                4. Save as HTML or CSV<br><br>
+                <strong style="color:var(--text)">Supported formats:</strong><br>
+                · MT4/MT5 CSV export<br>
+                · MT4/MT5 HTML report<br>
+                · Standard CSV with columns: date, symbol, type, lots, open price, close price, profit
+              </div>
             </div>
-            <div class="card"><div class="card-title">Supported Brokers</div><div style="font-size:11px;color:var(--text-muted);line-height:2.2">IC Markets · Pepperstone · Exness · XM · FTMO · The5ers · MyForexFunds · Funded Next · and 500+ more</div></div>
+            <div class="card" style="margin-top:14px">
+              <div class="card-title">Supported Brokers</div>
+              <div style="font-size:11px;color:var(--text-muted);line-height:2.2">IC Markets · Pepperstone · Exness · XM · FTMO · The5ers · Funded Next · Hantec · and 500+ more</div>
+            </div>
           </div>
         </div>
       </div>
@@ -1155,6 +1185,131 @@ function setPricePeriod(p){
   document.getElementById('elite-price').textContent=p==='annual'?'$39':'$49';
   document.getElementById('pro-billed').textContent=p==='annual'?'billed $276/year':'per month';
   document.getElementById('elite-billed').textContent=p==='annual'?'billed $468/year':'per month';
+}
+
+
+// CSV IMPORT
+var csvTrades = [];
+
+function previewCSV(input){
+  var file = input.files[0];
+  if(!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e){
+    var text = e.target.result;
+    csvTrades = parseCSV(text);
+    if(!csvTrades.length){
+      document.getElementById('csv-status').textContent = 'No trades found. Make sure to export as CSV from MT4/MT5.';
+      document.getElementById('csv-status').style.color = 'var(--red)';
+      return;
+    }
+    document.getElementById('csv-count').textContent = csvTrades.length + ' trades found — ready to import';
+    document.getElementById('csv-table').innerHTML = csvTrades.slice(0,10).map(function(t){
+      return '<tr><td>'+t.date+'</td><td>'+t.pair+'</td><td><span class="bdg '+(t.direction==='Long'?'bg':'br')+'">'+t.direction+'</span></td><td>'+t.lots+'</td><td style="color:'+(t.pnl>=0?'var(--accent)':'var(--red)')+'">$'+(t.pnl>=0?'+':'')+t.pnl.toFixed(2)+'</td></tr>';
+    }).join('');
+    document.getElementById('csv-preview').style.display = 'block';
+    document.getElementById('csv-import-btn').style.display = 'block';
+  };
+  reader.readAsText(file);
+}
+
+function parseCSV(text){
+  var lines = text.split('\n').filter(function(l){return l.trim();});
+  var trades = [];
+  for(var i=0; i<lines.length; i++){
+    var line = lines[i];
+    // Skip headers and non-trade lines
+    if(line.toLowerCase().includes('balance')||line.toLowerCase().includes('deposit')||line.toLowerCase().includes('withdrawal'))continue;
+    var cols = line.split(',').map(function(c){return c.trim().replace(/"/g,'');});
+    if(cols.length < 8) continue;
+    
+    // Try to detect MT5 format: ticket,open time,type,size,symbol,open price,s/l,t/p,close time,close price,profit
+    var pnl = 0;
+    var pair = '';
+    var date = '';
+    var lots = 0;
+    var direction = 'Long';
+    
+    // Find the profit column (usually last or second to last)
+    for(var j=0; j<cols.length; j++){
+      if(cols[j] && !isNaN(parseFloat(cols[j]))){
+        var val = parseFloat(cols[j]);
+        // Pair detection
+        if(/^[A-Z]{6}$/.test(cols[j])||/^(EUR|GBP|USD|JPY|XAU|NAS|US30|BTC)/.test(cols[j])){
+          pair = cols[j];
+        }
+      }
+    }
+    
+    // MT5 standard format detection
+    if(cols.length >= 11){
+      date = cols[1] ? cols[1].split(' ')[0] : '';
+      var typeStr = (cols[2]||'').toLowerCase();
+      direction = typeStr.includes('sell') ? 'Short' : 'Long';
+      lots = parseFloat(cols[3]) || 0;
+      pair = cols[4] || pair;
+      pnl = parseFloat(cols[cols.length-1]) || parseFloat(cols[cols.length-2]) || 0;
+    } else if(cols.length >= 8){
+      date = cols[0] || '';
+      var typeStr2 = (cols[2]||'').toLowerCase();
+      direction = typeStr2.includes('sell') ? 'Short' : 'Long';
+      lots = parseFloat(cols[3]) || 0;
+      pair = cols[1] || pair;
+      pnl = parseFloat(cols[cols.length-1]) || 0;
+    }
+    
+    if(!pair || !date || isNaN(pnl)) continue;
+    if(pair.length < 3 || pair.length > 10) continue;
+    
+    // Format date
+    var d = new Date(date);
+    if(isNaN(d.getTime())) continue;
+    var dateStr = d.toISOString().split('T')[0];
+    
+    trades.push({
+      date: dateStr,
+      pair: pair.toUpperCase(),
+      direction: direction,
+      lots: lots,
+      pnl: pnl,
+      result: pnl > 0 ? 'Win' : pnl < 0 ? 'Loss' : 'Breakeven',
+      session: 'London',
+      entry: 0, exit: 0, sl: 0, tp: 0, rr: 0, setup: 'MT Import', notes: 'Imported from MT5'
+    });
+  }
+  return trades;
+}
+
+async function importCSV(){
+  if(!csvTrades.length) return;
+  if(!checkTradeLimit()) return;
+  var btn = document.getElementById('csv-import-btn');
+  var status = document.getElementById('csv-status');
+  btn.textContent = 'Importing...';
+  btn.disabled = true;
+  var imported = 0;
+  var errors = 0;
+  for(var i=0; i<csvTrades.length; i++){
+    var t = csvTrades[i];
+    t.user_id = user.id;
+    var r = await sb.from('trades').insert([t]);
+    if(r.error) errors++;
+    else imported++;
+    // Update progress
+    status.textContent = 'Importing ' + (i+1) + '/' + csvTrades.length + '...';
+    status.style.color = 'var(--text-muted)';
+  }
+  await loadTrades();
+  updateDash();
+  renderJ();
+  renderCal();
+  btn.textContent = 'Import Trades';
+  btn.disabled = false;
+  status.textContent = imported + ' trades imported successfully!' + (errors > 0 ? ' (' + errors + ' errors)' : '');
+  status.style.color = 'var(--accent)';
+  csvTrades = [];
+  document.getElementById('csv-preview').style.display = 'none';
+  document.getElementById('csv-file').value = '';
 }
 
 function connectMT(){var s=document.getElementById('mt-srv').value,a=document.getElementById('mt-acc').value;if(!s||!a){alert('Fill all fields');return;}alert('MT5 connection via MetaApi available in Pro plan.');}
