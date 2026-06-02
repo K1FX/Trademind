@@ -185,7 +185,7 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
 <!-- AUTH -->
 <div id="auth-screen">
   <div class="auth-box">
-    <div class="auth-logo-wrap">
+    <div class="auth-logo-wrap" style="cursor:pointer" onclick="window.open('https://trademind-landing.vercel.app','_blank')">
       <div class="auth-tm">TM</div>
       <div class="auth-brand">Trade<span>Mind</span></div>
     </div>
@@ -199,6 +199,13 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
         <div class="fl"><label>Email</label><input class="fi" id="l-email" type="email" placeholder="trader@example.com"></div>
         <div class="fl"><label>Password</label><input class="fi" id="l-pwd" type="password" placeholder="••••••••"></div>
         <button class="btn-auth" onclick="login()">Sign In</button>
+        <div style="text-align:center;margin-top:10px"><span style="font-size:12px;color:var(--accent);cursor:pointer" onclick="showForgotPassword()">Forgot password?</span></div>
+      </div>
+      <div id="forgot-form" style="display:none">
+        <div style="font-size:13px;color:var(--text-muted);margin-bottom:14px">Enter your email to receive a reset link.</div>
+        <div class="fl"><label>Email</label><input class="fi" id="forgot-email" type="email" placeholder="trader@example.com"></div>
+        <button class="btn-auth" onclick="resetPassword()">Send Reset Link</button>
+        <div style="text-align:center;margin-top:10px"><span style="font-size:12px;color:var(--accent);cursor:pointer" onclick="showForgotPassword()">Back to Sign In</span></div>
       </div>
       <div id="signup-form" style="display:none">
         <div class="fl"><label>Full Name</label><input class="fi" id="s-name" placeholder="John Trader"></div>
@@ -313,6 +320,11 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
           </div>
         </div>
         <div class="card"><div class="card-title">Cumulative P&amp;L</div><div style="height:160px"><canvas id="pnl-chart"></canvas></div></div>
+        <!-- OBJECTIFS -->
+        <div class="card" id="goals-card">
+          <div class="card-title">Trading Goals <button class="btn btn-ghost btn-sm" onclick="openM('m-goal')">+ Set Goal</button></div>
+          <div id="goals-list"><div style="color:var(--text-muted);font-size:12px;padding:8px 0">No goals set — click "+ Set Goal" to add one</div></div>
+        </div>
       </div>
 
       <!-- JOURNAL -->
@@ -560,6 +572,13 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
             <button class="btn btn-acc btn-sm" onclick="saveProfile()">Save Changes</button>
           </div>
           <div class="card"><div class="card-title">Performance Summary</div><div id="profile-stats"><div style="color:var(--text-muted);font-size:12px">Add trades to see your summary</div></div></div>
+          <div class="card" style="margin-top:14px">
+            <div class="card-title">Change Password</div>
+            <div class="fg"><label>New Password</label><input class="fi2" id="new-pwd" type="password" placeholder="Min 6 characters"></div>
+            <div class="fg"><label>Confirm Password</label><input class="fi2" id="confirm-pwd" type="password" placeholder="Repeat new password"></div>
+            <button class="btn btn-acc btn-sm" onclick="changePassword()">Update Password</button>
+            <div id="pwd-status" style="font-size:11px;margin-top:8px"></div>
+          </div>
         </div>
         <div class="card" style="margin-top:0">
           <div class="card-title">API Configuration</div>
@@ -629,7 +648,7 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
 var SB_URL='https://ucyblsicfuoappzlurvs.supabase.co';
 var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjeWJsc2ljZnVvYXBwemx1cnZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxOTgyODAsImV4cCI6MjA5NTc3NDI4MH0.AIW-9Ee2gYRiyKw2x4qY9lE9yspGz_9vO1FGh4kfVfE';
 var SUPPORT_EMAIL='support@trademind.ai';
-var sb=supabase.createClient(SB_URL,SB_KEY);
+var sb=supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,storageKey:'trademind-auth'}});
 var user=null,trades=[],rules=[],imgBase64=null,currentTrade=null;
 var pnlC=null,pairC=null,dayC=null,sessC=null;
 var calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
@@ -669,10 +688,15 @@ function showUpgradeModal(msg){
 
 async function callAI(prompt,maxTokens){
   try{
+    var today=new Date().toDateString();
     var r=await fetch('https://trademind-chat.shopapple090.workers.dev/',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({messages:[{role:'user',content:prompt}],max_tokens:maxTokens||300})
+      body:JSON.stringify({
+        messages:[{role:'user',content:prompt}],
+        max_tokens:maxTokens||300,
+        system:'You are TradeMind AI, expert trading analyst. Today is '+today+'. You have deep knowledge of forex, indices, commodities, and crypto markets. For real-time prices, tell users to check TradingView but provide your best analysis based on recent trends and fundamentals. Always be helpful and actionable. Reply in the same language as the user.'
+      })
     });
     if(!r.ok)throw new Error('HTTP '+r.status);
     var d=await r.json();
@@ -713,7 +737,7 @@ async function initApp(){
   document.getElementById('p-from').value=new Date(today.getFullYear(),today.getMonth(),1).toISOString().split('T')[0];
   document.getElementById('p-to').value=today.toISOString().split('T')[0];
   await loadTrades();await loadRules();await loadSubscription();
-  updateDash();renderCal();loadAIBrief();loadEcoCal();updateSessBadge();
+  updateDash();renderCal();loadAIBrief();loadEcoCal();updateSessBadge();renderGoals();
   // Keep worker warm
   setInterval(function(){fetch('https://trademind-chat.shopapple090.workers.dev/').catch(function(){});},30000);
 }
@@ -842,9 +866,11 @@ function renderCal(){
     var isToday=ds===todayStr;
     var cls='cal-day'+(isToday?' today':'')+(pnlV!==null&&pnlV>0?' has-win':pnlV!==null&&pnlV<0?' has-loss':'');
     if(pnlV!==null){monthTotal+=pnlV;tradingDays++;if(pnlV>bestDay)bestDay=pnlV;if(pnlV<worstDay)worstDay=pnlV;}
+    var dayTrades=trades.filter(function(t){return t.date===ds;}).length;
     html+='<div class="'+cls+'" onclick="calDayClick(\''+ds+'\','+(pnlV||0)+')">'
       +'<div class="cdn">'+d+'</div>'
       +(pnlV!==null?'<div class="cdv" style="color:'+(pnlV>=0?'var(--accent)':'var(--red)')+'">$'+(pnlV>=0?'+':'')+pnlV.toFixed(0)+'</div>':'')
+      +(dayTrades>0?'<div style="font-size:8px;color:var(--text-muted);">'+dayTrades+'t</div>':'')
       +'</div>';
   }
   document.getElementById('cal-grid').innerHTML=html;
@@ -886,7 +912,7 @@ function updateDash(){
     return '<tr class="clickable" onclick="openTradeDetail('+JSON.stringify(t).replace(/'/g,"\\'")+')"><td>'+t.date+'</td><td><strong>'+t.pair+'</strong></td><td><span class="bdg '+(t.direction==='Long'?'bg':'br')+'">'+t.direction+'</span></td><td style="color:'+(t.pnl>=0?'var(--accent)':'var(--red)')+'"><strong>'+(t.pnl>=0?'+ ':'')+'$'+(t.pnl||0).toFixed(2)+'</strong></td><td><span class="bdg '+(t.result==='Win'?'bg':t.result==='Loss'?'br':'bgr')+'">'+t.result+'</span></td></tr>';
   }).join('');
   renderAdvStats(totalPnl,wins,losses,gp,gl,pf);
-  renderBehav();updatePnlChart();renderProfileStats(totalPnl,wins,losses,wr,pf);
+  renderBehav();updatePnlChart();renderProfileStats(totalPnl,wins,losses,wr,pf);renderGoals();
 }
 
 function renderAdvStats(totalPnl,wins,losses,gp,gl,pf){
@@ -1251,6 +1277,89 @@ async function loadSubscription(){
   }catch(e){userPlan='free';}
 }
 
+
+// FORGOT PASSWORD
+function showForgotPassword(){
+  var forgot=document.getElementById('forgot-form');
+  var login=document.getElementById('login-form');
+  if(forgot.style.display==='none'||!forgot.style.display){
+    forgot.style.display='block';
+    login.style.display='none';
+  } else {
+    forgot.style.display='none';
+    login.style.display='block';
+  }
+}
+
+async function resetPassword(){
+  var email=document.getElementById('forgot-email').value.trim();
+  if(!email)return showErr('Enter your email');
+  var r=await sb.auth.resetPasswordForEmail(email,{redirectTo:'https://trademind-nine.vercel.app'});
+  if(r.error)return showErr(r.error.message);
+  showOk('Reset link sent! Check your email.');
+  document.getElementById('forgot-form').style.display='none';
+  document.getElementById('login-form').style.display='block';
+}
+
+// CHANGE PASSWORD
+async function changePassword(){
+  var pwd=document.getElementById('new-pwd').value;
+  var confirm=document.getElementById('confirm-pwd').value;
+  var status=document.getElementById('pwd-status');
+  if(!pwd||pwd.length<6){status.textContent='Min 6 characters.';status.style.color='var(--red)';return;}
+  if(pwd!==confirm){status.textContent='Passwords do not match.';status.style.color='var(--red)';return;}
+  var r=await sb.auth.updateUser({password:pwd});
+  if(r.error){status.textContent=r.error.message;status.style.color='var(--red)';}
+  else{status.textContent='Password updated!';status.style.color='var(--accent)';document.getElementById('new-pwd').value='';document.getElementById('confirm-pwd').value='';}
+}
+
+// GOALS
+function saveGoal(){
+  var name=document.getElementById('g-name').value.trim();
+  var target=parseFloat(document.getElementById('g-target').value)||0;
+  var start=parseFloat(document.getElementById('g-start').value)||0;
+  var targetTrades=parseInt(document.getElementById('g-trades').value)||0;
+  if(!name||!target)return;
+  var goals=JSON.parse(localStorage.getItem('tm-goals-'+user.id)||'[]');
+  goals.push({id:Date.now(),name:name,target:target,start:start,targetTrades:targetTrades});
+  localStorage.setItem('tm-goals-'+user.id,JSON.stringify(goals));
+  closeM('m-goal');
+  document.getElementById('g-name').value='';document.getElementById('g-target').value='';document.getElementById('g-start').value='';document.getElementById('g-trades').value='';
+  renderGoals();
+}
+
+function renderGoals(){
+  var goals=JSON.parse(localStorage.getItem('tm-goals-'+user.id)||'[]');
+  if(!goals.length){document.getElementById('goals-list').innerHTML='<div style="color:var(--text-muted);font-size:12px;padding:8px 0">No goals set</div>';return;}
+  var totalPnl=trades.reduce(function(s,t){return s+(t.pnl||0);},0);
+  document.getElementById('goals-list').innerHTML=goals.map(function(g){
+    var current=g.start+totalPnl;
+    var pct=Math.min(Math.round((current-g.start)/(g.target-g.start)*100),100);
+    if(pct<0)pct=0;
+    var tradePct=g.targetTrades>0?Math.min(Math.round(trades.length/g.targetTrades*100),100):null;
+    return '<div style="margin-bottom:14px">'
+      +'<div style="display:flex;justify-content:space-between;margin-bottom:6px">'
+      +'<span style="font-size:12px;font-weight:600">'+g.name+'</span>'
+      +'<span style="font-size:12px;color:var(--accent);font-weight:700;font-family:JetBrains Mono,monospace">'+pct+'%</span>'
+      +'</div>'
+      +'<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);margin-bottom:6px">'
+      +'<span>$'+Math.round(current).toLocaleString()+' / $'+g.target.toLocaleString()+'</span>'
+      +(g.targetTrades?'<span>'+trades.length+' / '+g.targetTrades+' trades</span>':'')
+      +'</div>'
+      +'<div class="bar-t"><div class="bar-f" style="width:'+pct+'%"></div></div>'
+      +(tradePct!==null?'<div class="bar-t" style="margin-top:4px"><div style="height:100%;border-radius:99px;background:var(--blue);width:'+tradePct+'%"></div></div>':'')
+      +'<button class="btn btn-red btn-sm" style="margin-top:6px;font-size:10px" onclick="deleteGoal('+g.id+')">Remove</button>'
+      +'</div>';
+  }).join('');
+}
+
+function deleteGoal(id){
+  var goals=JSON.parse(localStorage.getItem('tm-goals-'+user.id)||'[]');
+  goals=goals.filter(function(g){return g.id!==id;});
+  localStorage.setItem('tm-goals-'+user.id,JSON.stringify(goals));
+  renderGoals();
+}
+
 sb.auth.getSession().then(function(r){if(r.data.session){user=r.data.session.user;initApp();}});
 </script>
 
@@ -1264,6 +1373,17 @@ sb.auth.getSession().then(function(r){if(r.data.session){user=r.data.session.use
       <button class="btn btn-ghost" style="width:100%" onclick="closeM('m-upgrade')">Maybe later</button>
     </div>
     <div style="font-size:11px;color:var(--text-muted);margin-top:12px">30-day money back guarantee</div>
+  </div>
+</div>
+
+<div id="m-goal" class="mo">
+  <div class="modal">
+    <div class="modal-hdr">Set Trading Goal <button class="mc-btn" onclick="closeM('m-goal')">x</button></div>
+    <div class="fg"><label>Goal Name</label><input class="fi2" id="g-name" placeholder="e.g. Reach $50,000"></div>
+    <div class="fg"><label>Target Amount ($)</label><input class="fi2" id="g-target" type="number" placeholder="50000"></div>
+    <div class="fg"><label>Starting Amount ($)</label><input class="fi2" id="g-start" type="number" placeholder="10000"></div>
+    <div class="fg"><label>Target Trades</label><input class="fi2" id="g-trades" type="number" placeholder="100"></div>
+    <div class="ma"><button class="btn btn-ghost" onclick="closeM('m-goal')">Cancel</button><button class="btn btn-acc" onclick="saveGoal()">Save Goal</button></div>
   </div>
 </div>
 </body>
