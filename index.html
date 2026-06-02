@@ -764,7 +764,7 @@ async function initApp(){
   var today=new Date();
   document.getElementById('p-from').value=new Date(today.getFullYear(),today.getMonth(),1).toISOString().split('T')[0];
   document.getElementById('p-to').value=today.toISOString().split('T')[0];
-  await loadTrades();await loadRules();await loadSubscription();
+  await loadTrades();await loadRules();await loadSubscription();await loadGoals();
   updateDash();renderCal();loadAIBrief();loadEcoCal();updateSessBadge();renderGoals();
   // Keep worker warm
   setInterval(function(){fetch('https://trademind-chat.shopapple090.workers.dev/').catch(function(){});},30000);
@@ -940,7 +940,7 @@ function updateDash(){
     return '<tr class="clickable" onclick="openTradeDetail('+JSON.stringify(t).replace(/'/g,"\\'")+')"><td>'+t.date+'</td><td><strong>'+t.pair+'</strong></td><td><span class="bdg '+(t.direction==='Long'?'bg':'br')+'">'+t.direction+'</span></td><td style="color:'+(t.pnl>=0?'var(--accent)':'var(--red)')+'"><strong>'+(t.pnl>=0?'+ ':'')+'$'+(t.pnl||0).toFixed(2)+'</strong></td><td><span class="bdg '+(t.result==='Win'?'bg':t.result==='Loss'?'br':'bgr')+'">'+t.result+'</span></td></tr>';
   }).join('');
   renderAdvStats(totalPnl,wins,losses,gp,gl,pf);
-  renderBehav();updatePnlChart();renderProfileStats(totalPnl,wins,losses,wr,pf);renderGoals();
+  renderBehav();updatePnlChart();renderProfileStats(totalPnl,wins,losses,wr,pf);if(typeof renderGoals==='function')renderGoals();
 }
 
 function renderAdvStats(totalPnl,wins,losses,gp,gl,pf){
@@ -1342,29 +1342,37 @@ async function changePassword(){
 }
 
 // GOALS
-function saveGoal(){
+var userGoals=[];
+
+async function saveGoal(){
   var name=document.getElementById('g-name').value.trim();
   var target=parseFloat(document.getElementById('g-target').value)||0;
   var start=parseFloat(document.getElementById('g-start').value)||0;
   var targetTrades=parseInt(document.getElementById('g-trades').value)||0;
   if(!name||!target)return;
-  var goals=JSON.parse(localStorage.getItem('tm-goals-'+user.id)||'[]');
-  goals.push({id:Date.now(),name:name,target:target,start:start,targetTrades:targetTrades});
-  localStorage.setItem('tm-goals-'+user.id,JSON.stringify(goals));
+  var goal={user_id:user.id,name:name,target:target,start_amount:start,target_trades:targetTrades};
+  var r=await sb.from('goals').insert([goal]);
+  if(r.error){alert('Error: '+r.error.message);return;}
   closeM('m-goal');
   document.getElementById('g-name').value='';document.getElementById('g-target').value='';document.getElementById('g-start').value='';document.getElementById('g-trades').value='';
+  await loadGoals();
   renderGoals();
 }
 
+async function loadGoals(){
+  var r=await sb.from('goals').select('*').eq('user_id',user.id);
+  userGoals=r.data||[];
+}
+
 function renderGoals(){
-  var goals=JSON.parse(localStorage.getItem('tm-goals-'+user.id)||'[]');
-  if(!goals.length){document.getElementById('goals-list').innerHTML='<div style="color:var(--text-muted);font-size:12px;padding:8px 0">No goals set</div>';return;}
+  if(!userGoals.length){document.getElementById('goals-list').innerHTML='<div style="color:var(--text-muted);font-size:12px;padding:8px 0">No goals set — click "+ Set Goal" to add one</div>';return;}
   var totalPnl=trades.reduce(function(s,t){return s+(t.pnl||0);},0);
-  document.getElementById('goals-list').innerHTML=goals.map(function(g){
-    var current=g.start+totalPnl;
-    var pct=Math.min(Math.round((current-g.start)/(g.target-g.start)*100),100);
+  document.getElementById('goals-list').innerHTML=userGoals.map(function(g){
+    var current=(g.start_amount||0)+totalPnl;
+    var range=g.target-(g.start_amount||0);
+    var pct=range>0?Math.min(Math.round((current-(g.start_amount||0))/range*100),100):0;
     if(pct<0)pct=0;
-    var tradePct=g.targetTrades>0?Math.min(Math.round(trades.length/g.targetTrades*100),100):null;
+    var tradePct=g.target_trades>0?Math.min(Math.round(trades.length/g.target_trades*100),100):null;
     return '<div style="margin-bottom:14px">'
       +'<div style="display:flex;justify-content:space-between;margin-bottom:6px">'
       +'<span style="font-size:12px;font-weight:600">'+g.name+'</span>'
@@ -1372,28 +1380,29 @@ function renderGoals(){
       +'</div>'
       +'<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);margin-bottom:6px">'
       +'<span>$'+Math.round(current).toLocaleString()+' / $'+g.target.toLocaleString()+'</span>'
-      +(g.targetTrades?'<span>'+trades.length+' / '+g.targetTrades+' trades</span>':'')
+      +(g.target_trades?'<span>'+trades.length+' / '+g.target_trades+' trades</span>':'')
       +'</div>'
       +'<div class="bar-t"><div class="bar-f" style="width:'+pct+'%"></div></div>'
       +(tradePct!==null?'<div class="bar-t" style="margin-top:4px"><div style="height:100%;border-radius:99px;background:var(--blue);width:'+tradePct+'%"></div></div>':'')
-      +'<button class="btn btn-red btn-sm" style="margin-top:6px;font-size:10px" onclick="deleteGoal('+g.id+')">Remove</button>'
+      +'<button class="btn btn-red btn-sm" style="margin-top:6px;font-size:10px" onclick="deleteGoal(\"'+g.id+'\")">Remove</button>'
       +'</div>';
   }).join('');
 }
 
-function deleteGoal(id){
-  var goals=JSON.parse(localStorage.getItem('tm-goals-'+user.id)||'[]');
-  goals=goals.filter(function(g){return g.id!==id;});
-  localStorage.setItem('tm-goals-'+user.id,JSON.stringify(goals));
+async function deleteGoal(id){
+  await sb.from('goals').delete().eq('id',id);
+  await loadGoals();
   renderGoals();
 }
 
 sb.auth.onAuthStateChange(function(event,session){
-  if((event==='SIGNED_IN'||event==='INITIAL_SESSION')&&session&&session.user){
+  if(session&&session.user){
     user=session.user;
     if(!document.getElementById('app').classList.contains('visible')){
       initApp();
     }
+  } else if(event==='SIGNED_OUT'){
+    location.reload();
   }
 });
 </script>
