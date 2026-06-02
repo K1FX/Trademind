@@ -1389,14 +1389,20 @@ function deleteGoal(id){
 }
 
 sb.auth.onAuthStateChange(function(event,session){
-  if(event==='SIGNED_IN'&&session){
+  if((event==='SIGNED_IN'||event==='TOKEN_REFRESHED')&&session){
     user=session.user;
-    if(document.getElementById('auth-screen').style.display!=='none'){
+    var authScreen=document.getElementById('auth-screen');
+    if(authScreen&&authScreen.style.display!=='none'&&!document.getElementById('app').classList.contains('visible')){
       initApp();
     }
   }
 });
-sb.auth.getSession().then(function(r){if(r.data&&r.data.session){user=r.data.session.user;initApp();}});;
+sb.auth.getSession().then(function(r){
+  if(r.data&&r.data.session&&r.data.session.user){
+    user=r.data.session.user;
+    initApp();
+  }
+});;
 </script>
 
 <div id="m-upgrade" class="mo">
