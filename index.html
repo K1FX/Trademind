@@ -195,12 +195,17 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
         <button class="auth-tab active" onclick="switchTab('login',this)">Sign In</button>
         <button class="auth-tab" onclick="switchTab('signup',this)">Sign Up</button>
       </div>
-      <!-- Google Sign In -->
-      <button onclick="loginWithGoogle()" style="width:100%;padding:11px;background:#fff;color:#333;border:1px solid #ddd;border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px;transition:opacity .2s" onmouseover="this.style.opacity='.9'" onmouseout="this.style.opacity='1'">
-        <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/><path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.175 0 7.55 0 9s.348 2.825.957 4.039l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z"/></svg>
-        Continue with Google
+      <!-- Magic Link -->
+      <button onclick="showMagicLink()" style="width:100%;padding:11px;background:var(--accent-dim);color:var(--accent);border:1px solid rgba(85,211,150,0.3);border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px;transition:opacity .2s">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8h12M8 2l6 6-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Sign in with Magic Link
       </button>
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><div style="flex:1;height:1px;background:var(--border)"></div><span style="font-size:11px;color:var(--text-muted)">or</span><div style="flex:1;height:1px;background:var(--border)"></div></div>
+      <div id="magic-form" style="display:none;margin-bottom:14px">
+        <div class="fl"><label>Email</label><input class="fi" id="magic-email" type="email" placeholder="trader@example.com"></div>
+        <button class="btn-auth" onclick="sendMagicLink()">Send Magic Link</button>
+        <div style="font-size:11px;color:var(--text-muted);text-align:center;margin-top:8px">We will send you a link to sign in instantly — no password needed!</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><div style="flex:1;height:1px;background:var(--border)"></div><span style="font-size:11px;color:var(--text-muted)">or email & password</span><div style="flex:1;height:1px;background:var(--border)"></div></div>
       <div id="login-form">
         <div class="fl"><label>Email</label><input class="fi" id="l-email" type="email" placeholder="trader@example.com"></div>
         <div class="fl"><label>Password</label><input class="fi" id="l-pwd" type="password" placeholder="••••••••"></div>
@@ -214,11 +219,6 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
         <div style="text-align:center;margin-top:10px"><span style="font-size:12px;color:var(--accent);cursor:pointer" onclick="showForgotPassword()">Back to Sign In</span></div>
       </div>
       <div id="signup-form" style="display:none">
-        <button onclick="loginWithGoogle()" style="width:100%;padding:11px;background:#fff;color:#333;border:1px solid #ddd;border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px">
-          <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/><path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.175 0 7.55 0 9s.348 2.825.957 4.039l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z"/></svg>
-          Sign up with Google
-        </button>
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><div style="flex:1;height:1px;background:var(--border)"></div><span style="font-size:11px;color:var(--text-muted)">or</span><div style="flex:1;height:1px;background:var(--border)"></div></div>
         <div class="fl"><label>Full Name</label><input class="fi" id="s-name" placeholder="John Trader"></div>
         <div class="fl"><label>Email</label><input class="fi" id="s-email" type="email" placeholder="trader@example.com"></div>
         <div class="fl"><label>Password</label><input class="fi" id="s-pwd" type="password" placeholder="Min 6 characters"></div>
@@ -733,15 +733,21 @@ async function signup(){
 }
 async function logout(){await sb.auth.signOut();location.reload();}
 
-async function loginWithGoogle(){
-  var r=await sb.auth.signInWithOAuth({
-    provider:'google',
-    options:{
-      redirectTo:'https://trademind-nine.vercel.app',
-      skipBrowserRedirect:false
-    }
+function showMagicLink(){
+  var f=document.getElementById('magic-form');
+  f.style.display=f.style.display==='none'||!f.style.display?'block':'none';
+}
+
+async function sendMagicLink(){
+  var email=document.getElementById('magic-email').value.trim();
+  if(!email)return showErr('Enter your email');
+  var r=await sb.auth.signInWithOtp({
+    email:email,
+    options:{emailRedirectTo:'https://trademind-nine.vercel.app'}
   });
-  if(r.error)showErr(r.error.message);
+  if(r.error)return showErr(r.error.message);
+  showOk('Magic link sent! Check your email and click the link to sign in.');
+  document.getElementById('magic-form').style.display='none';
 }
 function showErr(m){var el=document.getElementById('auth-err');el.textContent=m;el.style.display='block';document.getElementById('auth-ok').style.display='none';}
 function showOk(m){var el=document.getElementById('auth-ok');el.textContent=m;el.style.display='block';document.getElementById('auth-err').style.display='none';}
