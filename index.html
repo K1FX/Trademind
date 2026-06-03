@@ -1337,7 +1337,11 @@ var METAAPI_ACCOUNT_ID='03f148a4-4e69-4a31-8c25-992fb8471e49';
 var WORKER_URL='https://trademind-chat.shopapple090.workers.dev/';
 
 async function connectMT(){
-  if(userPlan==='free'){showUpgradeModal('MT5 live connection is available on Pro and Elite plans.');return;}
+  // Re-check subscription in case it loaded slowly
+  if(userPlan==='free'){
+    await loadSubscription();
+    if(userPlan==='free'){showUpgradeModal('MT5 live connection is available on Pro and Elite plans.');return;}
+  }
   var login=document.getElementById('mt-login').value.trim();
   var pwd=document.getElementById('mt-pwd').value;
   var srv=document.getElementById('mt-srv').value.trim();
@@ -1566,7 +1570,8 @@ async function loadSubscription(){
     }
     var planEl=document.getElementById('plan-name');
     if(planEl)planEl.textContent=userPlan.charAt(0).toUpperCase()+userPlan.slice(1)+' Plan';
-  }catch(e){userPlan='free';}
+    console.log('Plan loaded:',userPlan);
+  }catch(e){userPlan='free';console.log('Plan error:',e);}
 }
 
 
