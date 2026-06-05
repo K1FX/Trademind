@@ -182,8 +182,15 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
 </head>
 <body>
 
+<div id="tm-loader" style="position:fixed;inset:0;background:#040605;display:flex;align-items:center;justify-content:center;z-index:9999">
+  <div style="text-align:center">
+    <div style="width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,#55D396,#21F1A8);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:#040605;font-family:Space Grotesk,sans-serif;margin:0 auto 14px">TM</div>
+    <div style="font-size:12px;color:#4A6B50;letter-spacing:.1em">LOADING...</div>
+  </div>
+</div>
+
 <!-- AUTH -->
-<div id="auth-screen">
+<div id="auth-screen" style="display:none">
   <div class="auth-box">
     <div class="auth-logo-wrap" style="cursor:pointer" onclick="window.open('https://trademind-landing.vercel.app','_blank')">
       <div class="auth-tm">TM</div>
@@ -231,7 +238,7 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
 </div>
 
 <!-- APP -->
-<div id="app" style="display:flex">
+<div id="app" style="display:none">
   <nav class="sidebar">
     <div class="sidebar-header">
       <div class="s-logo-wrap">
@@ -799,6 +806,7 @@ function showOk(m){var el=document.getElementById('auth-ok');el.textContent=m;el
 function switchTab(t,btn){document.querySelectorAll('.auth-tab').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');document.getElementById('login-form').style.display=t==='login'?'block':'none';document.getElementById('signup-form').style.display=t==='signup'?'block':'none';}
 
 async function initApp(){
+  document.getElementById('tm-loader').style.display='none';
   document.getElementById('auth-screen').style.display='none';
   document.getElementById('app').style.display='flex';
   
@@ -1549,29 +1557,39 @@ function closeM(id){document.getElementById(id).classList.remove('open');}
 document.querySelectorAll('.mo').forEach(function(m){m.addEventListener('click',function(e){if(e.target===m)m.classList.remove('open');});});
 async function loadSubscription(){
   try{
+    // Use the user's auth token for secure access
+    var session = await sb.auth.getSession();
+    var token = session.data.session ? session.data.session.access_token : '';
     var sbHeaders={
       'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjeWJsc2ljZnVvYXBwemx1cnZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxOTgyODAsImV4cCI6MjA5NTc3NDI4MH0.AIW-9Ee2gYRiyKw2x4qY9lE9yspGz_9vO1FGh4kfVfE',
-      'Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjeWJsc2ljZnVvYXBwemx1cnZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxOTgyODAsImV4cCI6MjA5NTc3NDI4MH0.AIW-9Ee2gYRiyKw2x4qY9lE9yspGz_9vO1FGh4kfVfE'
+      'Authorization':'Bearer '+(token||'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjeWJsc2ljZnVvYXBwemx1cnZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxOTgyODAsImV4cCI6MjA5NTc3NDI4MH0.AIW-9Ee2gYRiyKw2x4qY9lE9yspGz_9vO1FGh4kfVfE')
     };
-    // Try with user_id first (most reliable)
-    var r1=await fetch('https://ucyblsicfuoappzlurvs.supabase.co/rest/v1/subscriptions?user_id=eq.'+user.id+'&select=plan,status',{headers:sbHeaders});
+    // Try by user_id
+    var r1=await fetch('https://ucyblsicfuoappzlurvs.supabase.co/rest/v1/subscriptions?user_id=eq.'+user.id+'&select=plan,status&limit=1',{headers:sbHeaders});
     var d1=await r1.json();
     if(d1&&d1.length>0&&d1[0].status==='active'){
       userPlan=d1[0].plan||'free';
     } else {
-      // Fallback: try with email (case insensitive)
-      var r2=await fetch('https://ucyblsicfuoappzlurvs.supabase.co/rest/v1/subscriptions?email=ilike.'+encodeURIComponent(user.email)+'&select=plan,status',{headers:sbHeaders});
+      // Try by email
+      var r2=await fetch('https://ucyblsicfuoappzlurvs.supabase.co/rest/v1/subscriptions?email=ilike.'+encodeURIComponent(user.email)+'&select=plan,status&limit=1',{headers:sbHeaders});
       var d2=await r2.json();
       if(d2&&d2.length>0&&d2[0].status==='active'){
         userPlan=d2[0].plan||'free';
+        // Update user_id for future lookups
+        fetch('https://ucyblsicfuoappzlurvs.supabase.co/rest/v1/subscriptions?email=ilike.'+encodeURIComponent(user.email),{
+          method:'PATCH',
+          headers:{...sbHeaders,'Content-Type':'application/json','Prefer':'return=minimal'},
+          body:JSON.stringify({user_id:user.id})
+        });
       } else {
         userPlan='free';
       }
     }
-    var planEl=document.getElementById('plan-name');
-    if(planEl)planEl.textContent=userPlan.charAt(0).toUpperCase()+userPlan.slice(1)+' Plan';
-    console.log('Plan loaded:',userPlan);
-  }catch(e){userPlan='free';console.log('Plan error:',e);}
+  }catch(e){userPlan='free';}
+  // Always update UI
+  localStorage.setItem('tm-plan-'+user.id, userPlan);
+  var planEl=document.getElementById('plan-name');
+  if(planEl)planEl.textContent=userPlan.charAt(0).toUpperCase()+userPlan.slice(1)+' Plan';
 }
 
 
@@ -1664,12 +1682,27 @@ async function deleteGoal(id){
   renderGoals();
 }
 
-sb.auth.onAuthStateChange(function(event,session){
-  if(session&&session.user){
-    user=session.user;
-    if(document.getElementById('app').style.display==='none'||document.getElementById('app').style.display===''){
+// Bulletproof session detection
+var sessionChecked = false;
+sb.auth.onAuthStateChange(function(event, session){
+  if(!sessionChecked){
+    sessionChecked = true;
+    if(session && session.user){
+      user = session.user;
+      initApp();
+    } else {
+      document.getElementById('tm-loader').style.display = 'none';
+      document.getElementById('auth-screen').style.display = 'flex';
+    }
+  } else if(event === 'SIGNED_IN' && session && session.user){
+    user = session.user;
+    if(document.getElementById('app').style.display === 'none'){
       initApp();
     }
+  } else if(event === 'SIGNED_OUT'){
+    sessionChecked = false;
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('auth-screen').style.display = 'flex';
   }
 });
 </script>
