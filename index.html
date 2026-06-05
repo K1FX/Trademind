@@ -800,6 +800,7 @@ function showOk(m){var el=document.getElementById('auth-ok');el.textContent=m;el
 function switchTab(t,btn){document.querySelectorAll('.auth-tab').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');document.getElementById('login-form').style.display=t==='login'?'block':'none';document.getElementById('signup-form').style.display=t==='signup'?'block':'none';}
 
 async function initApp(){
+  try{
   document.getElementById('auth-screen').style.display='none';
   document.getElementById('app').classList.add('visible');
   
@@ -813,8 +814,8 @@ async function initApp(){
   document.getElementById('p-to').value=today.toISOString().split('T')[0];
   await loadTrades();await loadRules();await loadSubscription();await loadGoals();
   updateDash();renderCal();loadAIBrief();loadEcoCal();updateSessBadge();renderGoals();
-  // Keep worker warm
   setInterval(function(){fetch('https://trademind-chat.shopapple090.workers.dev/').catch(function(){});},30000);
+  }catch(e){document.getElementById('auth-screen').style.display='flex';document.getElementById('app').classList.remove('visible');alert('Init error: '+e.message);}
 }
 
 async function loadTrades(){var r=await sb.from('trades').select('*').eq('user_id',user.id).order('date',{ascending:false});trades=r.data||[];}
