@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>TradeMind — Redirecting...</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<script>
+var sb = supabase.createClient(
+  'https://ucyblsicfuoappzlurvs.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjeWJsc2ljZnVvYXBwemx1cnZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxOTgyODAsImV4cCI6MjA5NTc3NDI4MH0.AIW-9Ee2gYRiyKw2x4qY9lE9yspGz_9vO1FGh4kfVfE'
+);
+
+sb.auth.onAuthStateChange(function(event, session) {
+  if (event === 'PASSWORD_RECOVERY') {
+    window.location.href = '/?reset=true';
+  } else if (event === 'SIGNED_IN' && session) {
+    window.location.href = '/';
+  }
+});
+</script>
+<div style="font-family:Inter,sans-serif;background:#040605;color:#E8F0E9;height:100vh;display:flex;align-items:center;justify-content:center;text-align:center">
+  <div>
+    <div style="width:44px;height:44px;border-radius:11px;background:linear-gradient(135deg,#55D396,#21F1A8);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#040605;margin:0 auto 12px">TM</div>
+    <div style="font-size:13px;color:#4A6B50">Redirecting...</div>
+  </div>
+</div>
+</body>
+</html>
