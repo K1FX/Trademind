@@ -223,6 +223,19 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
         <button class="btn-auth" onclick="resetPassword()">Send Reset Link</button>
         <div style="text-align:center;margin-top:10px"><span style="font-size:12px;color:var(--accent);cursor:pointer" onclick="showForgotPassword()">Back to Sign In</span></div>
       </div>
+      <div id="reset-pwd-form" style="display:none">
+        <div style="font-size:14px;font-weight:600;margin-bottom:6px">Set New Password</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:14px">Enter your new password below.</div>
+        <div class="fl"><label>New Password</label>
+          <div style="position:relative">
+            <input class="fi" id="reset-pwd" type="password" placeholder="Min 6 characters" style="padding-right:40px">
+            <span onclick="togglePwd('reset-pwd',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--text-muted);font-size:12px">Show</span>
+          </div>
+        </div>
+        <div class="fl"><label>Confirm Password</label><input class="fi" id="reset-pwd-confirm" type="password" placeholder="Repeat password"></div>
+        <button class="btn-auth" onclick="setNewPassword()">Update Password</button>
+        <div id="reset-status" style="font-size:12px;margin-top:8px;text-align:center"></div>
+      </div>
       <div id="signup-form" style="display:none">
         <div class="fl"><label>Full Name</label><input class="fi" id="s-name" placeholder="John Trader"></div>
         <div class="fl"><label>Email</label><input class="fi" id="s-email" type="email" placeholder="trader@example.com"></div>
@@ -1621,6 +1634,27 @@ async function resetPassword(){
 }
 
 // CHANGE PASSWORD
+async function setNewPassword(){
+  var pwd=document.getElementById('reset-pwd').value;
+  var confirm=document.getElementById('reset-pwd-confirm').value;
+  var status=document.getElementById('reset-status');
+  if(!pwd||pwd.length<6){status.textContent='Min 6 characters.';status.style.color='var(--red)';return;}
+  if(pwd!==confirm){status.textContent='Passwords do not match.';status.style.color='var(--red)';return;}
+  status.textContent='Updating...';status.style.color='var(--text-muted)';
+  var r=await sb.auth.updateUser({password:pwd});
+  if(r.error){status.textContent=r.error.message;status.style.color='var(--red)';}
+  else{
+    status.textContent='Password updated! Redirecting...';
+    status.style.color='var(--accent)';
+    setTimeout(function(){
+      user=r.data.user;
+      document.getElementById('reset-pwd-form').style.display='none';
+      document.querySelectorAll('.auth-tab').forEach(function(t){t.style.display='';});
+      initApp();
+    },1500);
+  }
+}
+
 async function changePassword(){
   var pwd=document.getElementById('new-pwd').value;
   var confirm=document.getElementById('confirm-pwd').value;
@@ -1686,16 +1720,32 @@ async function deleteGoal(id){
   renderGoals();
 }
 
-sb.auth.getSession().then(function(r){
-  if(r.data&&r.data.session&&r.data.session.user){
-    user=r.data.session.user;
-    initApp();
+sb.auth.onAuthStateChange(function(event,session){
+  if(event==='PASSWORD_RECOVERY'){
+    // Show password reset form
+    document.getElementById('auth-screen').style.display='flex';
+    document.getElementById('login-form').style.display='none';
+    document.getElementById('signup-form').style.display='none';
+    document.getElementById('forgot-form').style.display='none';
+    document.getElementById('reset-pwd-form').style.display='block';
+    document.querySelectorAll('.auth-tab').forEach(function(t){t.style.display='none';});
+    return;
+  }
+  if((event==='SIGNED_IN'||event==='INITIAL_SESSION')&&session&&session.user){
+    user=session.user;
+    if(!document.getElementById('app').classList.contains('visible')){
+      initApp();
+    }
   }
 });
-sb.auth.onAuthStateChange(function(event,session){
-  if(event==='SIGNED_IN'&&session&&session.user&&!document.getElementById('app').classList.contains('visible')){
-    user=session.user;
-    initApp();
+
+sb.auth.getSession().then(function(r){
+  if(r.data&&r.data.session){
+    var session=r.data.session;
+    if(!document.getElementById('app').classList.contains('visible')){
+      user=session.user;
+      initApp();
+    }
   }
 });
 </script>
