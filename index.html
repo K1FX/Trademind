@@ -511,71 +511,50 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
 
       <!-- MT5 -->
       <div id="page-connect" class="page">
-        <div style="font-size:15px;font-weight:600;margin-bottom:6px">MT4 / MT5 Connect</div>
-        <div style="font-size:12px;color:var(--text-muted);margin-bottom:16px">Connect your broker account or import via CSV</div>
-        <!-- MetaApi Connection -->
-        <div class="card" style="margin-bottom:14px">
-          <div class="card-title">Live Connection — MetaApi <span class="bdg bo">Pro & Elite</span></div>
-          <div class="fr">
-            <div class="fg"><label>Login (Account Number)</label><input class="fi2" id="mt-login" placeholder="12345678"></div>
-            <div class="fg"><label>Password</label><input class="fi2" id="mt-pwd" type="password" placeholder="••••••••"></div>
+        <div style="font-size:15px;font-weight:600;margin-bottom:6px">MT4 / MT5 Auto-Import</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:24px">Automatic broker connection — coming soon</div>
+        <div style="text-align:center;padding:48px 24px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)">
+          <div style="width:56px;height:56px;border-radius:14px;background:linear-gradient(135deg,rgba(85,211,150,0.15),rgba(33,241,168,0.08));border:1px solid rgba(85,211,150,0.2);display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="6" cy="12" r="3.5" stroke="#55D396" stroke-width="1.5"/><circle cx="18" cy="12" r="3.5" stroke="#55D396" stroke-width="1.5"/><line x1="9.5" y1="12" x2="14.5" y2="12" stroke="#55D396" stroke-width="1.5"/></svg>
           </div>
-          <div class="fg"><label>Server</label><input class="fi2" id="mt-srv" placeholder="e.g. ICMarkets-Live01"></div>
-          <div class="fg"><label>Platform</label><select class="fi2" id="mt-plat"><option value="mt5">MetaTrader 5</option><option value="mt4">MetaTrader 4</option></select></div>
-          <div style="display:flex;gap:8px">
-            <button class="btn btn-acc" style="flex:1" onclick="connectMT()">Connect Account</button>
-            <button class="btn btn-ghost" onclick="syncMTTrades()">Sync Trades</button>
+          <div style="font-size:16px;font-weight:700;margin-bottom:8px">Coming Soon</div>
+          <div style="font-size:13px;color:var(--text-muted);line-height:1.8;max-width:400px;margin:0 auto 20px">
+            Direct connection to your MT4/MT5 broker account.<br>
+            Your trades will sync automatically — no manual entry needed.
           </div>
-          <div id="mt-status" style="font-size:11px;margin-top:8px;text-align:center"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:24px">
+            <span class="bdg bg">IC Markets</span>
+            <span class="bdg bg">Pepperstone</span>
+            <span class="bdg bg">Exness</span>
+            <span class="bdg bg">XM</span>
+            <span class="bdg bg">FTMO</span>
+            <span class="bdg bg">The5ers</span>
+            <span class="bdg bg">500+ brokers</span>
+          </div>
+          <div style="background:var(--accent-dim);border:1px solid rgba(85,211,150,0.2);border-radius:var(--radius-sm);padding:14px;max-width:360px;margin:0 auto 20px">
+            <div style="font-size:11px;font-weight:700;color:var(--accent);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px">In the meantime</div>
+            <div style="font-size:12px;color:var(--text-muted);line-height:1.7">Import your trades manually via CSV export from MT4/MT5 — takes less than 30 seconds.</div>
+          </div>
+          <input class="fi2" id="notify-email" type="email" placeholder="Enter your email to get notified" style="max-width:280px;margin:0 auto;display:block;margin-bottom:10px;text-align:center">
+          <button class="btn btn-acc" onclick="notifyMT5()">Notify Me When Available</button>
+          <div id="notify-status" style="font-size:11px;margin-top:8px;color:var(--accent)"></div>
         </div>
-        <div class="g2">
-          <div class="card">
-            <div class="card-title">Import from CSV</div>
-            <div style="font-size:12px;color:var(--text-muted);line-height:1.8;margin-bottom:14px">
-              <strong style="color:var(--text)">How to export from MT5:</strong><br>
-              1. Open MetaTrader 5<br>
-              2. Go to <strong style="color:var(--accent)">View → Terminal → History</strong><br>
-              3. Right-click → <strong style="color:var(--accent)">Save as Report</strong><br>
-              4. Choose <strong style="color:var(--accent)">Detailed Report (CSV)</strong><br>
-              5. Upload the file below
-            </div>
-            <div class="fg">
-              <label>Select CSV File</label>
-              <input class="fi2" type="file" id="csv-file" accept=".csv,.htm,.html" onchange="previewCSV(this)">
-            </div>
-            <div id="csv-preview" style="display:none;margin-bottom:12px">
-              <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px" id="csv-count"></div>
-              <div style="max-height:200px;overflow-y:auto;font-size:11px">
-                <table style="width:100%"><thead><tr><th>Date</th><th>Pair</th><th>Type</th><th>Lots</th><th>P&L</th></tr></thead>
-                <tbody id="csv-table"></tbody></table>
-              </div>
-            </div>
-            <button class="btn btn-acc" style="width:100%" id="csv-import-btn" onclick="importCSV()">Import Trades</button>
-            <div id="csv-status" style="font-size:11px;margin-top:8px;text-align:center"></div>
+        <!-- CSV Import -->
+        <div class="card" style="margin-top:14px">
+          <div class="card-title">Import via CSV — Available Now</div>
+          <div style="font-size:12px;color:var(--text-muted);line-height:1.8;margin-bottom:14px">
+            <strong style="color:var(--text)">MT5:</strong> View → Terminal → History → Right-click → Save as Report (CSV)<br>
+            <strong style="color:var(--text)">MT4:</strong> Account History → Right-click → Save as Report
           </div>
-          <div>
-            <div class="card">
-              <div class="card-title">MT4 Export Guide</div>
-              <div style="font-size:12px;color:var(--text-muted);line-height:1.8">
-                <strong style="color:var(--text)">MetaTrader 4:</strong><br>
-                1. Open MT4<br>
-                2. <strong style="color:var(--accent)">Account History tab</strong><br>
-                3. Right-click → <strong style="color:var(--accent)">Save as Report</strong><br>
-                4. Save as HTML or CSV<br><br>
-                <strong style="color:var(--text)">Supported formats:</strong><br>
-                · MT4/MT5 CSV export<br>
-                · MT4/MT5 HTML report<br>
-                · Standard CSV with columns: date, symbol, type, lots, open price, close price, profit
-              </div>
-            </div>
-            <div class="card" style="margin-top:14px">
-              <div class="card-title">Supported Brokers</div>
-              <div style="font-size:11px;color:var(--text-muted);line-height:2.2">IC Markets · Pepperstone · Exness · XM · FTMO · The5ers · Funded Next · Hantec · and 500+ more</div>
-            </div>
+          <div class="fg"><input class="fi2" type="file" id="csv-file" accept=".csv,.htm,.html" onchange="previewCSV(this)"></div>
+          <div id="csv-preview" style="display:none;margin-bottom:12px">
+            <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px" id="csv-count"></div>
+            <div style="max-height:160px;overflow-y:auto"><table style="width:100%"><thead><tr><th>Date</th><th>Pair</th><th>Type</th><th>Lots</th><th>P&amp;L</th></tr></thead><tbody id="csv-table"></tbody></table></div>
           </div>
+          <button class="btn btn-acc" id="csv-import-btn" style="display:none" onclick="importCSV()">Import Trades</button>
+          <div id="csv-status" style="font-size:11px;margin-top:8px;text-align:center"></div>
         </div>
       </div>
-
       <!-- PRICING -->
       <div id="page-pricing" class="page">
         <div style="font-size:15px;font-weight:600;margin-bottom:6px">Plans &amp; Pricing</div>
@@ -1336,12 +1315,17 @@ var METAAPI_TOKEN='eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI3MTFmMDgxMGI0
 var METAAPI_ACCOUNT_ID='03f148a4-4e69-4a31-8c25-992fb8471e49';
 var WORKER_URL='https://trademind-chat.shopapple090.workers.dev/';
 
+async 
+function notifyMT5(){
+  var email=document.getElementById('notify-email').value.trim();
+  var status=document.getElementById('notify-status');
+  if(!email){status.textContent='Enter your email first.';return;}
+  status.textContent='Thanks! We will notify you when MT5 auto-import is ready.';
+  document.getElementById('notify-email').value='';
+}
+
 async function connectMT(){
-  // Re-check subscription in case it loaded slowly
-  if(userPlan==='free'){
-    await loadSubscription();
-    if(userPlan==='free'){showUpgradeModal('MT5 live connection is available on Pro and Elite plans.');return;}
-  }
+  if(userPlan==='free'){showUpgradeModal('MT5 live connection is available on Pro and Elite plans.');return;}
   var login=document.getElementById('mt-login').value.trim();
   var pwd=document.getElementById('mt-pwd').value;
   var srv=document.getElementById('mt-srv').value.trim();
