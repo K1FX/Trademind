@@ -795,7 +795,7 @@ async function sendMagicLink(){
   if(!email)return showErr('Enter your email');
   var r=await sb.auth.signInWithOtp({
     email:email,
-    options:{emailRedirectTo:'https://trademind-nine.vercel.app'}
+    options:{emailRedirectTo:'https://trademind-nine.vercel.app/auth-callback.html'}
   });
   if(r.error)return showErr(r.error.message);
   showOk('Magic link sent! Check your email and click the link to sign in.');
@@ -1720,13 +1720,20 @@ async function deleteGoal(id){
   renderGoals();
 }
 
+// Check if redirected from password reset
+if(window.location.search.includes('reset=true')){
+  document.getElementById('auth-screen').style.display='flex';
+  document.getElementById('login-form').style.display='none';
+  document.getElementById('signup-form').style.display='none';
+  document.getElementById('forgot-form').style.display='none';
+  document.getElementById('reset-pwd-form').style.display='block';
+  document.querySelectorAll('.auth-tab').forEach(function(t){t.style.display='none';});
+}
+
 sb.auth.onAuthStateChange(function(event,session){
   if(event==='PASSWORD_RECOVERY'){
-    // Show password reset form
     document.getElementById('auth-screen').style.display='flex';
     document.getElementById('login-form').style.display='none';
-    document.getElementById('signup-form').style.display='none';
-    document.getElementById('forgot-form').style.display='none';
     document.getElementById('reset-pwd-form').style.display='block';
     document.querySelectorAll('.auth-tab').forEach(function(t){t.style.display='none';});
     return;
@@ -1740,10 +1747,9 @@ sb.auth.onAuthStateChange(function(event,session){
 });
 
 sb.auth.getSession().then(function(r){
-  if(r.data&&r.data.session){
-    var session=r.data.session;
+  if(r.data&&r.data.session&&r.data.session.user){
+    user=r.data.session.user;
     if(!document.getElementById('app').classList.contains('visible')){
-      user=session.user;
       initApp();
     }
   }
