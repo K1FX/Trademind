@@ -209,7 +209,11 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><div style="flex:1;height:1px;background:var(--border)"></div><span style="font-size:11px;color:var(--text-muted)">or email & password</span><div style="flex:1;height:1px;background:var(--border)"></div></div>
       <div id="login-form">
         <div class="fl"><label>Email</label><input class="fi" id="l-email" type="email" placeholder="trader@example.com"></div>
-        <div class="fl"><label>Password</label><input class="fi" id="l-pwd" type="password" placeholder="••••••••"></div>
+        <div class="fl"><label>Password</label>
+<div style="position:relative">
+<input class="fi" id="l-pwd" type="password" placeholder="••••••••" style="padding-right:40px">
+<span onclick="togglePwd('l-pwd',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--text-muted);font-size:12px">Show</span>
+</div></div>
         <button class="btn-auth" onclick="login()">Sign In</button>
         <div style="text-align:center;margin-top:10px"><span style="font-size:12px;color:var(--accent);cursor:pointer" onclick="showForgotPassword()">Forgot password?</span></div>
       </div>
@@ -222,7 +226,11 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
       <div id="signup-form" style="display:none">
         <div class="fl"><label>Full Name</label><input class="fi" id="s-name" placeholder="John Trader"></div>
         <div class="fl"><label>Email</label><input class="fi" id="s-email" type="email" placeholder="trader@example.com"></div>
-        <div class="fl"><label>Password</label><input class="fi" id="s-pwd" type="password" placeholder="Min 6 characters"></div>
+        <div class="fl"><label>Password</label>
+<div style="position:relative">
+<input class="fi" id="s-pwd" type="password" placeholder="Min 6 characters" style="padding-right:40px">
+<span onclick="togglePwd('s-pwd',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--text-muted);font-size:12px">Show</span>
+</div></div>
         <button class="btn-auth" onclick="signup()">Create Free Account</button>
       </div>
       <div class="auth-msg auth-err" id="auth-err"></div>
@@ -757,6 +765,12 @@ async function signup(){
   showOk('Account created! Sign in directly.');
 }
 async function logout(){await sb.auth.signOut();location.reload();}
+
+function togglePwd(id, btn){
+  var inp=document.getElementById(id);
+  if(inp.type==='password'){inp.type='text';btn.textContent='Hide';}
+  else{inp.type='password';btn.textContent='Show';}
+}
 
 function showMagicLink(){
   var f=document.getElementById('magic-form');
