@@ -705,7 +705,14 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
 var SB_URL='https://ucyblsicfuoappzlurvs.supabase.co';
 var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjeWJsc2ljZnVvYXBwemx1cnZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxOTgyODAsImV4cCI6MjA5NTc3NDI4MH0.AIW-9Ee2gYRiyKw2x4qY9lE9yspGz_9vO1FGh4kfVfE';
 var SUPPORT_EMAIL='support@trademind.ai';
-var sb=supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,storageKey:'trademind-auth'}});
+var sb=supabase.createClient(SB_URL,SB_KEY,{
+  auth:{
+    persistSession:true,
+    storageKey:'trademind-auth',
+    flowType:'pkce',
+    detectSessionInUrl:true
+  }
+});
 var user=null,trades=[],rules=[],imgBase64=null,currentTrade=null;
 var pnlC=null,pairC=null,dayC=null,sessC=null;
 var calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
@@ -795,7 +802,7 @@ async function sendMagicLink(){
   if(!email)return showErr('Enter your email');
   var r=await sb.auth.signInWithOtp({
     email:email,
-    options:{emailRedirectTo:'https://trademind-nine.vercel.app/auth-callback.html'}
+    options:{emailRedirectTo:'https://trademind-nine.vercel.app'}
   });
   if(r.error)return showErr(r.error.message);
   showOk('Magic link sent! Check your email and click the link to sign in.');
@@ -1720,37 +1727,29 @@ async function deleteGoal(id){
   renderGoals();
 }
 
-// Check if redirected from password reset
-if(window.location.search.includes('reset=true')){
-  document.getElementById('auth-screen').style.display='flex';
-  document.getElementById('login-form').style.display='none';
-  document.getElementById('signup-form').style.display='none';
-  document.getElementById('forgot-form').style.display='none';
-  document.getElementById('reset-pwd-form').style.display='block';
-  document.querySelectorAll('.auth-tab').forEach(function(t){t.style.display='none';});
-}
-
 sb.auth.onAuthStateChange(function(event,session){
   if(event==='PASSWORD_RECOVERY'){
     document.getElementById('auth-screen').style.display='flex';
     document.getElementById('login-form').style.display='none';
+    document.getElementById('signup-form').style.display='none';
+    document.getElementById('forgot-form').style.display='none';
     document.getElementById('reset-pwd-form').style.display='block';
     document.querySelectorAll('.auth-tab').forEach(function(t){t.style.display='none';});
     return;
   }
-  if((event==='SIGNED_IN'||event==='INITIAL_SESSION')&&session&&session.user){
+  if(event==='SIGNED_IN'&&session&&session.user){
     user=session.user;
     if(!document.getElementById('app').classList.contains('visible')){
       initApp();
     }
+    return;
   }
-});
-
-sb.auth.getSession().then(function(r){
-  if(r.data&&r.data.session&&r.data.session.user){
-    user=r.data.session.user;
-    if(!document.getElementById('app').classList.contains('visible')){
-      initApp();
+  if(event==='INITIAL_SESSION'){
+    if(session&&session.user){
+      user=session.user;
+      if(!document.getElementById('app').classList.contains('visible')){
+        initApp();
+      }
     }
   }
 });
