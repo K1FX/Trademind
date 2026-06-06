@@ -196,17 +196,7 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
         <button class="auth-tab active" onclick="switchTab('login',this)">Sign In</button>
         <button class="auth-tab" onclick="switchTab('signup',this)">Sign Up</button>
       </div>
-      <!-- Magic Link -->
-      <button onclick="showMagicLink()" style="width:100%;padding:11px;background:var(--accent-dim);color:var(--accent);border:1px solid rgba(85,211,150,0.3);border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px;transition:opacity .2s">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8h12M8 2l6 6-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        Sign in with Magic Link
-      </button>
-      <div id="magic-form" style="display:none;margin-bottom:14px">
-        <div class="fl"><label>Email</label><input class="fi" id="magic-email" type="email" placeholder="trader@example.com"></div>
-        <button class="btn-auth" onclick="sendMagicLink()">Send Magic Link</button>
-        <div style="font-size:11px;color:var(--text-muted);text-align:center;margin-top:8px">We will send you a link to sign in instantly — no password needed!</div>
-      </div>
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><div style="flex:1;height:1px;background:var(--border)"></div><span style="font-size:11px;color:var(--text-muted)">or email & password</span><div style="flex:1;height:1px;background:var(--border)"></div></div>
+
       <div id="login-form">
         <div class="fl"><label>Email</label><input class="fi" id="l-email" type="email" placeholder="trader@example.com"></div>
         <div class="fl"><label>Password</label>
@@ -215,23 +205,10 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
 <span onclick="togglePwd('l-pwd',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--text-muted);font-size:12px">Show</span>
 </div></div>
         <button class="btn-auth" onclick="login()">Sign In</button>
-        <div style="text-align:center;margin-top:10px"><span style="font-size:12px;color:var(--accent);cursor:pointer" onclick="showForgotPassword()">Forgot password?</span></div>
+        <div style="text-align:center;margin-top:10px"><a href="mailto:support@trademind.ai?subject=Password Reset Request" style="font-size:12px;color:var(--accent);text-decoration:none">Forgot your password? Click here to reset</a></div>
       </div>
-      <div id="forgot-form" style="display:none">
-        <div style="font-size:13px;color:var(--text-muted);margin-bottom:14px">Enter your email to receive a reset link.</div>
-        <div class="fl"><label>Email</label><input class="fi" id="forgot-email" type="email" placeholder="trader@example.com"></div>
-        <button class="btn-auth" onclick="resetPassword()">Send Reset Link</button>
-        <div style="text-align:center;margin-top:10px"><span style="font-size:12px;color:var(--accent);cursor:pointer" onclick="showForgotPassword()">Back to Sign In</span></div>
-      </div>
-      <div id="reset-pwd-form" style="display:none">
-        <div style="font-size:14px;font-weight:600;margin-bottom:6px">Set New Password</div>
-        <div style="font-size:12px;color:var(--text-muted);margin-bottom:14px">Enter your new password below.</div>
-        <div class="fl"><label>New Password</label>
-          <div style="position:relative">
-            <input class="fi" id="reset-pwd" type="password" placeholder="Min 6 characters" style="padding-right:40px">
-            <span onclick="togglePwd('reset-pwd',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--text-muted);font-size:12px">Show</span>
-          </div>
-        </div>
+      
+      
         <div class="fl"><label>Confirm Password</label><input class="fi" id="reset-pwd-confirm" type="password" placeholder="Repeat password"></div>
         <button class="btn-auth" onclick="setNewPassword()">Update Password</button>
         <div id="reset-status" style="font-size:12px;margin-top:8px;text-align:center"></div>
