@@ -210,7 +210,15 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
 <span onclick="togglePwd('l-pwd',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--text-muted);font-size:12px">Show</span>
 </div></div>
         <button class="btn-auth" onclick="login()">Sign In</button>
-<div style="text-align:center;margin-top:10px"><span style="font-size:12px;color:var(--text-muted)">Forgot password? Go to <strong style="color:var(--accent)">Support</strong> in the app</span></div>
+<div style="text-align:center;margin-top:10px">
+  <span style="font-size:12px;color:var(--accent);cursor:pointer" onclick="toggleForgot()">Forgot password?</span>
+</div>
+<div id="forgot-box" style="display:none;margin-top:12px;padding:14px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm)">
+  <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px">Enter your email — we will send a reset link.</div>
+  <input class="fi" id="forgot-email" type="email" placeholder="trader@example.com" style="margin-bottom:8px">
+  <button class="btn-auth" onclick="sendReset()">Send Reset Link</button>
+  <div id="forgot-status" style="font-size:11px;margin-top:8px;text-align:center"></div>
+</div>
       </div>
       </div>
       <div id="signup-form" style="display:none">
