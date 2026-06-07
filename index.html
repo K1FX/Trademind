@@ -759,6 +759,13 @@ async function signup(){
 }
 async function logout(){await sb.auth.signOut();location.reload();}
 
+function switchTab(t,btn){
+  document.querySelectorAll('.auth-tab').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  document.getElementById('login-form').style.display=t==='login'?'block':'none';
+  document.getElementById('signup-form').style.display=t==='signup'?'block':'none';
+}
+
 function togglePwd(id, btn){
   var inp=document.getElementById(id);
   if(inp.type==='password'){inp.type='text';btn.textContent='Hide';}
