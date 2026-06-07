@@ -5,14 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TradeMind — Reset Password</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-// Initialize Supabase immediately in head
-var sb = supabase.createClient(
-  'https://ucyblsicfuoappzlurvs.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjeWJsc2ljZnVvYXBwemx1cnZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxOTgyODAsImV4cCI6MjA5NTc3NDI4MH0.AIW-9Ee2gYRiyKw2x4qY9lE9yspGz_9vO1FGh4kfVfE',
-  { auth: { flowType: 'implicit', detectSessionInUrl: true, persistSession: false } }
-);
-</script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -30,10 +22,10 @@ label{display:block;font-size:10px;font-weight:600;color:#4A6B50;text-transform:
 .fi:focus{border-color:#55D396}
 .btn{width:100%;padding:12px;background:#55D396;color:#040605;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer}
 .btn:hover{opacity:.88}
-.msg{font-size:12px;margin-top:12px;text-align:center;padding:10px;border-radius:8px}
-.err{background:rgba(255,68,102,0.1);color:#FF4466;border:1px solid rgba(255,68,102,0.2);display:none}
-.ok{background:rgba(85,211,150,0.1);color:#55D396;border:1px solid rgba(85,211,150,0.2);display:none}
-.loading{text-align:center;padding:30px;color:#4A6B50}
+.msg{font-size:12px;margin-top:12px;text-align:center;padding:10px;border-radius:8px;display:none}
+.err{background:rgba(255,68,102,0.1);color:#FF4466;border:1px solid rgba(255,68,102,0.2)}
+.ok{background:rgba(85,211,150,0.1);color:#55D396;border:1px solid rgba(85,211,150,0.2)}
+.loading{text-align:center;padding:30px;color:#4A6B50;font-size:13px}
 .back{display:block;text-align:center;margin-top:16px;font-size:12px;color:#4A6B50;text-decoration:none}
 .back:hover{color:#55D396}
 </style>
@@ -46,21 +38,17 @@ label{display:block;font-size:10px;font-weight:600;color:#4A6B50;text-transform:
   </div>
   <div class="card">
     <div id="loading" class="loading">Verifying reset link...</div>
-
     <div id="form-section" style="display:none">
       <div class="title">Set New Password</div>
       <div class="sub">Enter your new password below.</div>
-      <div>
-        <label>New Password</label>
-        <input type="password" class="fi" id="pwd" placeholder="Min 6 characters">
-        <label>Confirm Password</label>
-        <input type="password" class="fi" id="pwd2" placeholder="Repeat your password">
-        <button class="btn" onclick="updatePwd()">Update Password</button>
-        <div class="msg err" id="err-msg"></div>
-        <div class="msg ok" id="ok-msg"></div>
-      </div>
+      <label>New Password</label>
+      <input type="password" class="fi" id="pwd" placeholder="Min 6 characters">
+      <label>Confirm Password</label>
+      <input type="password" class="fi" id="pwd2" placeholder="Repeat your password">
+      <button class="btn" onclick="updatePwd()">Update Password</button>
+      <div class="msg err" id="err-msg"></div>
+      <div class="msg ok" id="ok-msg"></div>
     </div>
-
     <div id="invalid-section" style="display:none">
       <div class="title">Link Expired</div>
       <div style="font-size:13px;color:#4A6B50;margin-top:8px;line-height:1.7">This reset link has expired or is invalid.<br>Please request a new one from the login page.</div>
@@ -70,43 +58,68 @@ label{display:block;font-size:10px;font-weight:600;color:#4A6B50;text-transform:
 </div>
 
 <script>
-function show(id) {
-  document.getElementById('loading').style.display = 'none';
-  document.getElementById('form-section').style.display = 'none';
-  document.getElementById('invalid-section').style.display = 'none';
-  document.getElementById(id).style.display = 'block';
-}
+var SB_URL = 'https://ucyblsicfuoappzlurvs.supabase.co';
+var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjeWJsc2ljZnVvYXBwemx1cnZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxOTgyODAsImV4cCI6MjA5NTc3NDI4MH0.AIW-9Ee2gYRiyKw2x4qY9lE9yspGz_9vO1FGh4kfVfE';
 
-// Listen for auth state changes
-sb.auth.onAuthStateChange(function(event, session) {
-  console.log('Auth event:', event, session);
-  if (event === 'PASSWORD_RECOVERY') {
-    show('form-section');
-  } else if (event === 'SIGNED_IN' && session) {
-    show('form-section');
-  } else if (event === 'INITIAL_SESSION' && !session) {
-    show('invalid-section');
-  }
+var sb = supabase.createClient(SB_URL, SB_KEY, {
+  auth: { persistSession: false, detectSessionInUrl: false }
 });
 
-// Fallback: check hash manually after 2 seconds
-setTimeout(function() {
-  var hash = window.location.hash;
-  var loading = document.getElementById('loading');
-  if (loading.style.display !== 'none') {
-    if (hash.includes('access_token') || hash.includes('error')) {
-      sb.auth.getSession().then(function(r) {
-        if (r.data && r.data.session) {
-          show('form-section');
-        } else {
-          show('invalid-section');
-        }
-      });
-    } else {
-      show('invalid-section');
-    }
+function show(id) {
+  ['loading','form-section','invalid-section'].forEach(function(i){
+    document.getElementById(i).style.display = i === id ? 'block' : 'none';
+  });
+}
+
+// Parse URL hash and query params
+function getParams() {
+  var hash = window.location.hash.substring(1);
+  var query = window.location.search.substring(1);
+  var params = {};
+  (hash + '&' + query).split('&').forEach(function(p) {
+    var kv = p.split('=');
+    if(kv[0]) params[decodeURIComponent(kv[0])] = decodeURIComponent(kv[1] || '');
+  });
+  return params;
+}
+
+async function init() {
+  var params = getParams();
+  console.log('URL params:', params);
+
+  var token = params['access_token'];
+  var type = params['type'];
+  var tokenHash = params['token_hash'] || params['token'];
+
+  // Case 1: Full JWT access token (implicit flow)
+  if (token && token.length > 100) {
+    var refreshToken = params['refresh_token'] || '';
+    var r = await sb.auth.setSession({ access_token: token, refresh_token: refreshToken });
+    if (!r.error) { show('form-section'); return; }
   }
-}, 2000);
+
+  // Case 2: Short OTP token - use verifyOtp
+  if ((tokenHash || token) && type) {
+    var otp = tokenHash || token;
+    var r = await sb.auth.verifyOtp({ token_hash: otp, type: type });
+    if (!r.error && r.data && r.data.session) {
+      show('form-section');
+      return;
+    }
+    console.log('verifyOtp error:', r.error);
+  }
+
+  // Case 3: Check existing session
+  var session = await sb.auth.getSession();
+  if (session.data && session.data.session) {
+    show('form-section');
+    return;
+  }
+
+  show('invalid-section');
+}
+
+init();
 
 async function updatePwd() {
   var pwd = document.getElementById('pwd').value;
