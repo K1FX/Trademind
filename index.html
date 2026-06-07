@@ -1726,22 +1726,20 @@ async function deleteGoal(id){
 }
 
 sb.auth.onAuthStateChange(function(event,session){
-  if(event==='PASSWORD_RECOVERY'){
-    return;
-  }
-  if(event==='SIGNED_IN'&&session&&session.user){
+  if(session&&session.user){
     user=session.user;
     if(!document.getElementById('app').classList.contains('visible')){
       initApp();
     }
-    return;
   }
-  if(event==='INITIAL_SESSION'){
-    if(session&&session.user){
-      user=session.user;
-      if(!document.getElementById('app').classList.contains('visible')){
-        initApp();
-      }
+});
+
+// Explicit session check on page load (handles Google OAuth redirect)
+sb.auth.getSession().then(function(r){
+  if(r.data&&r.data.session&&r.data.session.user){
+    user=r.data.session.user;
+    if(!document.getElementById('app').classList.contains('visible')){
+      initApp();
     }
   }
 });
