@@ -205,19 +205,13 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
 <span onclick="togglePwd('l-pwd',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--text-muted);font-size:12px">Show</span>
 </div></div>
         <button class="btn-auth" onclick="login()">Sign In</button>
-        <div style="text-align:center;margin-top:10px"><span style="font-size:12px;color:var(--accent);cursor:pointer" onclick="showForgotPwd()">Forgot password?</span></div>
+        
       </div>
       
       
         <div class="fl"><label>Confirm Password</label><input class="fi" id="reset-pwd-confirm" type="password" placeholder="Repeat password"></div>
         <button class="btn-auth" onclick="setNewPassword()">Update Password</button>
         <div id="reset-status" style="font-size:12px;margin-top:8px;text-align:center"></div>
-      </div>
-      <div id="forgot-pwd-box" style="display:none;margin-top:12px;padding:14px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm)">
-        <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px">Enter your email — we will send you a reset link.</div>
-        <div class="fl"><input class="fi" id="forgot-email" type="email" placeholder="trader@example.com"></div>
-        <button class="btn-auth" onclick="sendReset()">Send Reset Link</button>
-        <div id="forgot-status" style="font-size:11px;margin-top:8px;text-align:center"></div>
       </div>
       <div id="signup-form" style="display:none">
         <div class="fl"><label>Full Name</label><input class="fi" id="s-name" placeholder="John Trader"></div>
@@ -692,8 +686,9 @@ var sb=supabase.createClient(SB_URL,SB_KEY,{
   auth:{
     persistSession:true,
     storageKey:'trademind-auth',
-    flowType:'pkce',
-    detectSessionInUrl:true
+    flowType:'implicit',
+    detectSessionInUrl:true,
+    autoRefreshToken:true
   }
 });
 var user=null,trades=[],rules=[],imgBase64=null,currentTrade=null;
@@ -769,46 +764,11 @@ async function signup(){
 }
 async function logout(){await sb.auth.signOut();location.reload();}
 
-function showForgotPwd(){
-  var f=document.getElementById('forgot-pwd-box');
-  f.style.display=f.style.display==='none'?'block':'none';
-}
-
 function togglePwd(id, btn){
   var inp=document.getElementById(id);
   if(inp.type==='password'){inp.type='text';btn.textContent='Hide';}
   else{inp.type='password';btn.textContent='Show';}
 }
-
-function showMagicLink(){
-  var f=document.getElementById('magic-form');
-  f.style.display=f.style.display==='none'||!f.style.display?'block':'none';
-}
-
-async function sendReset(){
-  var email=document.getElementById('forgot-email').value.trim();
-  var status=document.getElementById('forgot-status');
-  if(!email){status.textContent='Enter your email.';status.style.color='var(--red)';return;}
-  status.textContent='Sending...';status.style.color='var(--text-muted)';
-  var r=await sb.auth.resetPasswordForEmail(email,{redirectTo:'https://trademind-nine.vercel.app'});
-  if(r.error){status.textContent=r.error.message;status.style.color='var(--red)';}
-  else{status.textContent='Reset link sent! Check your email.';status.style.color='var(--accent)';}
-}
-
-async function sendMagicLink(){
-  var email=document.getElementById('magic-email').value.trim();
-  if(!email)return showErr('Enter your email');
-  var r=await sb.auth.signInWithOtp({
-    email:email,
-    options:{emailRedirectTo:'https://trademind-nine.vercel.app'}
-  });
-  if(r.error)return showErr(r.error.message);
-  showOk('Magic link sent! Check your email and click the link to sign in.');
-  document.getElementById('magic-form').style.display='none';
-}
-function showErr(m){var el=document.getElementById('auth-err');el.textContent=m;el.style.display='block';document.getElementById('auth-ok').style.display='none';}
-function showOk(m){var el=document.getElementById('auth-ok');el.textContent=m;el.style.display='block';document.getElementById('auth-err').style.display='none';}
-function switchTab(t,btn){document.querySelectorAll('.auth-tab').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');document.getElementById('login-form').style.display=t==='login'?'block':'none';document.getElementById('signup-form').style.display=t==='signup'?'block':'none';}
 
 async function initApp(){
   document.getElementById('auth-screen').style.display='none';
