@@ -767,6 +767,24 @@ async function signup(){
 }
 async function logout(){await sb.auth.signOut();location.reload();}
 
+function showErr(m){
+  var el=document.getElementById('auth-err');
+  if(el){el.textContent=m;el.style.display='block';}
+  var ok=document.getElementById('auth-ok');
+  if(ok)ok.style.display='none';
+}
+function showOk(m){
+  var el=document.getElementById('auth-ok');
+  if(el){el.textContent=m;el.style.display='block';}
+  var err=document.getElementById('auth-err');
+  if(err)err.style.display='none';
+}
+function switchTab(t,btn){
+  document.querySelectorAll('.auth-tab').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  document.getElementById('login-form').style.display=t==='login'?'block':'none';
+  document.getElementById('signup-form').style.display=t==='signup'?'block':'none';
+}
 function toggleForgot(){
   var box=document.getElementById('forgot-box');
   box.style.display=box.style.display==='none'?'block':'none';
