@@ -242,6 +242,31 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
   </div>
 </div>
 
+<!-- PASSWORD RESET OVERLAY -->
+<div id="reset-overlay" style="display:none;position:fixed;inset:0;background:#040605;z-index:99999;display:none;align-items:center;justify-content:center;background-image:radial-gradient(ellipse at 50% 0%,rgba(85,211,150,0.06) 0%,transparent 60%)">
+  <div style="width:min(400px,94vw);text-align:center">
+    <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:24px">
+      <div style="width:44px;height:44px;border-radius:11px;background:linear-gradient(135deg,#55D396,#21F1A8);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#040605">TM</div>
+      <div style="font-size:22px;font-weight:700;color:#E8F0E9">Trade<span style="background:linear-gradient(135deg,#55D396,#21F1A8);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Mind</span></div>
+    </div>
+    <div style="background:#0A120C;border:1px solid #0F2414;border-radius:16px;padding:28px;text-align:left">
+      <div style="font-size:16px;font-weight:600;margin-bottom:6px">Set New Password</div>
+      <div style="font-size:12px;color:#4A6B50;margin-bottom:20px">Enter your new password below.</div>
+      <div class="fl"><label>New Password</label>
+        <div style="position:relative">
+          <input class="fi" id="reset-new-pwd" type="password" placeholder="Min 6 characters" style="padding-right:40px">
+          <span onclick="togglePwd('reset-new-pwd',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:#4A6B50;font-size:12px">Show</span>
+        </div>
+      </div>
+      <div class="fl"><label>Confirm Password</label>
+        <input class="fi" id="reset-confirm-pwd" type="password" placeholder="Repeat password">
+      </div>
+      <button class="btn-auth" onclick="doPasswordReset()">Update Password</button>
+      <div id="reset-overlay-status" style="font-size:12px;margin-top:10px;text-align:center"></div>
+    </div>
+  </div>
+</div>
+
 <!-- APP -->
 <div id="app">
   <nav class="sidebar">
@@ -776,6 +801,24 @@ async function signup(){
   showOk('Account created! Sign in directly.');
 }
 async function logout(){await sb.auth.signOut();location.reload();}
+
+async function doPasswordReset(){
+  var pwd=document.getElementById('reset-new-pwd').value;
+  var pwd2=document.getElementById('reset-confirm-pwd').value;
+  var status=document.getElementById('reset-overlay-status');
+  if(!pwd||pwd.length<6){status.textContent='Min 6 characters.';status.style.color='#FF4466';return;}
+  if(pwd!==pwd2){status.textContent='Passwords do not match.';status.style.color='#FF4466';return;}
+  status.textContent='Updating...';status.style.color='#4A6B50';
+  var r=await sb.auth.updateUser({password:pwd});
+  if(r.error){status.textContent=r.error.message;status.style.color='#FF4466';}
+  else{
+    status.textContent='Password updated! Signing in...';status.style.color='#55D396';
+    setTimeout(function(){
+      document.getElementById('reset-overlay').style.display='none';
+      location.reload();
+    },1500);
+  }
+}
 
 async function loginGoogle(){
   var r=await sb.auth.signInWithOAuth({
@@ -1726,6 +1769,11 @@ async function deleteGoal(id){
 }
 
 sb.auth.onAuthStateChange(function(event,session){
+  if(event==='PASSWORD_RECOVERY'){
+    var overlay=document.getElementById('reset-overlay');
+    overlay.style.display='flex';
+    return;
+  }
   if(session&&session.user){
     user=session.user;
     if(!document.getElementById('app').classList.contains('visible')){
