@@ -1735,6 +1735,7 @@ sb.auth.onAuthStateChange(function(event,session){
 });
 
 // Explicit session check on page load (handles Google OAuth redirect)
+// Check session immediately
 sb.auth.getSession().then(function(r){
   if(r.data&&r.data.session&&r.data.session.user){
     user=r.data.session.user;
@@ -1743,6 +1744,18 @@ sb.auth.getSession().then(function(r){
     }
   }
 });
+
+// Also check after short delay (catches Google OAuth redirect)
+setTimeout(function(){
+  sb.auth.getSession().then(function(r){
+    if(r.data&&r.data.session&&r.data.session.user){
+      user=r.data.session.user;
+      if(!document.getElementById('app').classList.contains('visible')){
+        initApp();
+      }
+    }
+  });
+}, 1500);
 </script>
 
 <div id="m-upgrade" class="mo">
