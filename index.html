@@ -1768,76 +1768,63 @@ async function deleteGoal(id){
   renderGoals();
 }
 
-sb.auth.onAuthStateChange(function(event,session){
-  if(event==='PASSWORD_RECOVERY'){
-    document.getElementById('reset-overlay').style.display='flex';
-    return;
-  }
-  if((event==='SIGNED_IN'||event==='INITIAL_SESSION')&&session&&session.user){
-    document.getElementById('reset-overlay').style.display='none';
-    user=session.user;
-    if(!document.getElementById('app').classList.contains('visible')){
-      initApp();
-    }
-  }
-});
-
-// Handle ALL Supabase redirects
+// SESSION HANDLING
 (async function(){
-  var url=new URL(window.location.href);
-  var hash=window.location.hash;
-  
-  // Method 1: PKCE code in query params
-  var code=url.searchParams.get('code');
-  if(code){
-    var r=await sb.auth.exchangeCodeForSession(code);
-    if(!r.error){
-      window.history.replaceState(null,'',window.location.pathname);
-      return;
-    }
-  }
-  
-  // Method 2: Hash with access_token (implicit flow)
-  if(hash&&hash.includes('access_token')){
-    var params={};
-    hash.substring(1).split('&').forEach(function(p){
-      var kv=p.split('=');
-      params[decodeURIComponent(kv[0])]=decodeURIComponent(kv[1]||'');
-    });
-    if(params.access_token&&params.access_token.length>50){
-      var r=await sb.auth.setSession({
-        access_token:params.access_token,
-        refresh_token:params.refresh_token||''
-      });
-      window.history.replaceState(null,'',window.location.pathname);
-      if(!r.error&&r.data&&r.data.session){
-        if(params.type==='recovery'){
-          document.getElementById('reset-overlay').style.display='flex';
-        } else {
-          user=r.data.session.user;
-          initApp();
+  var hash = window.location.hash.substring(1);
+  var params = {};
+  if(hash) hash.split('&').forEach(function(p){
+    var kv = p.split('=');
+    params[decodeURIComponent(kv[0])] = decodeURIComponent(kv[1]||'');
+  });
+
+  // PASSWORD RESET - direct REST API call
+  if(params['type']==='recovery' && params['access_token']){
+    try{
+      // Try to use the token directly via REST API
+      var res = await fetch('https://ucyblsicfuoappzlurvs.supabase.co/auth/v1/user', {
+        headers: {
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjeWJsc2ljZnVvYXBwemx1cnZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxOTgyODAsImV4cCI6MjA5NTc3NDI4MH0.AIW-9Ee2gYRiyKw2x4qY9lE9yspGz_9vO1FGh4kfVfE',
+          'Authorization': 'Bearer ' + params['access_token']
         }
-        return;
-      }
-    }
-    // Short OTP token - use verifyOtp
-    if(params.type==='recovery'){
-      var r=await sb.auth.verifyOtp({
-        token_hash:params.access_token,
-        type:'recovery'
       });
-      window.history.replaceState(null,'',window.location.pathname);
-      if(!r.error){
+      if(res.ok){
+        // Token works - set session and show reset form
+        await sb.auth.setSession({
+          access_token: params['access_token'],
+          refresh_token: params['refresh_token'] || ''
+        });
+        window.history.replaceState(null,'',window.location.pathname);
         document.getElementById('reset-overlay').style.display='flex';
         return;
       }
-    }
+    } catch(e){}
+    // Token is short OTP - try verifyOtp
+    try{
+      var r = await sb.auth.verifyOtp({
+        token_hash: params['access_token'],
+        type: 'recovery'
+      });
+      if(!r.error){
+        window.history.replaceState(null,'',window.location.pathname);
+        document.getElementById('reset-overlay').style.display='flex';
+        return;
+      }
+    } catch(e){}
   }
-  
-  // Method 3: Normal session check
-  var r=await sb.auth.getSession();
-  if(r.data&&r.data.session&&r.data.session.user){
-    user=r.data.session.user;
+
+  // NORMAL SESSION CHECK
+  sb.auth.onAuthStateChange(function(event, session){
+    if(event==='PASSWORD_RECOVERY'){
+      document.getElementById('reset-overlay').style.display='flex';
+    } else if(session && session.user && !document.getElementById('app').classList.contains('visible')){
+      user = session.user;
+      initApp();
+    }
+  });
+
+  var r = await sb.auth.getSession();
+  if(r.data && r.data.session && r.data.session.user){
+    user = r.data.session.user;
     if(!document.getElementById('app').classList.contains('visible')){
       initApp();
     }
