@@ -17,9 +17,13 @@ body{font-family:'Inter',sans-serif;background:#040605;color:#E8F0E9;min-height:
 .title{font-size:16px;font-weight:600;margin-bottom:6px}
 .sub{font-size:12px;color:#4A6B50;margin-bottom:20px}
 label{display:block;font-size:10px;font-weight:600;color:#4A6B50;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;margin-top:12px}
-.fi{width:100%;padding:11px 14px;background:#040605;border:1px solid #0F2414;border-radius:8px;color:#E8F0E9;font-size:14px;outline:none;font-family:Inter,sans-serif}
+.fi-wrap{position:relative}
+.fi{width:100%;padding:11px 40px 11px 14px;background:#040605;border:1px solid #0F2414;border-radius:8px;color:#E8F0E9;font-size:14px;outline:none;font-family:Inter,sans-serif}
 .fi:focus{border-color:#55D396}
+.show-btn{position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:#4A6B50;font-size:11px;font-weight:600;background:none;border:none;color:#4A6B50}
+.show-btn:hover{color:#55D396}
 .btn{width:100%;padding:12px;background:#55D396;color:#040605;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;margin-top:16px}
+.btn:hover{opacity:.88}
 .err{font-size:12px;margin-top:10px;text-align:center;padding:10px;border-radius:8px;background:rgba(255,68,102,0.1);color:#FF4466;border:1px solid rgba(255,68,102,0.2);display:none}
 .ok{font-size:12px;margin-top:10px;text-align:center;padding:10px;border-radius:8px;background:rgba(85,211,150,0.1);color:#55D396;border:1px solid rgba(85,211,150,0.2);display:none}
 .back{display:block;text-align:center;margin-top:16px;font-size:12px;color:#4A6B50;text-decoration:none}
@@ -37,9 +41,15 @@ label{display:block;font-size:10px;font-weight:600;color:#4A6B50;text-transform:
     <div class="title">Set New Password</div>
     <div class="sub">Enter your new password below.</div>
     <label>New Password</label>
-    <input type="password" class="fi" id="pwd" placeholder="Min 6 characters">
+    <div class="fi-wrap">
+      <input type="password" class="fi" id="pwd" placeholder="Min 6 characters">
+      <button class="show-btn" onclick="togglePwd('pwd',this)" type="button">Show</button>
+    </div>
     <label>Confirm Password</label>
-    <input type="password" class="fi" id="pwd2" placeholder="Repeat your password">
+    <div class="fi-wrap">
+      <input type="password" class="fi" id="pwd2" placeholder="Repeat your password">
+      <button class="show-btn" onclick="togglePwd('pwd2',this)" type="button">Show</button>
+    </div>
     <button class="btn" onclick="updatePwd()">Update Password</button>
     <div class="err" id="err-msg"></div>
     <div class="ok" id="ok-msg"></div>
@@ -58,7 +68,13 @@ var SB_URL='https://ucyblsicfuoappzlurvs.supabase.co';
 var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjeWJsc2ljZnVvYXBwemx1cnZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxOTgyODAsImV4cCI6MjA5NTc3NDI4MH0.AIW-9Ee2gYRiyKw2x4qY9lE9yspGz_9vO1FGh4kfVfE';
 var accessToken=null;
 
-// Read token from hash (#access_token=...)
+function togglePwd(id,btn){
+  var inp=document.getElementById(id);
+  if(inp.type==='password'){inp.type='text';btn.textContent='Hide';}
+  else{inp.type='password';btn.textContent='Show';}
+}
+
+// Read token from hash
 var hash=window.location.hash.substring(1);
 var params={};
 hash.split('&').forEach(function(p){
@@ -66,16 +82,19 @@ hash.split('&').forEach(function(p){
   if(kv[0])params[decodeURIComponent(kv[0])]=decodeURIComponent(kv[1]||'');
 });
 
-console.log('Params:', params);
-
-if(!params['access_token']||params['type']!=='recovery'){
+if(params['access_token']&&params['type']==='recovery'){
+  accessToken=params['access_token'];
+} else {
   document.getElementById('form-card').style.display='none';
   document.getElementById('invalid-card').style.display='block';
-} else {
-  accessToken=params['access_token'];
 }
 
 async function updatePwd(){
+  if(!accessToken){
+    document.getElementById('err-msg').textContent='Invalid token. Please request a new reset link.';
+    document.getElementById('err-msg').style.display='block';
+    return;
+  }
   var pwd=document.getElementById('pwd').value;
   var pwd2=document.getElementById('pwd2').value;
   var err=document.getElementById('err-msg');
@@ -85,7 +104,6 @@ async function updatePwd(){
   if(!pwd||pwd.length<6){err.textContent='Minimum 6 characters.';err.style.display='block';return;}
   if(pwd!==pwd2){err.textContent='Passwords do not match.';err.style.display='block';return;}
 
-  // Update password via Supabase REST API with the token
   var res=await fetch(SB_URL+'/auth/v1/user',{
     method:'PUT',
     headers:{
@@ -101,7 +119,7 @@ async function updatePwd(){
     ok.textContent='Password updated! Redirecting...';ok.style.display='block';
     setTimeout(function(){window.location.href='https://trademind-nine.vercel.app';},2000);
   } else {
-    err.textContent=data.message||data.error_description||'Token expired. Request a new reset link.';
+    err.textContent='Link expired. Please request a new reset link.';
     err.style.display='block';
   }
 }
