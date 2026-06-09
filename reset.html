@@ -39,9 +39,11 @@ label{display:block;font-size:10px;font-weight:600;color:#4A6B50;text-transform:
     <div class="tm">TM</div>
     <div class="brand">Trade<span>Mind</span></div>
   </div>
-  <div class="card" id="form-card">
+  <div class="card">
     <div class="title">Set New Password</div>
-    <div class="sub">Enter your new password below.</div>
+    <div class="sub">Enter your email and new password.</div>
+    <label>Email</label>
+    <input type="email" class="fi" id="email" placeholder="trader@example.com">
     <label>New Password</label>
     <div class="fi-wrap">
       <input type="password" class="fi fi-pwd" id="pwd" placeholder="Min 6 characters">
@@ -56,46 +58,18 @@ label{display:block;font-size:10px;font-weight:600;color:#4A6B50;text-transform:
     <div class="err" id="err"></div>
     <div class="ok" id="ok"></div>
   </div>
-  <div class="card" id="expired-card" style="display:none">
-    <div class="title">Link Expired</div>
-    <div class="sub" style="margin-top:8px">This reset link has expired.<br>Please request a new one from the login page.</div>
-  </div>
   <a href="https://trademind-nine.vercel.app" class="back">← Back to TradeMind</a>
 </div>
 <script>
-// Init Supabase avec detectSessionInUrl pour qu'il lise automatiquement le hash
 var sb=supabase.createClient(
   'https://ucyblsicfuoappzlurvs.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjeWJsc2ljZnVvYXBwemx1cnZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxOTgyODAsImV4cCI6MjA5NTc3NDI4MH0.AIW-9Ee2gYRiyKw2x4qY9lE9yspGz_9vO1FGh4kfVfE',
-  {auth:{detectSessionInUrl:true,persistSession:true,flowType:'implicit'}}
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjeWJsc2ljZnVvYXBwemx1cnZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxOTgyODAsImV4cCI6MjA5NTc3NDI4MH0.AIW-9Ee2gYRiyKw2x4qY9lE9yspGz_9vO1FGh4kfVfE'
 );
 
-var sessionReady=false;
-
-// Supabase lit automatiquement le hash et crée une session
-sb.auth.onAuthStateChange(function(event,session){
-  if(event==='PASSWORD_RECOVERY'&&session){
-    sessionReady=true;
-    document.getElementById('form-card').style.display='block';
-    document.getElementById('expired-card').style.display='none';
-  } else if(event==='SIGNED_IN'&&session&&window.location.hash.includes('type=recovery')){
-    sessionReady=true;
-  }
-});
-
-// Timeout - si pas de session après 5 secondes
-setTimeout(function(){
-  if(!sessionReady){
-    sb.auth.getSession().then(function(r){
-      if(!r.data||!r.data.session){
-        document.getElementById('form-card').style.display='none';
-        document.getElementById('expired-card').style.display='block';
-      } else {
-        sessionReady=true;
-      }
-    });
-  }
-},5000);
+var hash=window.location.hash.substring(1);
+var params={};
+hash.split('&').forEach(function(p){var kv=p.split('=');if(kv[0])params[decodeURIComponent(kv[0])]=decodeURIComponent(kv[1]||'');});
+var token=params['access_token']||'';
 
 function tog(id,btn){
   var el=document.getElementById(id);
@@ -104,27 +78,38 @@ function tog(id,btn){
 }
 
 async function update(){
+  var email=document.getElementById('email').value.trim();
   var pwd=document.getElementById('pwd').value;
   var pwd2=document.getElementById('pwd2').value;
   var err=document.getElementById('err');
   var ok=document.getElementById('ok');
   var btn=document.getElementById('btn');
   err.style.display='none';ok.style.display='none';
+  if(!email){err.textContent='Enter your email.';err.style.display='block';return;}
   if(!pwd||pwd.length<6){err.textContent='Min 6 characters.';err.style.display='block';return;}
   if(pwd!==pwd2){err.textContent='Passwords do not match.';err.style.display='block';return;}
+  if(!token){err.textContent='Invalid link. Please request a new one.';err.style.display='block';return;}
   btn.disabled=true;btn.textContent='Updating...';
 
-  // Exactement comme en interne - updateUser après que Supabase a créé la session
-  var r=await sb.auth.updateUser({password:pwd});
+  var r=await sb.auth.verifyOtp({email:email,token:token,type:'recovery'});
   if(r.error){
-    err.textContent=r.error.message||'Link expired. Please request a new reset link.';
+    err.textContent='Link expired or invalid email. Please request a new reset link.';
     err.style.display='block';
     btn.disabled=false;btn.textContent='Update Password';
-  } else {
-    ok.textContent='Password updated! Redirecting...';ok.style.display='block';
-    setTimeout(function(){window.location.href='https://trademind-nine.vercel.app';},2000);
+    return;
   }
+  var r2=await sb.auth.updateUser({password:pwd});
+  if(r2.error){
+    err.textContent=r2.error.message;
+    err.style.display='block';
+    btn.disabled=false;btn.textContent='Update Password';
+    return;
+  }
+  ok.textContent='Password updated! Redirecting...';ok.style.display='block';
+  setTimeout(function(){window.location.href='https://trademind-nine.vercel.app';},2000);
 }
 </script>
 </body>
 </html>
+
+
