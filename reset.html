@@ -64,28 +64,13 @@ var sb=supabase.createClient(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjeWJsc2ljZnVvYXBwemx1cnZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxOTgyODAsImV4cCI6MjA5NTc3NDI4MH0.AIW-9Ee2gYRiyKw2x4qY9lE9yspGz_9vO1FGh4kfVfE'
 );
 
-var hash=window.location.hash.substring(1);
-var params={};
-hash.split('&').forEach(function(p){var kv=p.split('=');if(kv[0])params[decodeURIComponent(kv[0])]=decodeURIComponent(kv[1]||'');});
-var accessToken=params['access_token']||'';
-var refreshToken=params['refresh_token']||'';
-
-// Check also query string for PKCE flow (code=...)
-var urlParams=new URLSearchParams(window.location.search);
-var code=urlParams.get('code')||'';
-
 var sessionReady=false;
 
-async function initSession(){
-  if(code){
-    var r=await sb.auth.exchangeCodeForSession(code);
-    if(!r.error) sessionReady=true;
-  } else if(accessToken && refreshToken){
-    var r=await sb.auth.setSession({access_token:accessToken,refresh_token:refreshToken});
-    if(!r.error) sessionReady=true;
+sb.auth.onAuthStateChange(function(event, session){
+  if(event==='PASSWORD_RECOVERY'){
+    sessionReady=true;
   }
-}
-initSession();
+});
 
 function tog(id,btn){
   var el=document.getElementById(id);
