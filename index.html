@@ -379,6 +379,19 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
           </div>
         </div>
         <div class="card"><div class="tw"><table><thead><tr><th>Date</th><th>Pair</th><th>Direction</th><th>Entry</th><th>Exit</th><th>Lots</th><th>P&amp;L</th><th>R:R</th><th>Result</th><th>Setup</th><th></th></tr></thead><tbody id="j-table"><tr><td colspan="11" style="text-align:center;color:var(--text-muted);padding:20px">No trades yet</td></tr></tbody></table></div></div>
+        <div class="card" style="margin-top:14px">
+          <div class="card-title">
+            Screenshots
+            <div style="display:flex;gap:6px">
+              <button class="btn btn-acc btn-sm ss-filter-btn" onclick="setSsFilter('all',this)">All</button>
+              <button class="btn btn-ghost btn-sm ss-filter-btn" onclick="setSsFilter('Win',this)">Wins</button>
+              <button class="btn btn-ghost btn-sm ss-filter-btn" onclick="setSsFilter('Loss',this)">Losses</button>
+            </div>
+          </div>
+          <div id="screenshots-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px">
+            <div style="color:var(--text-muted);font-size:12px;padding:20px;text-align:center">No screenshots yet</div>
+          </div>
+        </div>
       </div>
 
       <!-- CALENDAR -->
@@ -1120,8 +1133,36 @@ function renderJ(){
   var ft=trades.filter(function(t){return(!fp||t.pair===fp)&&(!fd||t.direction===fd)&&(!fr||t.result===fr);});
   document.getElementById('j-table').innerHTML=ft.length===0?'<tr><td colspan="11" style="text-align:center;color:var(--text-muted);padding:20px">No trades found</td></tr>':
     ft.map(function(t){
-      return '<tr class="clickable" onclick="openTradeDetail('+JSON.stringify(t).replace(/'/g,"\\'")+')"><td>'+t.date+'</td><td><strong>'+t.pair+'</strong></td><td><span class="bdg '+(t.direction==='Long'?'bg':'br')+'">'+t.direction+'</span></td><td>'+(t.entry||'-')+'</td><td>'+(t.exit||'-')+'</td><td>'+(t.lots||'-')+'</td><td style="color:'+(t.pnl>=0?'var(--accent)':'var(--red)')+'"><strong>'+(t.pnl>=0?'+ ':'')+'$'+(t.pnl||0).toFixed(2)+'</strong></td><td>'+(t.rr||'-')+'</td><td><span class="bdg '+(t.result==='Win'?'bg':t.result==='Loss'?'br':'bgr')+'">'+t.result+'</span></td><td style="font-size:10px;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(t.setup||'-')+'</td><td><button class="btn btn-red btn-sm" onclick="event.stopPropagation();deleteTrade(\''+t.id+'\')">x</button></td></tr>';
+      return '<tr class="clickable" onclick="openTradeById(\''+t.id+'\')"><td>'+t.date+'</td><td><strong>'+t.pair+'</strong></td><td><span class="bdg '+(t.direction==='Long'?'bg':'br')+'">'+t.direction+'</span></td><td>'+(t.entry||'-')+'</td><td>'+(t.exit||'-')+'</td><td>'+(t.lots||'-')+'</td><td style="color:'+(t.pnl>=0?'var(--accent)':'var(--red)')+'"><strong>'+(t.pnl>=0?'+ ':'')+'$'+(t.pnl||0).toFixed(2)+'</strong></td><td>'+(t.rr||'-')+'</td><td><span class="bdg '+(t.result==='Win'?'bg':t.result==='Loss'?'br':'bgr')+'">'+t.result+'</span></td><td style="font-size:10px;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(t.setup||'-')+'</td><td><button class="btn btn-red btn-sm" onclick="event.stopPropagation();deleteTrade(\''+t.id+'\')">x</button></td></tr>';
     }).join('');
+  renderScreenshots();
+}
+
+function openTradeById(id){
+  var t=trades.find(function(x){return x.id===id;});
+  if(t)openTradeDetail(t);
+}
+
+var screenshotFilter='all';
+function renderScreenshots(){
+  var filtered=trades.filter(function(t){return t.screenshot&&(screenshotFilter==='all'||t.result===screenshotFilter);});
+  var container=document.getElementById('screenshots-grid');
+  if(!container)return;
+  if(!filtered.length){container.innerHTML='<div style="color:var(--text-muted);font-size:12px;padding:20px;text-align:center">No screenshots '+(screenshotFilter!=='all'?'for '+screenshotFilter+'s':'')+' yet</div>';return;}
+  container.innerHTML=filtered.map(function(t){
+    return '<div style="cursor:pointer;position:relative" onclick="openTradeById(\''+t.id+'\')">'
+      +'<img src="'+t.screenshot+'" style="width:100%;border-radius:8px;border:1px solid var(--border);display:block;aspect-ratio:16/9;object-fit:cover">'
+      +'<div style="position:absolute;top:6px;left:6px"><span class="bdg '+(t.result==='Win'?'bg':t.result==='Loss'?'br':'bgr')+'">'+t.result+'</span></div>'
+      +'<div style="font-size:10px;color:var(--text-muted);margin-top:4px">'+t.date+' · '+t.pair+'</div>'
+      +'</div>';
+  }).join('');
+}
+
+function setSsFilter(f,btn){
+  screenshotFilter=f;
+  document.querySelectorAll('.ss-filter-btn').forEach(function(b){b.className='btn btn-ghost btn-sm ss-filter-btn';});
+  btn.className='btn btn-acc btn-sm ss-filter-btn';
+  renderScreenshots();
 }
 
 async function periodAnalysis(){
@@ -1760,6 +1801,9 @@ async function deleteGoal(id){
 
 // SESSION HANDLING
 (async function(){
+  // Hide auth screen while checking session to avoid flash
+  document.getElementById('auth-screen').style.display='none';
+
   var hash = window.location.hash.substring(1);
   var params = {};
   if(hash) hash.split('&').forEach(function(p){
@@ -1767,10 +1811,9 @@ async function deleteGoal(id){
     params[decodeURIComponent(kv[0])] = decodeURIComponent(kv[1]||'');
   });
 
-  // PASSWORD RESET - direct REST API call
+  // PASSWORD RESET
   if(params['type']==='recovery' && params['access_token']){
     try{
-      // Try to use the token directly via REST API
       var res = await fetch('https://ucyblsicfuoappzlurvs.supabase.co/auth/v1/user', {
         headers: {
           'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjeWJsc2ljZnVvYXBwemx1cnZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxOTgyODAsImV4cCI6MjA5NTc3NDI4MH0.AIW-9Ee2gYRiyKw2x4qY9lE9yspGz_9vO1FGh4kfVfE',
@@ -1778,46 +1821,44 @@ async function deleteGoal(id){
         }
       });
       if(res.ok){
-        // Token works - set session and show reset form
-        await sb.auth.setSession({
-          access_token: params['access_token'],
-          refresh_token: params['refresh_token'] || ''
-        });
+        await sb.auth.setSession({access_token:params['access_token'],refresh_token:params['refresh_token']||''});
         window.history.replaceState(null,'',window.location.pathname);
         document.getElementById('reset-overlay').style.display='flex';
         return;
       }
     } catch(e){}
-    // Token is short OTP - try verifyOtp
     try{
-      var r = await sb.auth.verifyOtp({
-        token_hash: params['access_token'],
-        type: 'recovery'
-      });
+      var r = await sb.auth.verifyOtp({token_hash:params['access_token'],type:'recovery'});
       if(!r.error){
         window.history.replaceState(null,'',window.location.pathname);
         document.getElementById('reset-overlay').style.display='flex';
         return;
       }
     } catch(e){}
+    document.getElementById('auth-screen').style.display='flex';
+    return;
   }
 
   // NORMAL SESSION CHECK
-  sb.auth.onAuthStateChange(function(event, session){
-    if(event==='PASSWORD_RECOVERY'){
-      document.getElementById('reset-overlay').style.display='flex';
-    } else if(session && session.user && !document.getElementById('app').classList.contains('visible')){
-      user = session.user;
-      initApp();
-    }
-  });
-
   var r = await sb.auth.getSession();
   if(r.data && r.data.session && r.data.session.user){
     user = r.data.session.user;
-    if(!document.getElementById('app').classList.contains('visible')){
-      initApp();
-    }
+    initApp();
+  } else {
+    // No session — show login
+    document.getElementById('auth-screen').style.display='flex';
   }
+
+  sb.auth.onAuthStateChange(function(event, session){
+    if(event==='PASSWORD_RECOVERY'){
+      document.getElementById('reset-overlay').style.display='flex';
+    } else if(event==='SIGNED_IN' && session && session.user && !document.getElementById('app').classList.contains('visible')){
+      user = session.user;
+      initApp();
+    } else if(event==='SIGNED_OUT'){
+      document.getElementById('app').classList.remove('visible');
+      document.getElementById('auth-screen').style.display='flex';
+    }
+  });
 })();
 </script>
