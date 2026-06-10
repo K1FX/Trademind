@@ -726,7 +726,6 @@ var SUPPORT_EMAIL='support@trademind.ai';
 var sb=supabase.createClient(SB_URL,SB_KEY,{
   auth:{
     persistSession:true,
-    storageKey:'trademind-auth',
     flowType:'implicit',
     detectSessionInUrl:true,
     autoRefreshToken:true
@@ -1839,18 +1838,16 @@ async function deleteGoal(id){
     return;
   }
 
-  // NORMAL SESSION CHECK
-  var r = await sb.auth.getSession();
-  if(r.data && r.data.session && r.data.session.user){
-    user = r.data.session.user;
-    initApp();
-  } else {
-    // No session — show login
-    document.getElementById('auth-screen').style.display='flex';
-  }
-
+  // NORMAL SESSION CHECK — onAuthStateChange fires INITIAL_SESSION on every page load
   sb.auth.onAuthStateChange(function(event, session){
-    if(event==='PASSWORD_RECOVERY'){
+    if(event==='INITIAL_SESSION'){
+      if(session && session.user){
+        user = session.user;
+        if(!document.getElementById('app').classList.contains('visible')) initApp();
+      } else {
+        document.getElementById('auth-screen').style.display='flex';
+      }
+    } else if(event==='PASSWORD_RECOVERY'){
       document.getElementById('reset-overlay').style.display='flex';
     } else if(event==='SIGNED_IN' && session && session.user && !document.getElementById('app').classList.contains('visible')){
       user = session.user;
