@@ -334,7 +334,7 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
       <div class="tb-actions">
         <div class="bdg bg" id="sess-badge">London Open</div>
         <button class="btn btn-acc" onclick="openM('m-trade')">+ Add Trade</button>
-        <button class="btn btn-ghost btn-sm" onclick="logout()">Sign Out</button>
+        <button class="btn btn-ghost btn-sm" style="display:inline-flex!important" onclick="logout()">Sign Out</button>
       </div>
     </div>
     <div class="content">
@@ -785,6 +785,7 @@ async function login(){
   if(!e||!p)return showErr('Fill all fields');
   var r=await sb.auth.signInWithPassword({email:e,password:p});
   if(r.error)return showErr(r.error.message);
+  if(r.data.session){localStorage.setItem('tm_sess',JSON.stringify({access_token:r.data.session.access_token,refresh_token:r.data.session.refresh_token}));}
   user=r.data.user;initApp();
 }
 async function signup(){
@@ -795,7 +796,7 @@ async function signup(){
   if(r.error)return showErr(r.error.message);
   showOk('Account created! Sign in directly.');
 }
-async function logout(){await sb.auth.signOut();location.reload();}
+async function logout(){localStorage.removeItem('tm_sess');await sb.auth.signOut();location.reload();}
 
 async function doPasswordReset(){
   var pwd=document.getElementById('reset-new-pwd').value;
@@ -1848,6 +1849,7 @@ async function deleteGoal(id){
     if(event==='PASSWORD_RECOVERY'){
       document.getElementById('reset-overlay').style.display='flex';
     } else if((event==='SIGNED_IN'||event==='INITIAL_SESSION') && session && session.user){
+      if(session.access_token){localStorage.setItem('tm_sess',JSON.stringify({access_token:session.access_token,refresh_token:session.refresh_token}));}
       tryStart(session.user);
     } else if(event==='SIGNED_OUT'){
       appStarted=false;
@@ -1856,16 +1858,32 @@ async function deleteGoal(id){
     }
   });
 
-  // Fallback: direct getSession check
+  // Try Supabase getSession first
+  var started = false;
   try{
     var r = await sb.auth.getSession();
     if(r.data && r.data.session && r.data.session.user){
       tryStart(r.data.session.user);
-    } else {
-      setTimeout(showLogin, 800);
+      started = true;
     }
-  }catch(e){
-    setTimeout(showLogin, 800);
+  }catch(e){}
+
+  // Fallback: restore session manually from localStorage
+  if(!started){
+    var stored = localStorage.getItem('tm_sess');
+    if(stored){
+      try{
+        var sess = JSON.parse(stored);
+        var r2 = await sb.auth.setSession({access_token:sess.access_token,refresh_token:sess.refresh_token});
+        if(r2.data && r2.data.session && r2.data.session.user){
+          localStorage.setItem('tm_sess',JSON.stringify({access_token:r2.data.session.access_token,refresh_token:r2.data.session.refresh_token}));
+          tryStart(r2.data.session.user);
+          started = true;
+        }
+      }catch(e){}
+    }
   }
+
+  if(!started) setTimeout(showLogin, 500);
 })();
 </script>
