@@ -64,14 +64,6 @@ var sb=supabase.createClient(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjeWJsc2ljZnVvYXBwemx1cnZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxOTgyODAsImV4cCI6MjA5NTc3NDI4MH0.AIW-9Ee2gYRiyKw2x4qY9lE9yspGz_9vO1FGh4kfVfE'
 );
 
-var sessionReady=false;
-
-sb.auth.onAuthStateChange(function(event, session){
-  if(event==='PASSWORD_RECOVERY'){
-    sessionReady=true;
-  }
-});
-
 function tog(id,btn){
   var el=document.getElementById(id);
   el.type=el.type==='password'?'text':'password';
@@ -87,8 +79,15 @@ async function update(){
   err.style.display='none';ok.style.display='none';
   if(!pwd||pwd.length<6){err.textContent='Min 6 characters.';err.style.display='block';return;}
   if(pwd!==pwd2){err.textContent='Passwords do not match.';err.style.display='block';return;}
-  if(!sessionReady){err.textContent='Invalid or expired link. Please request a new one.';err.style.display='block';return;}
   btn.disabled=true;btn.textContent='Updating...';
+
+  var sessionData=await sb.auth.getSession();
+  if(!sessionData.data.session){
+    err.textContent='Invalid or expired link. Please request a new one.';
+    err.style.display='block';
+    btn.disabled=false;btn.textContent='Update Password';
+    return;
+  }
 
   var r2=await sb.auth.updateUser({password:pwd});
   if(r2.error){
