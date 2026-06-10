@@ -113,22 +113,20 @@ async function update(){
   var hash=window.location.hash.substring(1);
   var p={};hash.split('&').forEach(function(x){var kv=x.split('=');if(kv[0])p[kv[0]]=decodeURIComponent(kv[1]||'');});
   var accessToken=p.access_token||'';
+  var refreshToken=p.refresh_token||'';
 
   if(!accessToken){
     err.textContent='Invalid or expired link. Please request a new one.';
     err.style.display='block';btn.disabled=false;btn.textContent='Update Password';return;
   }
 
-  var resp=await fetch('https://ucyblsicfuoappzlurvs.supabase.co/auth/v1/user',{
-    method:'PUT',
-    headers:{
-      'Content-Type':'application/json',
-      'Authorization':'Bearer '+accessToken,
-      'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjeWJsc2ljZnVvYXBwemx1cnZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxOTgyODAsImV4cCI6MjA5NTc3NDI4MH0.AIW-9Ee2gYRiyKw2x4qY9lE9yspGz_9vO1FGh4kfVfE'
-    },
-    body:JSON.stringify({password:pwd})
-  });
-  var r2=await resp.json();
+  var rs=await sb.auth.setSession({access_token:accessToken,refresh_token:refreshToken});
+  if(rs.error){
+    err.textContent='Link error: '+rs.error.message;
+    err.style.display='block';btn.disabled=false;btn.textContent='Update Password';return;
+  }
+
+  var r2=await sb.auth.updateUser({password:pwd});
   if(r2.error){
     err.textContent=r2.error.message;
     err.style.display='block';
