@@ -723,14 +723,7 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
 var SB_URL='https://ucyblsicfuoappzlurvs.supabase.co';
 var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjeWJsc2ljZnVvYXBwemx1cnZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxOTgyODAsImV4cCI6MjA5NTc3NDI4MH0.AIW-9Ee2gYRiyKw2x4qY9lE9yspGz_9vO1FGh4kfVfE';
 var SUPPORT_EMAIL='support@trademind.ai';
-var sb=supabase.createClient(SB_URL,SB_KEY,{
-  auth:{
-    persistSession:true,
-    flowType:'implicit',
-    detectSessionInUrl:true,
-    autoRefreshToken:true
-  }
-});
+var sb=supabase.createClient(SB_URL,SB_KEY);
 var user=null,trades=[],rules=[],imgBase64=null,currentTrade=null;
 var pnlC=null,pairC=null,dayC=null,sessC=null;
 var calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
