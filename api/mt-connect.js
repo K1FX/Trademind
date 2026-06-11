@@ -1,8 +1,9 @@
+import MetaApi from 'metaapi.cloud-sdk';
+
 const METAAPI_TOKEN = process.env.METAAPI_TOKEN;
 const PROVISION_URL = 'https://mt-provisioning-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts';
 const SUPABASE_URL  = process.env.SUPABASE_URL;
 const SUPABASE_KEY  = process.env.SUPABASE_SERVICE_KEY;
-
 const h = { 'Content-Type': 'application/json', 'auth-token': METAAPI_TOKEN };
 
 export default async function handler(req, res){
@@ -16,9 +17,7 @@ export default async function handler(req, res){
 
   // ── CREATE ──────────────────────────────────────────────────────────
   if(action === 'create'){
-    if(accountId){
-      return res.status(200).json({ accountId, existing: true, ready: false });
-    }
+    if(accountId) return res.status(200).json({ accountId, existing: true, ready: false });
     if(!login || !password || !server || !userId)
       return res.status(400).json({ error: 'Missing fields' });
     try {
@@ -29,7 +28,6 @@ export default async function handler(req, res){
       const rows = await sbRes.json();
       if(rows && rows[0] && rows[0].mt_account_id)
         return res.status(200).json({ accountId: rows[0].mt_account_id, existing: true, ready: false });
-
       const cr = await fetch(PROVISION_URL, {
         method: 'POST', headers: h,
         body: JSON.stringify({ login: String(login), password, name: 'TradeMind-'+login, server, platform: platform||'mt5', magic: 0, application: 'MetaApi', type: 'cloud-g2' })
@@ -43,9 +41,7 @@ export default async function handler(req, res){
         body: JSON.stringify({ user_id: userId, token: 'mt-'+userId, mt_account_id: newId })
       });
       return res.status(200).json({ accountId: newId, ready: false });
-    } catch(e){
-      return res.status(200).json({ error: 'create failed: ' + e.message });
-    }
+    } catch(e){ return res.status(200).json({ error: 'create failed: ' + e.message }); }
   }
 
   // ── STATUS ──────────────────────────────────────────────────────────
@@ -60,86 +56,44 @@ export default async function handler(req, res){
       if(!ready && state !== 'DEPLOYING')
         await fetch(`${PROVISION_URL}/${accountId}/deploy`, { method: 'POST', headers: h });
       return res.status(200).json({ state: acc.state, connectionStatus: acc.connectionStatus, ready });
-    } catch(e){
-      return res.status(200).json({ error: 'status failed: ' + e.message, ready: false });
-    }
+    } catch(e){ return res.status(200).json({ error: 'status failed: ' + e.message, ready: false }); }
   }
 
-  // ── GETTOKEN: return token so client can call MetaAPI directly ──────
-  if(action === 'gettoken'){
-    if(!accountId) return res.status(400).json({ error: 'Missing accountId' });
-    try {
-      const accR = await fetch(`${PROVISION_URL}/${accountId}`, { headers: h });
-      const accInfo = await accR.json();
-      if(accInfo.error || accInfo.message) return res.status(200).json({ error: accInfo.message });
-      const region = (accInfo.region||'london').toLowerCase().replace(/\s/g,'-');
-      return res.status(200).json({ token: METAAPI_TOKEN, region });
-    } catch(e){
-      return res.status(200).json({ error: 'gettoken failed: '+e.message });
-    }
-  }
-
-  // ── IMPORT ──────────────────────────────────────────────────────────
+  // ── IMPORT via MetaAPI SDK ───────────────────────────────────────────
   if(action === 'import'){
     if(!accountId || !userId) return res.status(400).json({ error: 'Missing fields' });
     try {
-      const startIso = fromDate ? new Date(fromDate).toISOString() : '2018-01-01T00:00:00.000Z';
-      const endIso   = toDate   ? new Date(toDate + 'T23:59:59').toISOString() : new Date().toISOString();
+      const api = new MetaApi(METAAPI_TOKEN);
+      const account = await api.metatraderAccountApi.getAccount(accountId);
 
-      const accR = await fetch(`${PROVISION_URL}/${accountId}`, { headers: h });
-      const accInfo = await accR.json();
-      const region = (accInfo.region||'london').toLowerCase().replace(/\s/g,'-');
-      if(accInfo.error || accInfo.message) return res.status(200).json({ error: 'provisioning: '+accInfo.message, trades: [], debug: accInfo });
+      const startDate = fromDate ? new Date(fromDate) : new Date('2018-01-01');
+      const endDate   = toDate   ? new Date(toDate + 'T23:59:59') : new Date();
 
-      // Try both domain variants (single and double agiliumtrade)
-      const apis = [
-        { base: `https://mt-client-api-v1.${region}.agiliumtrade.agiliumtrade.ai`, path: (id,s,e) => `/users/current/accounts/${id}/history-deals/time/${encodeURIComponent(s)}/${encodeURIComponent(e)}`, key: null },
-        { base: `https://mt-client-api-v1.${region}.agiliumtrade.ai`, path: (id,s,e) => `/users/current/accounts/${id}/history-deals/time/${encodeURIComponent(s)}/${encodeURIComponent(e)}`, key: null },
-        { base: `https://metastats-api-v1.${region}.agiliumtrade.agiliumtrade.ai`, path: (id,s,e) => `/users/current/accounts/${id}/historical-trades/${encodeURIComponent(s)}/${encodeURIComponent(e)}`, key: 'trades' },
-        { base: `https://metastats-api-v1.${region}.agiliumtrade.ai`, path: (id,s,e) => `/users/current/accounts/${id}/historical-trades/${encodeURIComponent(s)}/${encodeURIComponent(e)}`, key: 'trades' },
-      ];
+      const connection = account.getRPCConnection();
+      await connection.connect();
+      await connection.waitSynchronized({ timeoutInSeconds: 60 });
 
-      let raw = [];
-      let lastErr = '';
-      const debugLog = [{ region, accountState: accInfo.state, conn: accInfo.connectionStatus }];
-      for(const api of apis){
-        try {
-          const url = api.base + api.path(accountId, startIso, endIso);
-          const r = await fetch(url, { headers: h });
-          const text = await r.text();
-          debugLog.push({ url: url.slice(0,80), status: r.status, body: text.slice(0,200) });
-          if(r.status >= 500){ lastErr = r.status+' from '+api.base.slice(8,50); continue; }
-          const data = JSON.parse(text);
-          const arr = api.key ? (data[api.key]||[]) : (Array.isArray(data) ? data : (data.deals||[]));
-          if(arr.length){ raw = arr; break; }
-          lastErr = 'empty from '+api.base.slice(8,50)+' status='+r.status;
-        } catch(e){ lastErr = 'err '+api.base.slice(8,50)+': '+e.message; debugLog.push({ err: e.message }); }
-      }
+      const deals = await connection.getHistoryDealsByTimeRange(startDate, endDate);
+      await connection.close();
 
-      if(!raw.length)
-        return res.status(200).json({ error: lastErr, trades: [], debug: debugLog });
-
-      const from = fromDate ? new Date(fromDate) : null;
-      const to   = toDate   ? new Date(toDate + 'T23:59:59') : null;
+      if(!deals || !deals.deals || !deals.deals.length)
+        return res.status(200).json({ trades: [], found: 0, rawCount: 0 });
 
       const trades = [];
-      for(const t of raw){
+      for(const t of deals.deals){
         const typeUp  = (t.type||'').toUpperCase();
         const entryUp = (t.entryType||'').toUpperCase();
         if(!t.symbol) continue;
         if(typeUp.includes('BALANCE')||typeUp.includes('CREDIT')||typeUp.includes('COMMISSION')) continue;
         if(entryUp && !entryUp.includes('OUT') && !entryUp.includes('INOUT')) continue;
-        const rawTime = t.time || t.brokerTime || t.closeTime || t.doneTime || t.openTime;
-        const date = rawTime ? String(rawTime).split('T')[0] : new Date().toISOString().split('T')[0];
-        if(from && new Date(date) < from) continue;
-        if(to   && new Date(date) > to)   continue;
+        const rawTime = t.time || t.brokerTime || t.closeTime;
+        const date = rawTime ? (rawTime instanceof Date ? rawTime.toISOString() : String(rawTime)).split('T')[0] : new Date().toISOString().split('T')[0];
         const pnl = parseFloat(t.profit)||0;
         trades.push({
           user_id: userId, date,
           pair: t.symbol.toUpperCase(),
           direction: typeUp.includes('SELL') ? 'Short' : 'Long',
-          lots: parseFloat(t.volume)||0,
-          pnl,
+          lots: parseFloat(t.volume)||0, pnl,
           entry: parseFloat(t.openPrice)||0,
           exit:  parseFloat(t.closePrice)||parseFloat(t.price)||0,
           sl:0, tp:0, rr:0,
@@ -148,8 +102,7 @@ export default async function handler(req, res){
           notes:'Imported from MetaTrader', screenshot:null
         });
       }
-
-      return res.status(200).json({ trades, found: trades.length, rawCount: raw.length });
+      return res.status(200).json({ trades, found: trades.length, rawCount: deals.deals.length });
     } catch(e){
       return res.status(200).json({ error: 'import failed: ' + e.message, trades: [] });
     }

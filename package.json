@@ -1,0 +1,8 @@
+{
+  "name": "trademind",
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "metaapi.cloud-sdk": "^27.0.0"
+  }
+}
