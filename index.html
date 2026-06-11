@@ -571,9 +571,10 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
             <label class="fl">Mot de passe du compte</label>
             <input class="fi2" id="mt-pwd" type="password" placeholder="Mot de passe investisseur ou principal">
           </div>
-          <div class="fg">
+          <div class="fg" style="position:relative">
             <label class="fl">Serveur broker</label>
-            <input class="fi2" id="mt-srv" placeholder="Ex: ICMarkets-Live, Pepperstone-Live01...">
+            <input class="fi2" id="mt-srv" placeholder="Tape le nom de ton broker..." oninput="searchMTServers(this.value)" autocomplete="off">
+            <div id="mt-srv-list" style="display:none;position:absolute;top:100%;left:0;right:0;background:#0A120C;border:1px solid var(--border);border-radius:var(--radius-sm);z-index:100;max-height:200px;overflow-y:auto"></div>
           </div>
           <div style="background:var(--accent-dim);border:1px solid rgba(85,211,150,0.15);border-radius:var(--radius-sm);padding:10px;font-size:11px;color:var(--text-muted);margin-bottom:14px;line-height:1.7">
             🔒 Tes identifiants sont utilisés uniquement pour lire ton historique de trades. Ils ne sont jamais stockés.<br>
@@ -1457,6 +1458,30 @@ function showMTToken(token){
   document.getElementById('mt-token-display').textContent=token;
   document.getElementById('mt-token-box').style.display='block';
   document.getElementById('mt-gen-btn').textContent='Regenerate Token';
+}
+
+var mtServerTimer=null;
+async function searchMTServers(q){
+  var list=document.getElementById('mt-srv-list');
+  if(!q||q.length<2){list.style.display='none';return;}
+  clearTimeout(mtServerTimer);
+  mtServerTimer=setTimeout(async function(){
+    var plat=document.getElementById('mt-plat').value;
+    var r=await fetch('/api/mt-servers?q='+encodeURIComponent(q)+'&platform='+plat);
+    var servers=await r.json();
+    if(!servers.length){list.style.display='none';return;}
+    list.innerHTML=servers.map(function(s){
+      return '<div onclick="selectMTServer(\''+s.name+'\')" style="padding:9px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid var(--border);color:var(--text)" onmouseover="this.style.background=\'var(--accent-dim)\'" onmouseout="this.style.background=\'\'">'+
+        '<div style="font-weight:600">'+s.name+'</div>'+
+        (s.broker?'<div style="font-size:10px;color:var(--text-muted)">'+s.broker+'</div>':'')+
+      '</div>';
+    }).join('');
+    list.style.display='block';
+  },350);
+}
+function selectMTServer(name){
+  document.getElementById('mt-srv').value=name;
+  document.getElementById('mt-srv-list').style.display='none';
 }
 
 async function mtApi(body){
