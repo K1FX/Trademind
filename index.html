@@ -1587,18 +1587,22 @@ async function mtImportDirect(accountId, status, btn){
   mtProgressSet(55,'Récupération des trades...');
   status.innerHTML='<span style="color:var(--text-muted)">⏳ Récupération des trades MT...</span>';
 
-  var imp=await mtApi({action:'import',accountId:accountId,userId:user.id,fromDate:fromDate||null,toDate:toDate||null});
-  if(imp.error){
-    console.log('MT debug:', JSON.stringify(imp.debug||imp,null,2));
-    mtProgressEnd();btn.disabled=false;btn.innerHTML=MT_BTN_HTML;
-    status.innerHTML='<span style="color:var(--red)">Erreur : '+imp.error+'</span>';
-    return;
+  var trades=[];
+  for(var attempt=1;attempt<=5;attempt++){
+    status.innerHTML='<span style="color:var(--text-muted)">⏳ Récupération des trades... ('+attempt+'/5)</span>';
+    var imp=await mtApi({action:'import',accountId:accountId,userId:user.id,fromDate:fromDate||null,toDate:toDate||null});
+    trades=imp.trades||[];
+    if(trades.length) break;
+    if(attempt<5){
+      status.innerHTML='<span style="color:var(--text-muted)">⏳ Synchronisation broker... attente 20s ('+attempt+'/5)</span>';
+      mtProgressSet(55+attempt*3,'Attente synchronisation...');
+      await new Promise(function(r){setTimeout(r,20000);});
+    }
   }
-  var trades=imp.trades||[];
 
   if(!trades.length){
     mtProgressEnd();btn.disabled=false;btn.innerHTML=MT_BTN_HTML;
-    status.innerHTML='<span style="color:var(--text-muted)">Aucun trade fermé trouvé sur cette période.</span>';
+    status.innerHTML='<span style="color:var(--red)">Aucun trade trouvé. Vérifie que le compte MT5 a des trades fermés et réessaie.</span>';
     return;
   }
 
