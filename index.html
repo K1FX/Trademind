@@ -1587,22 +1587,13 @@ async function mtImportDirect(accountId, status, btn){
   mtProgressSet(55,'Récupération des trades...');
   status.innerHTML='<span style="color:var(--text-muted)">⏳ Récupération des trades MT...</span>';
 
-  var trades=[];
-  for(var attempt=1;attempt<=5;attempt++){
-    status.innerHTML='<span style="color:var(--text-muted)">⏳ Récupération des trades... ('+attempt+'/5)</span>';
-    var imp=await mtApi({action:'import',accountId:accountId,userId:user.id,fromDate:fromDate||null,toDate:toDate||null});
-    trades=imp.trades||[];
-    if(trades.length) break;
-    if(attempt<5){
-      status.innerHTML='<span style="color:var(--text-muted)">⏳ Synchronisation broker... attente 20s ('+attempt+'/5)</span>';
-      mtProgressSet(55+attempt*3,'Attente synchronisation...');
-      await new Promise(function(r){setTimeout(r,20000);});
-    }
-  }
+  status.innerHTML='<span style="color:var(--text-muted)">⏳ Récupération des trades...</span>';
+  var imp=await mtApi({action:'import',accountId:accountId,userId:user.id,fromDate:fromDate||null,toDate:toDate||null});
+  var trades=imp.trades||[];
 
   if(!trades.length){
     mtProgressEnd();btn.disabled=false;btn.innerHTML=MT_BTN_HTML;
-    status.innerHTML='<span style="color:var(--red)">Aucun trade trouvé. Vérifie que le compte MT5 a des trades fermés et réessaie.</span>';
+    status.innerHTML='<span style="color:var(--red)">'+(imp.error||'Aucun trade trouvé sur cette période.')+'</span>';
     return;
   }
 
@@ -1704,8 +1695,7 @@ async function syncMT(){
     if(s.ready){
       clearInterval(mtPollTimer);
       mtProgressSet(50,'Broker connecté !');
-      status.innerHTML='<span style="color:var(--accent)">✓ Connecté — synchronisation 30s...</span>';
-      await new Promise(function(r){setTimeout(r,30000);});
+      status.innerHTML='<span style="color:var(--accent)">✓ Prêt !</span>';
       await mtImportDirect(d.accountId, status, btn);
     } else if(elapsed>=180){
       clearInterval(mtPollTimer);
