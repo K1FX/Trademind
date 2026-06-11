@@ -604,6 +604,7 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:6px"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
               Importer mes trades
             </button>
+            <button class="btn btn-ghost" onclick="resetMT()" style="font-size:11px;opacity:0.6">↺ Réinitialiser le compte</button>
             <button class="btn btn-ghost" id="mt-check-btn" onclick="checkAndImportMT()" style="display:none">Vérifier &amp; importer</button>
           </div>
           <div id="mt-status" style="font-size:12px;margin-top:10px;line-height:1.7"></div>
@@ -1707,6 +1708,13 @@ async function syncMT(){
 }
 
 function checkAndImportMT(){}
+
+async function resetMT(){
+  if(!confirm('Réinitialiser le compte MetaAPI ? Tu devras ressaisir tes identifiants.')) return;
+  localStorage.removeItem('mt_account_id_'+user.id);
+  await mtApi({action:'reset',userId:user.id});
+  document.getElementById('mt-status').innerHTML='<span style="color:var(--accent)">✓ Compte réinitialisé. Saisis tes identifiants et clique Importer.</span>';
+}
 
 async function generateMTToken(){
   var btn=document.getElementById('mt-gen-btn');
