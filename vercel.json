@@ -1,5 +1,10 @@
 {
   "rewrites": [
     { "source": "/auth-callback", "destination": "/auth-callback.html" }
-  ]
+  ],
+  "functions": {
+    "api/mt-connect.js": {
+      "regions": ["lhr1"]
+    }
+  }
 }
