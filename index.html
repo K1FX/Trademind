@@ -1319,7 +1319,7 @@ async function sendMsg(){
   msgs.innerHTML+='<div class="msg msg-ai" id="'+msgId+'"><div class="msg-lbl">TRADEMIND AI</div>Analyzing...</div>';
   msgs.scrollTop=msgs.scrollHeight;
   try{
-    var r=await callAI('You are TradeMind AI. Answer concisely: '+msg,400);
+    var r=await callAI(msg+'\n\n[Respond in 2-3 sentences max. No headers, no bullets, no markdown. Direct and human like a trader talking to a trader.]',350);
     var el=document.getElementById(msgId);
     if(el)el.innerHTML='<div class="msg-lbl">TRADEMIND AI</div>'+r;
   }catch(e){
