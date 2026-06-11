@@ -11,7 +11,7 @@
 body{font-family:'Inter',sans-serif;background:#040605;color:#E8F0E9;min-height:100vh;display:flex;align-items:center;justify-content:center;background-image:radial-gradient(ellipse at 50% 0%,rgba(85,211,150,0.06) 0%,transparent 60%)}
 .box{width:min(400px,94vw)}
 .logo{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:24px;cursor:pointer}
-.tm{width:44px;height:44px;border-radius:11px;background:linear-gradient(135deg,#55D396,#21F1A8);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#040605}
+.tm{width:44px;height:44px;border-radius:11px;background:#040605;display:flex;align-items:center;justify-content:center}
 .brand{font-size:22px;font-weight:700}
 .brand span{background:linear-gradient(135deg,#55D396,#21F1A8);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .card{background:#0A120C;border:1px solid #0F2414;border-radius:16px;padding:28px}
@@ -36,7 +36,7 @@ label{display:block;font-size:10px;font-weight:600;color:#4A6B50;text-transform:
 <body>
 <div class="box">
   <div class="logo" onclick="window.location.href='https://trademind-nine.vercel.app'">
-    <div class="tm"><svg viewBox="0 0 32 32" width="26" height="26"><polyline points="4,26 10,18 16,21 22,12 28,7" fill="none" stroke="#040605" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="28" cy="7" r="3" fill="#040605"/></svg></div>
+    <div class="tm"><svg viewBox="0 0 32 32" width="30" height="30"><defs><linearGradient id="ga" x1="0" y1="32" x2="32" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#55D396"/><stop offset="100%" stop-color="#21F1A8"/></linearGradient><filter id="gla"><feGaussianBlur stdDeviation="1.5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><circle cx="16" cy="16" r="13" stroke="url(#ga)" stroke-width="0.5" opacity="0.25" fill="none"/><path d="M4,24 L8,19 L12,21 L17,12 L23,15 L28,5" stroke="url(#ga)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none" filter="url(#gla)"/><circle cx="28" cy="5" r="2.5" fill="#21F1A8" filter="url(#gla)"/><circle cx="28" cy="5" r="1.2" fill="white"/><path d="M25,3.5 L29,3.5 L29,7.5" stroke="url(#ga)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none" filter="url(#gla)"/></svg></div>
     <div class="brand">Trade<span>Mind</span></div>
   </div>
   <div class="card">

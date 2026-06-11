@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>TradeMind.ai — AI Trading Journal</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='url(%23g)'/><defs><linearGradient id='g' x1='0' y1='0' x2='32' y2='32' gradientUnits='userSpaceOnUse'><stop offset='0%25' stop-color='%2355D396'/><stop offset='100%25' stop-color='%2321F1A8'/></linearGradient></defs><polyline points='4,26 10,18 16,21 22,12 28,7' fill='none' stroke='%23040605' stroke-width='2.8' stroke-linecap='round' stroke-linejoin='round'/><circle cx='28' cy='7' r='3' fill='%23040605'/></svg>">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'><rect width='32' height='32' rx='8' fill='%23040605'/><defs><linearGradient id='g' x1='0' y1='32' x2='32' y2='0' gradientUnits='userSpaceOnUse'><stop offset='0%25' stop-color='%2355D396'/><stop offset='100%25' stop-color='%2321F1A8'/></linearGradient><filter id='gl'><feGaussianBlur stdDeviation='1.5' result='blur'/><feMerge><feMergeNode in='blur'/><feMergeNode in='SourceGraphic'/></feMerge></filter></defs><circle cx='16' cy='16' r='13' stroke='url(%23g)' stroke-width='0.5' opacity='0.25' fill='none'/><path d='M4,24 L8,19 L12,21 L17,12 L23,15 L28,5' stroke='url(%23g)' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round' fill='none' filter='url(%23gl)'/><circle cx='28' cy='5' r='2.5' fill='%2321F1A8' filter='url(%23gl)'/><circle cx='28' cy='5' r='1.2' fill='white'/><path d='M25,3.5 L29,3.5 L29,7.5' stroke='url(%23g)' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' fill='none' filter='url(%23gl)'/></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
@@ -23,7 +23,7 @@ input,select,textarea,button{font-family:'Inter',sans-serif}
 #auth-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999;background-image:radial-gradient(ellipse at 50% 0%,rgba(85,211,150,0.06) 0%,transparent 60%)}
 .auth-box{width:min(400px,94vw);text-align:center}
 .auth-logo-wrap{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:6px}
-.auth-tm{width:44px;height:44px;border-radius:11px;background:linear-gradient(135deg,#55D396,#21F1A8);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#040605;font-family:'Space Grotesk',sans-serif;flex-shrink:0}
+.auth-tm{width:44px;height:44px;border-radius:11px;background:#040605;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .auth-brand{font-size:24px;font-weight:700;font-family:'Space Grotesk',sans-serif;letter-spacing:-0.5px;color:#E8F0E9}
 .auth-brand span{background:linear-gradient(135deg,#55D396,#21F1A8);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .auth-tagline{font-size:12px;color:var(--text-muted);margin-bottom:24px}
@@ -48,7 +48,7 @@ input,select,textarea,button{font-family:'Inter',sans-serif}
 .sidebar{width:210px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0}
 .sidebar-header{padding:16px 14px 14px;border-bottom:1px solid var(--border)}
 .s-logo-wrap{display:flex;align-items:center;gap:8px}
-.s-tm{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#55D396,#21F1A8);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#040605;font-family:'Space Grotesk',sans-serif;flex-shrink:0}
+.s-tm{width:28px;height:28px;border-radius:7px;background:#040605;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .s-brand{font-size:14px;font-weight:700;font-family:'Space Grotesk',sans-serif;letter-spacing:-0.3px;color:#E8F0E9}
 .s-brand span{background:linear-gradient(135deg,#55D396,#21F1A8);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .s-user{font-size:10px;color:var(--text-muted);margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -187,7 +187,7 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
 <div id="auth-screen">
   <div class="auth-box">
     <div class="auth-logo-wrap" style="cursor:pointer" onclick="window.open('https://trademind-landing.vercel.app','_blank')">
-      <div class="auth-tm"><svg viewBox="0 0 32 32" width="26" height="26"><polyline points="4,26 10,18 16,21 22,12 28,7" fill="none" stroke="#040605" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="28" cy="7" r="3" fill="#040605"/></svg></div>
+      <div class="auth-tm"><svg viewBox="0 0 32 32" width="30" height="30"><defs><linearGradient id="ga" x1="0" y1="32" x2="32" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#55D396"/><stop offset="100%" stop-color="#21F1A8"/></linearGradient><filter id="gla"><feGaussianBlur stdDeviation="1.5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><circle cx="16" cy="16" r="13" stroke="url(#ga)" stroke-width="0.5" opacity="0.25" fill="none"/><path d="M4,24 L8,19 L12,21 L17,12 L23,15 L28,5" stroke="url(#ga)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none" filter="url(#gla)"/><circle cx="28" cy="5" r="2.5" fill="#21F1A8" filter="url(#gla)"/><circle cx="28" cy="5" r="1.2" fill="white"/><path d="M25,3.5 L29,3.5 L29,7.5" stroke="url(#ga)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none" filter="url(#gla)"/></svg></div>
       <div class="auth-brand">Trade<span>Mind</span></div>
     </div>
     <div class="auth-tagline">The AI journal that thinks like a coach</div>
@@ -236,7 +236,7 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
 <div id="reset-overlay" style="display:none;position:fixed;inset:0;background:#040605;z-index:99999;display:none;align-items:center;justify-content:center;background-image:radial-gradient(ellipse at 50% 0%,rgba(85,211,150,0.06) 0%,transparent 60%)">
   <div style="width:min(400px,94vw);text-align:center">
     <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:24px">
-      <div style="width:44px;height:44px;border-radius:11px;background:linear-gradient(135deg,#55D396,#21F1A8);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 32 32" width="26" height="26"><polyline points="4,26 10,18 16,21 22,12 28,7" fill="none" stroke="#040605" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="28" cy="7" r="3" fill="#040605"/></svg></div>
+      <div style="width:44px;height:44px;border-radius:11px;background:#040605;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 32 32" width="30" height="30"><defs><linearGradient id="gb" x1="0" y1="32" x2="32" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#55D396"/><stop offset="100%" stop-color="#21F1A8"/></linearGradient><filter id="glb"><feGaussianBlur stdDeviation="1.5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><circle cx="16" cy="16" r="13" stroke="url(#gb)" stroke-width="0.5" opacity="0.25" fill="none"/><path d="M4,24 L8,19 L12,21 L17,12 L23,15 L28,5" stroke="url(#gb)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none" filter="url(#glb)"/><circle cx="28" cy="5" r="2.5" fill="#21F1A8" filter="url(#glb)"/><circle cx="28" cy="5" r="1.2" fill="white"/><path d="M25,3.5 L29,3.5 L29,7.5" stroke="url(#gb)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none" filter="url(#glb)"/></svg></div>
       <div style="font-size:22px;font-weight:700;color:#E8F0E9">Trade<span style="background:linear-gradient(135deg,#55D396,#21F1A8);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Mind</span></div>
     </div>
     <div style="background:#0A120C;border:1px solid #0F2414;border-radius:16px;padding:28px;text-align:left">
@@ -262,7 +262,7 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
   <nav class="sidebar">
     <div class="sidebar-header">
       <div class="s-logo-wrap">
-        <div class="s-tm"><svg viewBox="0 0 32 32" width="18" height="18"><polyline points="4,26 10,18 16,21 22,12 28,7" fill="none" stroke="#040605" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="28" cy="7" r="3" fill="#040605"/></svg></div>
+        <div class="s-tm"><svg viewBox="0 0 32 32" width="22" height="22"><defs><linearGradient id="gc" x1="0" y1="32" x2="32" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#55D396"/><stop offset="100%" stop-color="#21F1A8"/></linearGradient><filter id="glc"><feGaussianBlur stdDeviation="1.5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><circle cx="16" cy="16" r="13" stroke="url(#gc)" stroke-width="0.5" opacity="0.25" fill="none"/><path d="M4,24 L8,19 L12,21 L17,12 L23,15 L28,5" stroke="url(#gc)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none" filter="url(#glc)"/><circle cx="28" cy="5" r="2.5" fill="#21F1A8" filter="url(#glc)"/><circle cx="28" cy="5" r="1.2" fill="white"/><path d="M25,3.5 L29,3.5 L29,7.5" stroke="url(#gc)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none" filter="url(#glc)"/></svg></div>
         <div class="s-brand">Trade<span>Mind</span></div>
       </div>
       <div class="s-user" id="u-email">...</div>
