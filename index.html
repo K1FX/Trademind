@@ -1517,12 +1517,12 @@ async function syncMT(){
 
   localStorage.setItem('mt_account_id_'+user.id, d.accountId);
 
-  // Already connected — import immediately
-  if(d.ready){
-    status.innerHTML='<span style="color:var(--accent)">✓ Connecté ! Importation des trades...</span>';
+  // If existing saved account — import directly, no polling needed
+  if(d.existing){
+    status.innerHTML='<span style="color:var(--accent)">✓ Compte trouvé ! Importation des trades...</span>';
     var imp=await mtApi({action:'import',accountId:d.accountId,userId:user.id});
     btn.disabled=false;btn.innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:6px"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>Importer mes trades';
-    if(imp.error){status.innerHTML='<span style="color:var(--red)">Erreur : '+imp.error+'</span>';return;}
+    if(imp.error){status.innerHTML='<span style="color:var(--red)">Erreur import : '+imp.error+'</span>';return;}
     status.innerHTML='<span style="color:var(--accent)">✅ '+imp.imported+' trades importés avec succès !</span>';
     await loadTrades();updateDash();renderJ();renderCal();renderAnalytics();
     return;
