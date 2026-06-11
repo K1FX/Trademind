@@ -75,6 +75,7 @@ export default async function handler(req, res){
       const accR = await fetch(`${PROVISION_URL}/${accountId}`, { headers: h });
       const accInfo = await accR.json();
       const region = (accInfo.region||'london').toLowerCase().replace(/\s/g,'-');
+      if(accInfo.error || accInfo.message) return res.status(200).json({ error: 'provisioning: '+accInfo.message, trades: [], debug: accInfo });
 
       // Client API for account's region + MetaStats as fallback
       const apis = [
@@ -84,7 +85,7 @@ export default async function handler(req, res){
 
       let raw = [];
       let lastErr = '';
-      const debugLog = [];
+      const debugLog = [{ region, accountState: accInfo.state, conn: accInfo.connectionStatus }];
       for(const api of apis){
         try {
           const url = api.base + api.path(accountId, startIso, endIso);
