@@ -94,16 +94,22 @@ export default async function handler(req, res){
       let raw = [];
       const errs = [];
       for(const api of apis){
-        try {
-          const url = api.base + api.path(accountId, startIso, endIso);
-          const r   = await fetch(url, { headers: h });
-          const txt = await r.text();
-          if(r.status >= 400){ errs.push(r.status+':'+txt.slice(0,150)); continue; }
-          const data = JSON.parse(txt);
-          const arr  = api.key ? (data[api.key]||[]) : (Array.isArray(data) ? data : (data.deals||[]));
-          if(arr.length){ raw = arr; break; }
-          errs.push('empty:'+txt.slice(0,100));
-        } catch(e){ errs.push('DNS:'+e.message.slice(0,80)); }
+        for(let attempt=0; attempt<3; attempt++){
+          try {
+            const url = api.base + api.path(accountId, startIso, endIso);
+            const r   = await fetch(url, { headers: h });
+            const txt = await r.text();
+            if(r.status >= 400){ errs.push(r.status+':'+txt.slice(0,100)); break; }
+            const data = JSON.parse(txt);
+            const arr  = api.key ? (data[api.key]||[]) : (Array.isArray(data) ? data : (data.deals||[]));
+            if(arr.length){ raw = arr; break; }
+            errs.push('empty'); break;
+          } catch(e){
+            errs.push('dns'+attempt+':'+e.message.slice(0,50));
+            if(attempt<2) await new Promise(r=>setTimeout(r,1500));
+          }
+        }
+        if(raw.length) break;
       }
 
       if(!raw.length) return res.status(200).json({ error: `region=${region} | `+errs.join(' || '), trades: [] });
