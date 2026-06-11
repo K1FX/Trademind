@@ -800,7 +800,7 @@ function showUpgradeModal(msg){
 async function callAI(prompt,maxTokens){
   try{
     var today=new Date().toDateString();
-    var r=await fetch('https://trademind-chat.shopapple090.workers.dev/',{
+    var r=await fetch('/api/chat',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
