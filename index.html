@@ -550,37 +550,69 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
 
       <!-- MT5 -->
       <div id="page-connect" class="page">
-        <div style="font-size:15px;font-weight:600;margin-bottom:6px">MT4 / MT5 Auto-Import</div>
-        <div style="font-size:12px;color:var(--text-muted);margin-bottom:24px">Automatic broker connection — coming soon</div>
-        <div style="text-align:center;padding:48px 24px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)">
-          <div style="width:56px;height:56px;border-radius:14px;background:linear-gradient(135deg,rgba(85,211,150,0.15),rgba(33,241,168,0.08));border:1px solid rgba(85,211,150,0.2);display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="6" cy="12" r="3.5" stroke="#55D396" stroke-width="1.5"/><circle cx="18" cy="12" r="3.5" stroke="#55D396" stroke-width="1.5"/><line x1="9.5" y1="12" x2="14.5" y2="12" stroke="#55D396" stroke-width="1.5"/></svg>
+        <div style="font-size:15px;font-weight:600;margin-bottom:4px">MT4 / MT5 Auto-Import</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:20px">Each time you close a trade in MT4/MT5, it appears automatically in your journal.</div>
+
+        <!-- Step 1: Token -->
+        <div class="card" style="margin-bottom:12px">
+          <div class="card-title" style="margin-bottom:10px">
+            <span style="background:var(--accent);color:#040605;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;margin-right:8px;flex-shrink:0">1</span>
+            Generate your webhook token
           </div>
-          <div style="font-size:16px;font-weight:700;margin-bottom:8px">Coming Soon</div>
-          <div style="font-size:13px;color:var(--text-muted);line-height:1.8;max-width:400px;margin:0 auto 20px">
-            Direct connection to your MT4/MT5 broker account.<br>
-            Your trades will sync automatically — no manual entry needed.
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">This unique token links your MT4/MT5 to your TradeMind account. Keep it private.</div>
+          <div id="mt-token-box" style="display:none;margin-bottom:12px">
+            <div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Your Webhook URL</div>
+            <div style="display:flex;gap:6px;align-items:center">
+              <input id="mt-webhook-url" class="fi2" readonly style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--accent);cursor:pointer" onclick="this.select()">
+              <button class="btn btn-ghost btn-sm" onclick="copyWebhook()">Copy</button>
+            </div>
+            <div style="font-size:10px;color:var(--text-muted);margin-top:4px">Token: <span id="mt-token-display" style="font-family:'JetBrains Mono',monospace;color:var(--text)"></span></div>
           </div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:24px">
-            <span class="bdg bg">IC Markets</span>
-            <span class="bdg bg">Pepperstone</span>
-            <span class="bdg bg">Exness</span>
-            <span class="bdg bg">XM</span>
-            <span class="bdg bg">FTMO</span>
-            <span class="bdg bg">The5ers</span>
-            <span class="bdg bg">500+ brokers</span>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-acc btn-sm" id="mt-gen-btn" onclick="generateMTToken()">Generate Token</button>
+            <div id="mt-gen-status" style="font-size:11px;color:var(--text-muted);align-self:center"></div>
           </div>
-          <div style="background:var(--accent-dim);border:1px solid rgba(85,211,150,0.2);border-radius:var(--radius-sm);padding:14px;max-width:360px;margin:0 auto 20px">
-            <div style="font-size:11px;font-weight:700;color:var(--accent);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px">In the meantime</div>
-            <div style="font-size:12px;color:var(--text-muted);line-height:1.7">Import your trades manually via CSV export from MT4/MT5 — takes less than 30 seconds.</div>
-          </div>
-          <input class="fi2" id="notify-email" type="email" placeholder="Enter your email to get notified" style="max-width:280px;margin:0 auto;display:block;margin-bottom:10px;text-align:center">
-          <button class="btn btn-acc" onclick="notifyMT5()">Notify Me When Available</button>
-          <div id="notify-status" style="font-size:11px;margin-top:8px;color:var(--accent)"></div>
         </div>
+
+        <!-- Step 2: Download EA -->
+        <div class="card" style="margin-bottom:12px">
+          <div class="card-title" style="margin-bottom:10px">
+            <span style="background:var(--accent);color:#040605;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;margin-right:8px;flex-shrink:0">2</span>
+            Download and install the Expert Advisor
+          </div>
+          <div style="font-size:12px;color:var(--text-muted);line-height:1.8;margin-bottom:12px">
+            1. Download the EA file below<br>
+            2. In MT4/MT5 → <strong style="color:var(--text)">File → Open Data Folder → MQL5 → Experts</strong><br>
+            3. Paste the <code style="background:var(--surface2);padding:1px 5px;border-radius:4px;font-size:11px">TradeMindEA.mq5</code> file there<br>
+            4. Back in MT5: <strong style="color:var(--text)">Navigator → Expert Advisors → right-click → Refresh</strong>
+          </div>
+          <a href="/TradeMindEA.mq5" download class="btn btn-ghost btn-sm" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download TradeMindEA.mq5
+          </a>
+        </div>
+
+        <!-- Step 3: Configure EA -->
+        <div class="card" style="margin-bottom:12px">
+          <div class="card-title" style="margin-bottom:10px">
+            <span style="background:var(--accent);color:#040605;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;margin-right:8px;flex-shrink:0">3</span>
+            Configure the EA in MT4/MT5
+          </div>
+          <div style="font-size:12px;color:var(--text-muted);line-height:1.8;margin-bottom:12px">
+            1. Drag the EA onto any chart<br>
+            2. In the EA settings, paste your <strong style="color:var(--text)">Webhook URL</strong> and <strong style="color:var(--text)">Token</strong> from Step 1<br>
+            3. Go to <strong style="color:var(--text)">Tools → Options → Expert Advisors</strong> → check <strong style="color:var(--text)">Allow WebRequest</strong><br>
+            4. Add <code style="background:var(--surface2);padding:1px 5px;border-radius:4px;font-size:11px">https://trademind-nine.vercel.app</code> to the allowed URLs list<br>
+            5. Enable the EA (green button in toolbar) — done!
+          </div>
+          <div style="background:var(--accent-dim);border:1px solid rgba(85,211,150,0.15);border-radius:var(--radius-sm);padding:10px;font-size:11px;color:var(--text-muted)">
+            <strong style="color:var(--accent)">Works with all brokers</strong> — IC Markets, Pepperstone, Exness, XM, FTMO, The5ers and 500+ others.
+          </div>
+        </div>
+
         <!-- CSV Import -->
-        <div class="card" style="margin-top:14px">
-          <div class="card-title">Import via CSV — Available Now</div>
+        <div class="card">
+          <div class="card-title">Or import via CSV</div>
           <div style="font-size:12px;color:var(--text-muted);line-height:1.8;margin-bottom:14px">
             <strong style="color:var(--text)">MT5:</strong> View → Terminal → History → Right-click → Save as Report (CSV)<br>
             <strong style="color:var(--text)">MT4:</strong> Account History → Right-click → Save as Report
@@ -1436,12 +1468,40 @@ var METAAPI_ACCOUNT_ID='03f148a4-4e69-4a31-8c25-992fb8471e49';
 var WORKER_URL='https://trademind-chat.shopapple090.workers.dev/';
 
 async 
-function notifyMT5(){
-  var email=document.getElementById('notify-email').value.trim();
-  var status=document.getElementById('notify-status');
-  if(!email){status.textContent='Enter your email first.';return;}
-  status.textContent='Thanks! We will notify you when MT5 auto-import is ready.';
-  document.getElementById('notify-email').value='';
+function notifyMT5(){}
+
+async function loadMTToken(){
+  var r=await sb.from('mt_tokens').select('token').eq('user_id',user.id).single();
+  if(r.data&&r.data.token) showMTToken(r.data.token);
+}
+
+function showMTToken(token){
+  var url='https://trademind-nine.vercel.app/api/mt-import';
+  document.getElementById('mt-webhook-url').value=url;
+  document.getElementById('mt-token-display').textContent=token;
+  document.getElementById('mt-token-box').style.display='block';
+  document.getElementById('mt-gen-btn').textContent='Regenerate Token';
+}
+
+async function generateMTToken(){
+  var btn=document.getElementById('mt-gen-btn');
+  var status=document.getElementById('mt-gen-status');
+  btn.disabled=true;btn.textContent='Generating...';
+  var token=Array.from(crypto.getRandomValues(new Uint8Array(24))).map(b=>b.toString(16).padStart(2,'0')).join('');
+  var r=await sb.from('mt_tokens').upsert({user_id:user.id,token:token},{onConflict:'user_id'});
+  btn.disabled=false;
+  if(r.error){status.textContent='Error: '+r.error.message;return;}
+  showMTToken(token);
+  status.textContent='Token generated!';
+  setTimeout(function(){status.textContent='';},3000);
+}
+
+function copyWebhook(){
+  var url=document.getElementById('mt-webhook-url').value;
+  var token=document.getElementById('mt-token-display').textContent;
+  navigator.clipboard.writeText(url).catch(function(){});
+  var btn=event.target;btn.textContent='Copied!';
+  setTimeout(function(){btn.textContent='Copy';},2000);
 }
 
 async function connectMT(){
@@ -1658,6 +1718,7 @@ function nav(id,el){
   if(id==='analytics')renderAnalytics();
   if(id==='calendar')renderCal();
   if(id==='rules'){renderRules();analyzeRulesAI();}
+  if(id==='connect')loadMTToken();
   if(id==='policies'){setTimeout(function(){showPolicy('terms');},50);}
   if(id==='profile')loadAPIKeys();
 }
