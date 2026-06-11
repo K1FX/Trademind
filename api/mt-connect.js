@@ -1,10 +1,5 @@
 const METAAPI_TOKEN = process.env.METAAPI_TOKEN;
 const PROVISION_URL = 'https://mt-provisioning-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts';
-// MetaStats and Client API bases to try in order
-const API_BASES = [
-  { base: 'https://metastats-api-v1.london.agiliumtrade.ai', path: (id,s,e) => `/users/current/accounts/${id}/historical-trades/${encodeURIComponent(s)}/${encodeURIComponent(e)}`, key: 'trades' },
-  { base: 'https://mt-client-api-v1.london.agiliumtrade.ai',  path: (id,s,e) => `/users/current/accounts/${id}/history-deals/time/${encodeURIComponent(s)}/${encodeURIComponent(e)}`, key: null }
-];
 const SUPABASE_URL  = process.env.SUPABASE_URL;
 const SUPABASE_KEY  = process.env.SUPABASE_SERVICE_KEY;
 
@@ -19,18 +14,14 @@ export default async function handler(req, res){
 
   const { action, login, password, server, platform, accountId, userId, fromDate, toDate } = req.body || {};
 
-  // ── CREATE: find existing or create new account ──────────────────
+  // ── CREATE ──────────────────────────────────────────────────────────
   if(action === 'create'){
-    // If client already has accountId (from localStorage), just return it
     if(accountId){
       return res.status(200).json({ accountId, existing: true, ready: false });
     }
-    // Otherwise need credentials to create
     if(!login || !password || !server || !userId)
       return res.status(400).json({ error: 'Missing fields' });
-
     try {
-      // Check Supabase for existing account
       const sbRes = await fetch(
         `${SUPABASE_URL}/rest/v1/mt_tokens?user_id=eq.${userId}&select=mt_account_id`,
         { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
@@ -39,7 +30,6 @@ export default async function handler(req, res){
       if(rows && rows[0] && rows[0].mt_account_id)
         return res.status(200).json({ accountId: rows[0].mt_account_id, existing: true, ready: false });
 
-      // Create new MetaAPI account
       const cr = await fetch(PROVISION_URL, {
         method: 'POST', headers: h,
         body: JSON.stringify({ login: String(login), password, name: 'TradeMind-'+login, server, platform: platform||'mt5', magic: 0, application: 'MetaApi', type: 'cloud-g2' })
@@ -47,8 +37,6 @@ export default async function handler(req, res){
       const acc = await cr.json();
       if(!acc.id && !acc._id) return res.status(400).json({ error: acc.message || JSON.stringify(acc) });
       const newId = acc.id || acc._id;
-
-      // Save to Supabase
       await fetch(`${SUPABASE_URL}/rest/v1/mt_tokens`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, Prefer: 'resolution=merge-duplicates' },
@@ -60,7 +48,7 @@ export default async function handler(req, res){
     }
   }
 
-  // ── STATUS: check connection + trigger deploy if needed ──────────
+  // ── STATUS ──────────────────────────────────────────────────────────
   if(action === 'status'){
     if(!accountId) return res.status(400).json({ error: 'Missing accountId' });
     try {
@@ -68,48 +56,47 @@ export default async function handler(req, res){
       const acc = await r.json();
       const state = (acc.state||'').toUpperCase();
       const conn  = (acc.connectionStatus||'').toUpperCase();
-      const ready = conn.includes('CONNECTED');
+      const ready = state === 'DEPLOYED' || conn.includes('CONNECTED');
       if(!ready && state !== 'DEPLOYING')
         await fetch(`${PROVISION_URL}/${accountId}/deploy`, { method: 'POST', headers: h });
-      return res.status(200).json({ state: acc.state, connectionStatus: acc.connectionStatus, ready, _acc: acc });
+      return res.status(200).json({ state: acc.state, connectionStatus: acc.connectionStatus, ready });
     } catch(e){
       return res.status(200).json({ error: 'status failed: ' + e.message, ready: false });
     }
   }
 
-  // ── IMPORT: fetch trades from MetaStats, return to client ────────
+  // ── IMPORT ──────────────────────────────────────────────────────────
   if(action === 'import'){
     if(!accountId || !userId) return res.status(400).json({ error: 'Missing fields' });
     try {
       const startIso = fromDate ? new Date(fromDate).toISOString() : '2018-01-01T00:00:00.000Z';
       const endIso   = toDate   ? new Date(toDate + 'T23:59:59').toISOString() : new Date().toISOString();
 
-      // Get account region for client API
       const accR = await fetch(`${PROVISION_URL}/${accountId}`, { headers: h });
       const accInfo = await accR.json();
       const region = (accInfo.region||'london').toLowerCase().replace(/\s/g,'-');
 
-      // Try only the account's actual region — max 2 calls to stay under 10s Vercel limit
-      const dynamicBases = [
+      // Client API for account's region + MetaStats as fallback
+      const apis = [
         { base: `https://mt-client-api-v1.${region}.agiliumtrade.ai`, path: (id,s,e) => `/users/current/accounts/${id}/history-deals/time/${encodeURIComponent(s)}/${encodeURIComponent(e)}`, key: null },
         { base: `https://metastats-api-v1.${region}.agiliumtrade.ai`, path: (id,s,e) => `/users/current/accounts/${id}/historical-trades/${encodeURIComponent(s)}/${encodeURIComponent(e)}`, key: 'trades' },
       ];
 
       let raw = [];
       let lastErr = '';
-      for(const api of dynamicBases){
+      for(const api of apis){
         try {
           const url = api.base + api.path(accountId, startIso, endIso);
           const r = await fetch(url, { headers: h });
           const text = await r.text();
-          if(r.status >= 400){ lastErr = r.status+' from '+api.base.slice(8,40); continue; }
+          if(r.status >= 500){ lastErr = r.status+' from '+api.base.slice(8,50); continue; }
           const data = JSON.parse(text);
-          if(data && data.error){ lastErr = data.error+': '+data.message; continue; }
-          raw = api.key ? (data[api.key]||[]) : (Array.isArray(data) ? data : (data.deals||[]));
-          if(!raw.length){ lastErr = 'empty from '+api.base.slice(8,40); continue; }
-          break;
-        } catch(e){ lastErr = 'err '+api.base.slice(8,40)+': '+e.message; continue; }
+          const arr = api.key ? (data[api.key]||[]) : (Array.isArray(data) ? data : (data.deals||[]));
+          if(arr.length){ raw = arr; break; }
+          lastErr = 'empty from '+api.base.slice(8,50)+' status='+r.status;
+        } catch(e){ lastErr = 'err '+api.base.slice(8,50)+': '+e.message; }
       }
+
       if(!raw.length)
         return res.status(200).json({ error: lastErr, trades: [] });
 
