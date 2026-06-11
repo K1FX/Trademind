@@ -16,7 +16,7 @@ export default async function handler(req, res){
   if(req.method === 'OPTIONS') return res.status(200).end();
   if(req.method !== 'POST') return res.status(405).end();
 
-  const { action, login, password, server, platform, accountId, userId } = req.body;
+  const { action, login, password, server, platform, accountId, userId, fromDate, toDate } = req.body;
 
   // ── STEP 1: find or create account ──────────────────────────────
   if(action === 'create'){
@@ -95,7 +95,9 @@ export default async function handler(req, res){
   if(action === 'import'){
     if(!accountId || !userId) return res.status(400).json({ error: 'Missing fields' });
 
-    const tradesRes = await fetch(`${METASTATS_URL}/${accountId}/historical-trades/0/1000`, { headers: apiHeaders });
+    const startTime = fromDate ? new Date(fromDate).toISOString() : new Date(Date.now() - 365*24*60*60*1000).toISOString();
+    const endTime   = toDate   ? new Date(toDate + 'T23:59:59').toISOString() : new Date().toISOString();
+    const tradesRes = await fetch(`${METASTATS_URL}/${accountId}/historical-trades/${encodeURIComponent(startTime)}/${encodeURIComponent(endTime)}`, { headers: apiHeaders });
     const tradesData = await tradesRes.json();
     const mtTrades = tradesData.trades || [];
 
@@ -103,7 +105,7 @@ export default async function handler(req, res){
     await fetch(`${PROVISION_URL}/${accountId}/undeploy`, { method: 'POST', headers: apiHeaders });
 
     if(!mtTrades.length)
-      return res.status(200).json({ imported: 0 });
+      return res.status(200).json({ imported: 0, found: 0 });
 
     const toInsert = [];
     for(const t of mtTrades){
@@ -145,7 +147,7 @@ export default async function handler(req, res){
       if(insRes.ok) imported += batch.length;
     }
 
-    return res.status(200).json({ imported });
+    return res.status(200).json({ imported, found: toInsert.length });
   }
 
   return res.status(400).json({ error: 'Unknown action' });
