@@ -1632,8 +1632,13 @@ async function syncMT(){
   mtProgressStart('Reconnexion au broker...');
   mtProgressSet(5,'Reconnexion au broker...');
   status.innerHTML='<span style="color:var(--text-muted)">⏳ Reconnexion au broker...</span>';
+  var createProg=5;
+  var createTimer=setInterval(function(){
+    if(createProg<45){createProg+=2;mtProgressSet(createProg,'Reconnexion au broker...');}
+  },400);
 
   var d=await mtApi({action:'create',login:login||'',password:pwd||'',server:srv||'',platform:plat,userId:user.id});
+  clearInterval(createTimer);
   if(d.error){
     mtProgressEnd();
     status.innerHTML='<span style="color:var(--red)">Erreur : '+d.error+'</span>';
