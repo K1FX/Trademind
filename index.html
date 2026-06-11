@@ -1622,6 +1622,10 @@ async function mtImportDirect(accountId, status, btn){
     return;
   }
 
+  // Delete previously imported MT trades for this user before re-inserting
+  mtProgressSet(70,'Suppression des anciens trades MT...');
+  await sb.from('trades').delete().eq('user_id',user.id).eq('setup','MT Auto-Import');
+
   // Insert directly into Supabase with real progress
   var total=trades.length;
   var imported=0;
