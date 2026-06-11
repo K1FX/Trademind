@@ -1459,6 +1459,11 @@ function showMTToken(token){
   document.getElementById('mt-gen-btn').textContent='Regenerate Token';
 }
 
+async function mtApi(body){
+  var r=await fetch('/api/mt-connect',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  return r.json();
+}
+
 async function syncMT(){
   var login=document.getElementById('mt-login').value.trim();
   var pwd=document.getElementById('mt-pwd').value;
@@ -1466,24 +1471,39 @@ async function syncMT(){
   var plat=document.getElementById('mt-plat').value;
   var status=document.getElementById('mt-status');
   var btn=document.getElementById('mt-sync-btn');
+  var resetBtn=function(){btn.disabled=false;btn.innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:6px"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>Importer mes trades';};
   if(!login||!pwd||!srv){status.textContent='Remplis tous les champs.';status.style.color='var(--red)';return;}
-  btn.disabled=true;btn.textContent='Connexion en cours... (30-60 sec)';
-  status.textContent='Connexion à ton broker...';status.style.color='var(--text-muted)';
-  try{
-    var r=await fetch('/api/mt-connect',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({login:login,password:pwd,server:srv,platform:plat,userId:user.id})
-    });
-    var d=await r.json();
-    btn.disabled=false;btn.innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:6px"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>Importer mes trades';
-    if(d.error){status.textContent='Erreur : '+d.error;status.style.color='var(--red)';return;}
-    status.textContent=d.imported+' trades importés avec succès !';status.style.color='var(--accent)';
-    await loadTrades();updateDash();renderJ();renderCal();renderAnalytics();
-  }catch(e){
-    btn.disabled=false;btn.textContent='Importer mes trades';
-    status.textContent='Erreur : '+e.message;status.style.color='var(--red)';
+  btn.disabled=true;btn.textContent='Connexion...';
+  status.style.color='var(--text-muted)';
+
+  // Step 1 — create account
+  status.textContent='Étape 1/3 — Création du compte...';
+  var d=await mtApi({action:'create',login,password:pwd,server:srv,platform:plat,userId:user.id});
+  if(d.error){status.textContent='Erreur : '+d.error;status.style.color='var(--red)';resetBtn();return;}
+  var accountId=d.accountId;
+
+  // Step 2 — poll until connected (max 90s)
+  status.textContent='Étape 2/3 — Connexion au broker...';
+  var connected=false;
+  for(var i=0;i<18;i++){
+    await new Promise(function(r){setTimeout(r,5000);});
+    var s=await mtApi({action:'status',accountId:accountId});
+    status.textContent='Étape 2/3 — '+( s.connectionStatus||s.state||'en attente...')+' ('+((i+1)*5)+'s)';
+    if(s.state==='DEPLOYED'&&s.connectionStatus==='CONNECTED'){connected=true;break;}
+    if(s.state==='ERROR'){break;}
   }
+  if(!connected){
+    status.textContent='Timeout : vérifie ton login, mot de passe et nom de serveur.';
+    status.style.color='var(--red)';resetBtn();return;
+  }
+
+  // Step 3 — import trades
+  status.textContent='Étape 3/3 — Importation des trades...';
+  var imp=await mtApi({action:'import',accountId:accountId,userId:user.id});
+  resetBtn();
+  if(imp.error){status.textContent='Erreur import : '+imp.error;status.style.color='var(--red)';return;}
+  status.textContent=imp.imported+' trades importés avec succès !';status.style.color='var(--accent)';
+  await loadTrades();updateDash();renderJ();renderCal();renderAnalytics();
 }
 
 async function generateMTToken(){
