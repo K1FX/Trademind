@@ -89,11 +89,14 @@ export default async function handler(req, res){
       const accInfo = await accR.json();
       const region = (accInfo.region||'london').toLowerCase().replace(/\s/g,'-');
 
-      // Also try region-specific client API
-      const dynamicBases = [...API_BASES];
-      if(region !== 'london'){
-        dynamicBases.push({ base: `https://mt-client-api-v1.${region}.agiliumtrade.ai`, path: (id,s,e) => `/users/current/accounts/${id}/history-deals/time/${encodeURIComponent(s)}/${encodeURIComponent(e)}`, key: null });
+      // Build API list: account's real region first, then all known regions as fallback
+      const allRegions = [region, 'london', 'new-york', 'singapore', 'sydney'].filter((v,i,a)=>a.indexOf(v)===i);
+      const dynamicBases = [];
+      for(const r of allRegions){
+        dynamicBases.push({ base: `https://mt-client-api-v1.${r}.agiliumtrade.ai`, path: (id,s,e) => `/users/current/accounts/${id}/history-deals/time/${encodeURIComponent(s)}/${encodeURIComponent(e)}`, key: null });
       }
+      // MetaStats as last resort
+      dynamicBases.push({ base: `https://metastats-api-v1.${region}.agiliumtrade.ai`, path: (id,s,e) => `/users/current/accounts/${id}/historical-trades/${encodeURIComponent(s)}/${encodeURIComponent(e)}`, key: 'trades' });
 
       let raw = [];
       let lastErr = '';
