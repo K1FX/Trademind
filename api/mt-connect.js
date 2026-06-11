@@ -18,28 +18,29 @@ export default async function handler(req, res){
 
   const { action, login, password, server, platform, accountId, userId } = req.body;
 
-  // ── STEP 1: create or find account ──────────────────────────────
+  // ── STEP 1: find or create account ──────────────────────────────
   if(action === 'create'){
     if(!login || !password || !server || !userId)
       return res.status(400).json({ error: 'Missing fields' });
 
-    // Check if already exists
-    const listRes = await fetch(PROVISION_URL, { headers: apiHeaders });
-    const accounts = await listRes.json();
-    const existing = Array.isArray(accounts) && accounts.find(a =>
-      (String(a.login) === String(login) || (a.name||'').includes(String(login))) && a.server === server
+    // Check if accountId already saved in Supabase for this user
+    const savedRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/mt_tokens?user_id=eq.${userId}&select=mt_account_id`,
+      { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
     );
-
-    if(existing){
-      const id = existing._id || existing.id;
-      const stateUp = (existing.state||'').toUpperCase();
-      const connUp  = (existing.connectionStatus||'').toUpperCase();
+    const savedRows = await savedRes.json();
+    if(savedRows && savedRows[0] && savedRows[0].mt_account_id){
+      const savedId = savedRows[0].mt_account_id;
+      const accRes = await fetch(`${PROVISION_URL}/${savedId}`, { headers: apiHeaders });
+      const acc = await accRes.json();
+      const stateUp = (acc.state||'').toUpperCase();
+      const connUp  = (acc.connectionStatus||'').toUpperCase();
       const ready   = stateUp === 'DEPLOYED' || connUp.includes('CONNECTED');
-      if(!ready) await fetch(`${PROVISION_URL}/${id}/deploy`, { method: 'POST', headers: apiHeaders });
-      return res.status(200).json({ accountId: id, existing: true, ready });
+      if(!ready) await fetch(`${PROVISION_URL}/${savedId}/deploy`, { method: 'POST', headers: apiHeaders });
+      return res.status(200).json({ accountId: savedId, existing: true, ready });
     }
 
-    // Create new
+    // Create new account
     const createRes = await fetch(PROVISION_URL, {
       method: 'POST',
       headers: apiHeaders,
@@ -58,7 +59,21 @@ export default async function handler(req, res){
     if(!created.id && !created._id)
       return res.status(400).json({ error: created.message || JSON.stringify(created) });
 
-    return res.status(200).json({ accountId: created.id || created._id });
+    const newId = created.id || created._id;
+
+    // Save accountId to Supabase for future use
+    await fetch(`${SUPABASE_URL}/rest/v1/mt_tokens`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`,
+        Prefer: 'resolution=merge-duplicates'
+      },
+      body: JSON.stringify({ user_id: userId, token: 'mt-'+userId, mt_account_id: newId })
+    });
+
+    return res.status(200).json({ accountId: newId, ready: false });
   }
 
   // ── STEP 2: check connection status ─────────────────────────────
