@@ -744,7 +744,17 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
   <div class="modal modal-lg">
     <div class="modal-hdr"><span id="det-title">Trade Detail</span><button class="mc-btn" onclick="closeM('m-detail')">x</button></div>
     <div id="det-content"></div>
-    <div class="ma"><button class="btn btn-red btn-sm" id="det-del-btn">Delete</button><button class="btn btn-blue btn-sm" onclick="analyzeTradeAI()">AI Analysis</button><button class="btn btn-ghost" onclick="closeM('m-detail')">Close</button></div>
+    <div class="ma"><button class="btn btn-red btn-sm" id="det-del-btn">Delete</button><button class="btn btn-acc btn-sm" onclick="openEditInDetail()">✏️ Modifier</button><button class="btn btn-blue btn-sm" onclick="analyzeTradeAI()">AI Analysis</button><button class="btn btn-ghost" onclick="closeM('m-detail')">Close</button></div>
+    <div id="det-edit-form" style="display:none;margin-top:14px;border-top:1px solid var(--border);padding-top:14px">
+      <div class="fg"><label class="fl">Notes</label><textarea class="fi2" id="det-edit-notes" rows="3" style="resize:vertical"></textarea></div>
+      <div class="fg"><label class="fl">Setup</label><input class="fi2" id="det-edit-setup"></div>
+      <div class="fg"><label class="fl">Screenshot (URL ou base64)</label><input class="fi2" id="det-edit-screenshot" placeholder="https://... ou colle une image"></div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="btn btn-acc btn-sm" onclick="saveTradeEdit()">Sauvegarder</button>
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('det-edit-form').style.display='none'">Annuler</button>
+      </div>
+      <div id="det-edit-status" style="font-size:11px;margin-top:6px"></div>
+    </div>
     <div class="ai-box" id="det-ai-box" style="margin-top:14px;display:none"><div class="ai-hdr"><div class="ai-dot"></div><div class="ai-lbl">AI Trade Analysis</div></div><div class="ai-txt" id="det-ai-txt"></div></div>
   </div>
 </div>
@@ -985,6 +995,32 @@ function openTradeDetail(t){
   document.getElementById('det-content').innerHTML=html;
   document.getElementById('det-ai-box').style.display='none';
   openM('m-detail');
+}
+
+function openEditInDetail(){
+  if(!currentTrade) return;
+  var f=document.getElementById('det-edit-form');
+  f.style.display='block';
+  document.getElementById('det-edit-notes').value=currentTrade.notes||'';
+  document.getElementById('det-edit-setup').value=currentTrade.setup||'';
+  document.getElementById('det-edit-screenshot').value=currentTrade.screenshot||'';
+  document.getElementById('det-edit-status').textContent='';
+}
+
+async function saveTradeEdit(){
+  if(!currentTrade) return;
+  var notes=document.getElementById('det-edit-notes').value;
+  var setup=document.getElementById('det-edit-setup').value;
+  var screenshot=document.getElementById('det-edit-screenshot').value;
+  var st=document.getElementById('det-edit-status');
+  st.textContent='Sauvegarde...';
+  var r=await sb.from('trades').update({notes,setup,screenshot:screenshot||null}).eq('id',currentTrade.id);
+  if(r.error){st.style.color='var(--red)';st.textContent='Erreur : '+r.error.message;return;}
+  currentTrade.notes=notes;currentTrade.setup=setup;currentTrade.screenshot=screenshot||null;
+  st.style.color='var(--accent)';st.textContent='✅ Sauvegardé !';
+  document.getElementById('det-edit-form').style.display='none';
+  openTradeDetail(currentTrade);
+  await loadTrades();updateDash();renderJ();renderCal();renderAnalytics();
 }
 
 async function analyzeTradeAI(){
@@ -1605,8 +1641,9 @@ async function mtImportDirect(accountId, status, btn){
   btn.disabled=false;btn.innerHTML=MT_BTN_HTML;
   mtProgressSet(100,'Terminé !');
   setTimeout(mtProgressEnd,2000);
-  status.innerHTML='<span style="color:var(--accent)">✅ '+imported+' trades importés avec succès !</span>';
-  await loadTrades();updateDash();renderJ();renderCal();renderAnalytics();
+  await loadTrades();
+  updateDash();renderJ();renderCal();renderAnalytics();
+  status.innerHTML='<span style="color:var(--accent)">✅ '+imported+' trades importés ! <span onclick="nav(\'journal\',null)" style="cursor:pointer;text-decoration:underline">Voir le journal →</span></span>';
 }
 
 var mtPollTimer=null;
