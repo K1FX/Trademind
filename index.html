@@ -1664,8 +1664,8 @@ async function syncMT(){
   mtPollTimer=setInterval(async function(){
     elapsed+=5;
     if(connProg<48){connProg+=2;mtProgressSet(connProg,'En attente de connexion... ('+elapsed+'s)');}
-    status.innerHTML='<span style="color:var(--text-muted)">⏳ Connexion en cours... <span style="font-size:11px">('+elapsed+'s)</span></span>';
     var s=await mtApi({action:'status',accountId:d.accountId});
+    status.innerHTML='<span style="color:var(--text-muted)">⏳ '+elapsed+'s — state: '+(s.state||'?')+' / '+(s.connectionStatus||s.error||'?')+'</span>';
     if(s.ready){
       clearInterval(mtPollTimer);
       mtProgressSet(50,'Broker connecté !');
