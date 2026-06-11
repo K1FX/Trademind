@@ -97,6 +97,7 @@ export default async function handler(req, res){
   // ── STEP 3: fetch trades from MetaStats, return to client ───────
   if(action === 'import'){
     if(!accountId || !userId) return res.status(400).json({ error: 'Missing fields' });
+    try {
 
     // Get account info to find region
     const accRes = await fetch(`${PROVISION_URL}/${accountId}`, { headers: apiHeaders });
@@ -150,7 +151,10 @@ export default async function handler(req, res){
       });
     }
 
-    return res.status(200).json({ trades: toInsert, found: toInsert.length, rawCount: mtTrades.length });
+      return res.status(200).json({ trades: toInsert, found: toInsert.length, rawCount: mtTrades.length });
+    } catch(e) {
+      return res.status(200).json({ error: e.message, stack: e.stack });
+    }
   }
 
   return res.status(400).json({ error: 'Unknown action' });
