@@ -1642,7 +1642,16 @@ async function mtImportDirect(accountId, status, btn){
   mtProgressSet(100,'Terminé !');
   setTimeout(mtProgressEnd,2000);
   await loadTrades();
-  updateDash();renderJ();renderCal();renderAnalytics();
+  updateDash();renderAnalytics();renderJ();
+  // Navigate calendar to most recent imported trade
+  if(trades.length){
+    var latest=trades.reduce(function(a,b){return (a.date||'')>(b.date||'')?a:b;});
+    if(latest.date){
+      calYear=parseInt(latest.date.substring(0,4));
+      calMonth=parseInt(latest.date.substring(5,7))-1;
+    }
+  }
+  renderCal();
   status.innerHTML='<span style="color:var(--accent)">✅ '+imported+' trades importés ! <span onclick="nav(\'journal\',null)" style="cursor:pointer;text-decoration:underline">Voir le journal →</span></span>';
 }
 
