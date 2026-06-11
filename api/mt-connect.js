@@ -65,6 +65,20 @@ export default async function handler(req, res){
     }
   }
 
+  // ── GETTOKEN: return token so client can call MetaAPI directly ──────
+  if(action === 'gettoken'){
+    if(!accountId) return res.status(400).json({ error: 'Missing accountId' });
+    try {
+      const accR = await fetch(`${PROVISION_URL}/${accountId}`, { headers: h });
+      const accInfo = await accR.json();
+      if(accInfo.error || accInfo.message) return res.status(200).json({ error: accInfo.message });
+      const region = (accInfo.region||'london').toLowerCase().replace(/\s/g,'-');
+      return res.status(200).json({ token: METAAPI_TOKEN, region });
+    } catch(e){
+      return res.status(200).json({ error: 'gettoken failed: '+e.message });
+    }
+  }
+
   // ── IMPORT ──────────────────────────────────────────────────────────
   if(action === 'import'){
     if(!accountId || !userId) return res.status(400).json({ error: 'Missing fields' });
