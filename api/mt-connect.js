@@ -73,22 +73,22 @@ export default async function handler(req, res){
         { base: `https://metastats-api-v1.${region}.agiliumtrade.ai`,    path: (id,s,e) => `/users/current/accounts/${id}/historical-trades/${encodeURIComponent(s)}/${encodeURIComponent(e)}`, key: 'trades' },
       ];
 
-      let raw = [], lastErr = '';
+      let raw = [];
+      const errs = [];
       for(const api of apis){
         try {
           const url = api.base + api.path(accountId, startIso, endIso);
           const r   = await fetch(url, { headers: h });
           const txt = await r.text();
-          if(r.status >= 500){ lastErr = r.status+' from '+api.base.slice(8,50); continue; }
-          if(r.status >= 400){ lastErr = r.status+' from '+api.base.slice(8,50)+' body='+txt.slice(0,200); continue; }
+          if(r.status >= 400){ errs.push(r.status+':'+txt.slice(0,150)); continue; }
           const data = JSON.parse(txt);
           const arr  = api.key ? (data[api.key]||[]) : (Array.isArray(data) ? data : (data.deals||[]));
           if(arr.length){ raw = arr; break; }
-          lastErr = 'empty ('+r.status+') from '+api.base.slice(8,50);
-        } catch(e){ lastErr = 'err '+api.base.slice(8,50)+': '+e.message; }
+          errs.push('empty:'+txt.slice(0,100));
+        } catch(e){ errs.push('DNS:'+e.message.slice(0,80)); }
       }
 
-      if(!raw.length) return res.status(200).json({ error: `region=${region} | ${lastErr}`, trades: [] });
+      if(!raw.length) return res.status(200).json({ error: `region=${region} | `+errs.join(' || '), trades: [] });
 
       const fromD = fromDate ? new Date(fromDate) : null;
       const toD   = toDate   ? new Date(toDate + 'T23:59:59') : null;
