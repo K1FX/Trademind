@@ -582,9 +582,18 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
               <input class="fi2" id="mt-from" type="date" style="width:100%">
             </div>
             <div style="flex:1">
-              <label class="fl">Au (date de fin)</label>
-              <input class="fi2" id="mt-to" type="date" style="width:100%">
+              <label class="fl">Au (date de fin) <span style="font-weight:400;color:var(--text-muted)">— vide = sans limite</span></label>
+              <input class="fi2" id="mt-to" type="date" style="width:100%" placeholder="Sans limite">
             </div>
+          </div>
+          <div style="font-size:11px;margin-bottom:10px;margin-top:-6px">
+            <span onclick="document.getElementById('mt-from').value='';document.getElementById('mt-to').value=''" style="color:var(--accent);cursor:pointer;text-decoration:underline">Tout l'historique</span>
+            &nbsp;·&nbsp;
+            <span onclick="var d=new Date();var f=new Date(d);f.setMonth(f.getMonth()-1);document.getElementById('mt-from').value=f.toISOString().split('T')[0];document.getElementById('mt-to').value=''" style="color:var(--text-muted);cursor:pointer;text-decoration:underline">30 derniers jours</span>
+            &nbsp;·&nbsp;
+            <span onclick="var d=new Date();var f=new Date(d);f.setMonth(f.getMonth()-3);document.getElementById('mt-from').value=f.toISOString().split('T')[0];document.getElementById('mt-to').value=''" style="color:var(--text-muted);cursor:pointer;text-decoration:underline">3 mois</span>
+            &nbsp;·&nbsp;
+            <span onclick="var d=new Date();var f=new Date(d);f.setFullYear(f.getFullYear()-1);document.getElementById('mt-from').value=f.toISOString().split('T')[0];document.getElementById('mt-to').value=''" style="color:var(--text-muted);cursor:pointer;text-decoration:underline">1 an</span>
           </div>
           <div style="background:var(--accent-dim);border:1px solid rgba(85,211,150,0.15);border-radius:var(--radius-sm);padding:10px;font-size:11px;color:var(--text-muted);margin-bottom:14px;line-height:1.7">
             🔒 Tes identifiants sont utilisés uniquement pour lire ton historique de trades. Ils ne sont jamais stockés.<br>
@@ -1474,13 +1483,10 @@ async function loadMTToken(){
   if(r.data&&r.data.mt_account_id){
     localStorage.setItem('mt_account_id_'+user.id, r.data.mt_account_id);
   }
-  // Set default date range: last 3 months → today
-  var toEl=document.getElementById('mt-to');
+  // Default: from = 3 months ago, to = empty (no limit)
   var fromEl=document.getElementById('mt-from');
-  if(toEl&&!toEl.value){
-    var now=new Date();
-    toEl.value=now.toISOString().split('T')[0];
-    var from=new Date(now);from.setMonth(from.getMonth()-3);
+  if(fromEl&&!fromEl.value){
+    var from=new Date();from.setMonth(from.getMonth()-3);
     fromEl.value=from.toISOString().split('T')[0];
   }
 }
