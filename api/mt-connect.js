@@ -122,14 +122,15 @@ export default async function handler(req, res){
         if(!t.symbol) continue;
         if(typeUp.includes('BALANCE')||typeUp.includes('CREDIT')||typeUp.includes('COMMISSION')) continue;
         if(entryUp && !entryUp.includes('OUT') && !entryUp.includes('INOUT')) continue;
-        const date = t.time ? t.time.split('T')[0] : new Date().toISOString().split('T')[0];
+        const rawTime = t.time || t.brokerTime || t.closeTime || t.doneTime || t.openTime;
+        const date = rawTime ? String(rawTime).split('T')[0] : new Date().toISOString().split('T')[0];
         if(from && new Date(date) < from) continue;
         if(to   && new Date(date) > to)   continue;
         const pnl = parseFloat(t.profit)||0;
         trades.push({
           user_id: userId, date,
           pair: t.symbol.toUpperCase(),
-          direction: typeUp.includes('SELL') ? 'Long' : 'Short',
+          direction: typeUp.includes('SELL') ? 'Short' : 'Long',
           lots: parseFloat(t.volume)||0,
           pnl,
           entry: parseFloat(t.openPrice)||0,
