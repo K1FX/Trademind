@@ -1,8 +1,9 @@
 const METAAPI_TOKEN = process.env.METAAPI_TOKEN;
 const PROVISION_URL = 'https://mt-provisioning-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts';
-const METASTATS_BASES = [
-  'https://metastats-api-v1.london.agiliumtrade.ai',
-  'https://metastats-api-v1.agiliumtrade.agiliumtrade.ai'
+// MetaStats and Client API bases to try in order
+const API_BASES = [
+  { base: 'https://metastats-api-v1.london.agiliumtrade.ai', path: (id,s,e) => `/users/current/accounts/${id}/historical-trades/${encodeURIComponent(s)}/${encodeURIComponent(e)}`, key: 'trades' },
+  { base: 'https://mt-client-api-v1.london.agiliumtrade.ai',  path: (id,s,e) => `/users/current/accounts/${id}/history-deals/time/${encodeURIComponent(s)}/${encodeURIComponent(e)}`, key: null }
 ];
 const SUPABASE_URL  = process.env.SUPABASE_URL;
 const SUPABASE_KEY  = process.env.SUPABASE_SERVICE_KEY;
@@ -83,19 +84,30 @@ export default async function handler(req, res){
       const startIso = fromDate ? new Date(fromDate).toISOString() : new Date(Date.now() - 2*365*24*60*60*1000).toISOString();
       const endIso   = toDate   ? new Date(toDate + 'T23:59:59').toISOString() : new Date().toISOString();
 
+      // Get account region for client API
+      const accR = await fetch(`${PROVISION_URL}/${accountId}`, { headers: h });
+      const accInfo = await accR.json();
+      const region = (accInfo.region||'london').toLowerCase().replace(/\s/g,'-');
+
+      // Also try region-specific client API
+      const dynamicBases = [...API_BASES];
+      if(region !== 'london'){
+        dynamicBases.push({ base: `https://mt-client-api-v1.${region}.agiliumtrade.ai`, path: (id,s,e) => `/users/current/accounts/${id}/history-deals/time/${encodeURIComponent(s)}/${encodeURIComponent(e)}`, key: null });
+      }
+
       let raw = [];
       let lastErr = '';
-      for(const base of METASTATS_BASES){
+      for(const api of dynamicBases){
         try {
-          const url = `${base}/users/current/accounts/${accountId}/historical-trades/${encodeURIComponent(startIso)}/${encodeURIComponent(endIso)}`;
+          const url = api.base + api.path(accountId, startIso, endIso);
           const r = await fetch(url, { headers: h });
           const text = await r.text();
-          if(r.status >= 500){ lastErr = r.status+' on '+base+': '+text.slice(0,80); continue; }
+          if(r.status >= 500){ lastErr = r.status+' from '+url.slice(0,60); continue; }
           const data = JSON.parse(text);
-          raw = data.trades || (Array.isArray(data) ? data : []);
-          lastErr = 'parsed ok, raw='+raw.length+' url='+url;
+          raw = api.key ? (data[api.key]||[]) : (Array.isArray(data) ? data : (data.deals||[]));
+          lastErr = 'ok from '+url.slice(0,60)+' raw='+raw.length;
           break;
-        } catch(e){ lastErr = 'fetch error on '+base+': '+e.message; continue; }
+        } catch(e){ lastErr = 'err '+api.base.slice(8,40)+': '+e.message; continue; }
       }
       if(!raw.length)
         return res.status(200).json({ error: lastErr, trades: [] });
