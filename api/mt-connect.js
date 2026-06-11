@@ -95,9 +95,7 @@ export default async function handler(req, res){
   if(action === 'import'){
     if(!accountId || !userId) return res.status(400).json({ error: 'Missing fields' });
 
-    const startTime = fromDate ? new Date(fromDate).toISOString() : new Date(Date.now() - 365*24*60*60*1000).toISOString();
-    const endTime   = toDate   ? new Date(toDate + 'T23:59:59').toISOString() : new Date().toISOString();
-    const tradesRes = await fetch(`${METASTATS_URL}/${accountId}/historical-trades/${encodeURIComponent(startTime)}/${encodeURIComponent(endTime)}`, { headers: apiHeaders });
+    const tradesRes = await fetch(`${METASTATS_URL}/${accountId}/historical-trades/0/1000`, { headers: apiHeaders });
     const tradesData = await tradesRes.json();
     const mtTrades = tradesData.trades || [];
 
