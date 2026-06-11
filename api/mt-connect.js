@@ -26,15 +26,17 @@ export default async function handler(req, res){
     // Check if already exists
     const listRes = await fetch(PROVISION_URL, { headers: apiHeaders });
     const accounts = await listRes.json();
-    const existing = Array.isArray(accounts) && accounts.find(a => String(a.login) === String(login) && a.server === server);
+    const existing = Array.isArray(accounts) && accounts.find(a =>
+      (String(a.login) === String(login) || (a.name||'').includes(String(login))) && a.server === server
+    );
 
     if(existing){
       const id = existing._id || existing.id;
-      // Redeploy if needed
-      if(existing.state !== 'DEPLOYED'){
-        await fetch(`${PROVISION_URL}/${id}/deploy`, { method: 'POST', headers: apiHeaders });
-      }
-      return res.status(200).json({ accountId: id, existing: true });
+      const stateUp = (existing.state||'').toUpperCase();
+      const connUp  = (existing.connectionStatus||'').toUpperCase();
+      const ready   = stateUp === 'DEPLOYED' || connUp.includes('CONNECTED');
+      if(!ready) await fetch(`${PROVISION_URL}/${id}/deploy`, { method: 'POST', headers: apiHeaders });
+      return res.status(200).json({ accountId: id, existing: true, ready });
     }
 
     // Create new
