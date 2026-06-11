@@ -81,7 +81,7 @@ export default async function handler(req, res){
   if(action === 'import'){
     if(!accountId || !userId) return res.status(400).json({ error: 'Missing fields' });
     try {
-      const startIso = fromDate ? new Date(fromDate).toISOString() : new Date(Date.now() - 2*365*24*60*60*1000).toISOString();
+      const startIso = fromDate ? new Date(fromDate).toISOString() : '2018-01-01T00:00:00.000Z';
       const endIso   = toDate   ? new Date(toDate + 'T23:59:59').toISOString() : new Date().toISOString();
 
       // Get account region for client API
@@ -105,7 +105,7 @@ export default async function handler(req, res){
           if(r.status >= 500){ lastErr = r.status+' from '+url.slice(0,60); continue; }
           const data = JSON.parse(text);
           raw = api.key ? (data[api.key]||[]) : (Array.isArray(data) ? data : (data.deals||[]));
-          lastErr = 'ok from '+url.slice(0,60)+' raw='+raw.length;
+          lastErr = 'ok raw='+raw.length+' keys='+Object.keys(data).join(',').slice(0,60)+' sample='+JSON.stringify(data).slice(0,150);
           break;
         } catch(e){ lastErr = 'err '+api.base.slice(8,40)+': '+e.message; continue; }
       }
