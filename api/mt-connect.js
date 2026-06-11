@@ -50,9 +50,11 @@ export default async function handler(req, res){
       const acc = await r.json();
       const state = (acc.state||'').toUpperCase();
       const conn  = (acc.connectionStatus||'').toUpperCase();
-      const ready = state === 'DEPLOYED' || conn === 'CONNECTED';
-      if(!ready && state !== 'DEPLOYING')
+      const ready = conn === 'CONNECTED';
+      if(state !== 'DEPLOYED' && state !== 'DEPLOYING')
         await fetch(`${PROVISION_URL}/${accountId}/deploy`, { method: 'POST', headers: h });
+      else if(state === 'DEPLOYED' && !ready)
+        await fetch(`${PROVISION_URL}/${accountId}/redeploy`, { method: 'POST', headers: h });
       return res.status(200).json({ state: acc.state, connectionStatus: acc.connectionStatus, ready, _acc: acc });
     } catch(e){ return res.status(200).json({ error: 'status failed: ' + e.message, ready: false }); }
   }
