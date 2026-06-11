@@ -1,6 +1,10 @@
 const METAAPI_TOKEN = process.env.METAAPI_TOKEN;
 const PROVISION_URL = 'https://mt-provisioning-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts';
-const CLIENT_API_BASE = 'https://mt-client-api-v1.london.agiliumtrade.ai';
+const METASTATS_REGIONS = [
+  'https://metastats-api-v1.london.agiliumtrade.ai',
+  'https://metastats-api-v1.new-york.agiliumtrade.ai',
+  'https://metastats-api-v1.singapore.agiliumtrade.ai'
+];
 const SUPABASE_URL  = process.env.SUPABASE_URL;
 const SUPABASE_KEY  = process.env.SUPABASE_SERVICE_KEY;
 
@@ -79,12 +83,22 @@ export default async function handler(req, res){
     try {
       const startIso = fromDate ? new Date(fromDate).toISOString() : new Date(Date.now() - 2*365*24*60*60*1000).toISOString();
       const endIso   = toDate   ? new Date(toDate + 'T23:59:59').toISOString() : new Date().toISOString();
-      const url = `${CLIENT_API_BASE}/users/current/accounts/${accountId}/history-deals/time/${encodeURIComponent(startIso)}/${encodeURIComponent(endIso)}`;
-      const r = await fetch(url, { headers: h });
-      const text = await r.text();
-      let data;
-      try { data = JSON.parse(text); } catch(e){ return res.status(200).json({ error: 'API response: ' + text.slice(0,300), trades: [] }); }
-      const raw = Array.isArray(data) ? data : (data.deals || data.items || data.historyDeals || []);
+
+      let raw = [];
+      let lastErr = '';
+      for(const base of METASTATS_REGIONS){
+        const url = `${base}/users/current/accounts/${accountId}/historical-trades/${encodeURIComponent(startIso)}/${encodeURIComponent(endIso)}`;
+        const r = await fetch(url, { headers: h });
+        const text = await r.text();
+        if(r.status === 503){ lastErr = '503 on ' + base; continue; }
+        try {
+          const data = JSON.parse(text);
+          raw = data.trades || (Array.isArray(data) ? data : []);
+          break;
+        } catch(e){ lastErr = 'parse error: ' + text.slice(0,100); }
+      }
+      if(!raw.length && lastErr)
+        return res.status(200).json({ error: lastErr, trades: [] });
 
       const from = fromDate ? new Date(fromDate) : null;
       const to   = toDate   ? new Date(toDate + 'T23:59:59') : null;
