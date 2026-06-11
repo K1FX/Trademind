@@ -89,14 +89,15 @@ export default async function handler(req, res){
       const accInfo = await accR.json();
       const region = (accInfo.region||'london').toLowerCase().replace(/\s/g,'-');
 
-      // Build API list: account's real region first, then all known regions as fallback
+      // Build API list: MetaStats first (different permission scope), then client API for all regions
       const allRegions = [region, 'london', 'new-york', 'singapore', 'sydney'].filter((v,i,a)=>a.indexOf(v)===i);
       const dynamicBases = [];
-      for(const r of allRegions){
-        dynamicBases.push({ base: `https://mt-client-api-v1.${r}.agiliumtrade.ai`, path: (id,s,e) => `/users/current/accounts/${id}/history-deals/time/${encodeURIComponent(s)}/${encodeURIComponent(e)}`, key: null });
+      for(const rg of allRegions){
+        dynamicBases.push({ base: `https://metastats-api-v1.${rg}.agiliumtrade.ai`, path: (id,s,e) => `/users/current/accounts/${id}/historical-trades/${encodeURIComponent(s)}/${encodeURIComponent(e)}`, key: 'trades' });
       }
-      // MetaStats as last resort
-      dynamicBases.push({ base: `https://metastats-api-v1.${region}.agiliumtrade.ai`, path: (id,s,e) => `/users/current/accounts/${id}/historical-trades/${encodeURIComponent(s)}/${encodeURIComponent(e)}`, key: 'trades' });
+      for(const rg of allRegions){
+        dynamicBases.push({ base: `https://mt-client-api-v1.${rg}.agiliumtrade.ai`, path: (id,s,e) => `/users/current/accounts/${id}/history-deals/time/${encodeURIComponent(s)}/${encodeURIComponent(e)}`, key: null });
+      }
 
       let raw = [];
       let lastErr = '';
@@ -105,10 +106,11 @@ export default async function handler(req, res){
           const url = api.base + api.path(accountId, startIso, endIso);
           const r = await fetch(url, { headers: h });
           const text = await r.text();
-          if(r.status >= 500){ lastErr = r.status+' from '+url.slice(0,60); continue; }
+          if(r.status >= 400){ lastErr = r.status+' from '+api.base.slice(8,40); continue; }
           const data = JSON.parse(text);
+          if(data && data.error){ lastErr = data.error+': '+data.message; continue; }
           raw = api.key ? (data[api.key]||[]) : (Array.isArray(data) ? data : (data.deals||[]));
-          lastErr = 'ok raw='+raw.length+' keys='+Object.keys(data).join(',').slice(0,60)+' sample='+JSON.stringify(data).slice(0,150);
+          if(!raw.length){ lastErr = 'empty from '+api.base.slice(8,40); continue; }
           break;
         } catch(e){ lastErr = 'err '+api.base.slice(8,40)+': '+e.message; continue; }
       }
