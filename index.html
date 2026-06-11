@@ -619,21 +619,6 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
           </div>
         </div>
 
-        <!-- CSV Import -->
-        <div class="card">
-          <div class="card-title">Ou importer via CSV</div>
-          <div style="font-size:12px;color:var(--text-muted);line-height:1.8;margin-bottom:14px">
-            <strong style="color:var(--text)">MT5 :</strong> Affichage → Terminal → Historique → clic droit → Enregistrer en tant que rapport (CSV)<br>
-            <strong style="color:var(--text)">MT4 :</strong> Historique du compte → clic droit → Enregistrer en tant que rapport
-          </div>
-          <div class="fg"><input class="fi2" type="file" id="csv-file" accept=".csv,.htm,.html" onchange="previewCSV(this)"></div>
-          <div id="csv-preview" style="display:none;margin-bottom:12px">
-            <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px" id="csv-count"></div>
-            <div style="max-height:160px;overflow-y:auto"><table style="width:100%"><thead><tr><th>Date</th><th>Pair</th><th>Type</th><th>Lots</th><th>P&amp;L</th></tr></thead><tbody id="csv-table"></tbody></table></div>
-          </div>
-          <button class="btn btn-acc" id="csv-import-btn" style="display:none" onclick="importCSV()">Import Trades</button>
-          <div id="csv-status" style="font-size:11px;margin-top:8px;text-align:center"></div>
-        </div>
       </div>
       <!-- PRICING -->
       <div id="page-pricing" class="page">
