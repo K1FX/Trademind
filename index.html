@@ -1520,7 +1520,8 @@ async function checkAndImportMT(){
   btn.disabled=true;btn.textContent='Vérification...';
 
   var s=await mtApi({action:'status',accountId:accountId});
-  if(s.state==='DEPLOYED'&&s.connectionStatus==='CONNECTED'){
+  var isReady=(s.state==='DEPLOYED')||(s.connectionStatus&&s.connectionStatus.includes('CONNECTED'));
+  if(isReady){
     status.textContent='Connecté ! Importation des trades...';status.style.color='var(--accent)';
     var imp=await mtApi({action:'import',accountId:accountId,userId:user.id});
     btn.disabled=false;btn.textContent='Vérifier & importer';
