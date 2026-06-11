@@ -64,9 +64,13 @@ export default async function handler(req, res){
     if(!accountId) return res.status(400).json({ error: 'Missing accountId' });
     const r = await fetch(`${PROVISION_URL}/${accountId}`, { headers: apiHeaders });
     const acc = await r.json();
+    const stateUp = (acc.state||'').toUpperCase();
+    const connUp  = (acc.connectionStatus||'').toUpperCase();
+    const ready   = stateUp === 'DEPLOYED' || connUp.includes('CONNECTED');
     return res.status(200).json({
       state: acc.state,
-      connectionStatus: acc.connectionStatus
+      connectionStatus: acc.connectionStatus,
+      ready
     });
   }
 

@@ -1525,7 +1525,7 @@ async function syncMT(){
     di=(di+1)%4;
     status.innerHTML='<span style="color:var(--text-muted)">⏳ Connexion au broker'+dots[di]+'  <span style="font-size:11px">('+elapsed+'s)</span></span>';
     var s=await mtApi({action:'status',accountId:d.accountId});
-    var isReady=(s.state==='DEPLOYED')||(s.connectionStatus&&s.connectionStatus.includes('CONNECTED'));
+    var isReady=s.ready||false;
     if(isReady){
       clearInterval(mtPollTimer);
       status.innerHTML='<span style="color:var(--accent)">✓ Connecté ! Importation des trades...</span>';
