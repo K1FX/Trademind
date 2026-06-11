@@ -1584,70 +1584,17 @@ function mtProgressEnd(){
 async function mtImportDirect(accountId, status, btn){
   var fromDate=document.getElementById('mt-from').value;
   var toDate=document.getElementById('mt-to').value;
-  mtProgressSet(52,'Récupération du token...');
+  mtProgressSet(55,'Récupération des trades...');
+  status.innerHTML='<span style="color:var(--text-muted)">⏳ Récupération des trades MT...</span>';
 
-  // Get token + region from server, then call MetaAPI directly from browser
-  var tok=await mtApi({action:'gettoken',accountId:accountId});
-  if(tok.error){
+  var imp=await mtApi({action:'import',accountId:accountId,userId:user.id,fromDate:fromDate||null,toDate:toDate||null});
+  if(imp.error){
+    console.log('MT debug:', JSON.stringify(imp.debug||imp,null,2));
     mtProgressEnd();btn.disabled=false;btn.innerHTML=MT_BTN_HTML;
-    status.innerHTML='<span style="color:var(--red)">Erreur : '+tok.error+'</span>';
+    status.innerHTML='<span style="color:var(--red)">Erreur : '+imp.error+'</span>';
     return;
   }
-  var region=tok.region||'london';
-  var token=tok.token;
-  var startIso=fromDate?new Date(fromDate).toISOString():'2018-01-01T00:00:00.000Z';
-  var endIso=toDate?new Date(toDate+'T23:59:59').toISOString():new Date().toISOString();
-  var h2={'Content-Type':'application/json','auth-token':token};
-
-  mtProgressSet(60,'Récupération des trades...');
-  status.innerHTML='<span style="color:var(--text-muted)">⏳ Connexion à MetaTrader...</span>';
-
-  var raw=[];
-  var apis=[
-    {url:'https://mt-client-api-v1.'+region+'.agiliumtrade.ai/users/current/accounts/'+accountId+'/history-deals/time/'+encodeURIComponent(startIso)+'/'+encodeURIComponent(endIso),key:null},
-    {url:'https://metastats-api-v1.'+region+'.agiliumtrade.ai/users/current/accounts/'+accountId+'/historical-trades/'+encodeURIComponent(startIso)+'/'+encodeURIComponent(endIso),key:'trades'},
-  ];
-  var lastErr='';
-  for(var i=0;i<apis.length;i++){
-    try{
-      var r=await fetch(apis[i].url,{headers:h2});
-      var data=await r.json();
-      var arr=apis[i].key?(data[apis[i].key]||[]):(Array.isArray(data)?data:(data.deals||[]));
-      if(arr.length){raw=arr;break;}
-      lastErr='vide (status '+r.status+')';
-    }catch(e){lastErr='err: '+e.message;}
-  }
-
-  if(!raw.length){
-    mtProgressEnd();btn.disabled=false;btn.innerHTML=MT_BTN_HTML;
-    status.innerHTML='<span style="color:var(--red)">Aucun trade trouvé : '+lastErr+'</span>';
-    return;
-  }
-
-  // Map raw trades to TradeMind format
-  var trades=[];
-  var fromD=fromDate?new Date(fromDate):null;
-  var toD=toDate?new Date(toDate+'T23:59:59'):null;
-  for(var i=0;i<raw.length;i++){
-    var t=raw[i];
-    var typeUp=(t.type||'').toUpperCase();
-    var entryUp=(t.entryType||'').toUpperCase();
-    if(!t.symbol)continue;
-    if(typeUp.includes('BALANCE')||typeUp.includes('CREDIT')||typeUp.includes('COMMISSION'))continue;
-    if(entryUp&&!entryUp.includes('OUT')&&!entryUp.includes('INOUT'))continue;
-    var rawTime=t.time||t.brokerTime||t.closeTime||t.doneTime||t.openTime;
-    var date=rawTime?String(rawTime).split('T')[0]:new Date().toISOString().split('T')[0];
-    if(fromD&&new Date(date)<fromD)continue;
-    if(toD&&new Date(date)>toD)continue;
-    var pnl=parseFloat(t.profit)||0;
-    trades.push({user_id:user.id,date,pair:t.symbol.toUpperCase(),
-      direction:typeUp.includes('SELL')?'Short':'Long',
-      lots:parseFloat(t.volume)||0,pnl,
-      entry:parseFloat(t.openPrice)||0,
-      exit:parseFloat(t.closePrice)||parseFloat(t.price)||0,
-      sl:0,tp:0,rr:0,result:pnl>0?'Win':pnl<0?'Loss':'Breakeven',
-      session:'',setup:'MT Auto-Import',notes:'Imported from MetaTrader',screenshot:null});
-  }
+  var trades=imp.trades||[];
 
   if(!trades.length){
     mtProgressEnd();btn.disabled=false;btn.innerHTML=MT_BTN_HTML;

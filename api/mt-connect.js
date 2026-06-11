@@ -91,9 +91,11 @@ export default async function handler(req, res){
       const region = (accInfo.region||'london').toLowerCase().replace(/\s/g,'-');
       if(accInfo.error || accInfo.message) return res.status(200).json({ error: 'provisioning: '+accInfo.message, trades: [], debug: accInfo });
 
-      // Client API for account's region + MetaStats as fallback
+      // Try both domain variants (single and double agiliumtrade)
       const apis = [
+        { base: `https://mt-client-api-v1.${region}.agiliumtrade.agiliumtrade.ai`, path: (id,s,e) => `/users/current/accounts/${id}/history-deals/time/${encodeURIComponent(s)}/${encodeURIComponent(e)}`, key: null },
         { base: `https://mt-client-api-v1.${region}.agiliumtrade.ai`, path: (id,s,e) => `/users/current/accounts/${id}/history-deals/time/${encodeURIComponent(s)}/${encodeURIComponent(e)}`, key: null },
+        { base: `https://metastats-api-v1.${region}.agiliumtrade.agiliumtrade.ai`, path: (id,s,e) => `/users/current/accounts/${id}/historical-trades/${encodeURIComponent(s)}/${encodeURIComponent(e)}`, key: 'trades' },
         { base: `https://metastats-api-v1.${region}.agiliumtrade.ai`, path: (id,s,e) => `/users/current/accounts/${id}/historical-trades/${encodeURIComponent(s)}/${encodeURIComponent(e)}`, key: 'trades' },
       ];
 
