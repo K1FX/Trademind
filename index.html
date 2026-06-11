@@ -1566,6 +1566,8 @@ async function mtImportDirect(accountId, status, btn){
     return;
   }
 
+  console.log('MT Import debug:', imp);
+
   var trades=imp.trades||[];
   // Filter by selected date range
   if(fromDate||toDate){

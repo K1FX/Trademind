@@ -103,7 +103,7 @@ export default async function handler(req, res){
     await fetch(`${PROVISION_URL}/${accountId}/undeploy`, { method: 'POST', headers: apiHeaders });
 
     if(!mtTrades.length)
-      return res.status(200).json({ trades: [], found: 0 });
+      return res.status(200).json({ trades: [], found: 0, rawCount: (tradesData.trades||[]).length, sample: tradesData });
 
     // Map to TradeMind format and return to client for direct Supabase insert
     const toInsert = [];
@@ -130,7 +130,7 @@ export default async function handler(req, res){
       });
     }
 
-    return res.status(200).json({ trades: toInsert, found: toInsert.length });
+    return res.status(200).json({ trades: toInsert, found: toInsert.length, rawCount: mtTrades.length });
   }
 
   return res.status(400).json({ error: 'Unknown action' });
