@@ -84,21 +84,23 @@ export default async function handler(req, res){
 
       let raw = [];
       let lastErr = '';
+      const debugLog = [];
       for(const api of apis){
         try {
           const url = api.base + api.path(accountId, startIso, endIso);
           const r = await fetch(url, { headers: h });
           const text = await r.text();
+          debugLog.push({ url: url.slice(0,80), status: r.status, body: text.slice(0,200) });
           if(r.status >= 500){ lastErr = r.status+' from '+api.base.slice(8,50); continue; }
           const data = JSON.parse(text);
           const arr = api.key ? (data[api.key]||[]) : (Array.isArray(data) ? data : (data.deals||[]));
           if(arr.length){ raw = arr; break; }
           lastErr = 'empty from '+api.base.slice(8,50)+' status='+r.status;
-        } catch(e){ lastErr = 'err '+api.base.slice(8,50)+': '+e.message; }
+        } catch(e){ lastErr = 'err '+api.base.slice(8,50)+': '+e.message; debugLog.push({ err: e.message }); }
       }
 
       if(!raw.length)
-        return res.status(200).json({ error: lastErr, trades: [] });
+        return res.status(200).json({ error: lastErr, trades: [], debug: debugLog });
 
       const from = fromDate ? new Date(fromDate) : null;
       const to   = toDate   ? new Date(toDate + 'T23:59:59') : null;

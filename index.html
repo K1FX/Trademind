@@ -1593,6 +1593,7 @@ async function mtImportDirect(accountId, status, btn){
     status.innerHTML='<span style="color:var(--text-muted)">⏳ Synchronisation des données... <span style="font-size:11px">('+attempt+'/4)</span></span>';
     var imp=await mtApi({action:'import',accountId:accountId,userId:user.id,fromDate:fromDate||null,toDate:toDate||null});
     if(imp.error){
+      console.log('MT debug:', JSON.stringify(imp.debug||imp,null,2));
       mtProgressEnd();
       btn.disabled=false;btn.innerHTML=MT_BTN_HTML;
       status.innerHTML='<span style="color:var(--red)">Erreur : '+imp.error+'</span>';
