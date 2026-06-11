@@ -20,8 +20,8 @@ export default async function handler(req, res){
 
   // ── STEP 1: find or create account ──────────────────────────────
   if(action === 'create'){
-    if(!login || !password || !server || !userId)
-      return res.status(400).json({ error: 'Missing fields' });
+    if(!userId)
+      return res.status(400).json({ error: 'Missing userId' });
 
     // Check if accountId already saved in Supabase for this user
     const savedRes = await fetch(
@@ -40,7 +40,10 @@ export default async function handler(req, res){
       return res.status(200).json({ accountId: savedId, existing: true, ready });
     }
 
-    // Create new account
+    // Create new account — requires credentials
+    if(!login || !password || !server)
+      return res.status(400).json({ error: 'Missing fields' });
+
     const createRes = await fetch(PROVISION_URL, {
       method: 'POST',
       headers: apiHeaders,

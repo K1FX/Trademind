@@ -1608,6 +1608,9 @@ async function mtImportDirect(accountId, status, btn){
   await loadTrades();updateDash();renderJ();renderCal();renderAnalytics();
 }
 
+var mtPollTimer=null;
+var MT_BTN_HTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:6px"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>Importer mes trades';
+
 async function syncMT(){
   var login=document.getElementById('mt-login').value.trim();
   var pwd=document.getElementById('mt-pwd').value;
@@ -1615,62 +1618,46 @@ async function syncMT(){
   var plat=document.getElementById('mt-plat').value;
   var status=document.getElementById('mt-status');
   var btn=document.getElementById('mt-sync-btn');
-  if(!login||!pwd||!srv){status.textContent='Remplis tous les champs.';status.style.color='var(--red)';return;}
-  btn.disabled=true;btn.textContent='Connexion...';
-  document.getElementById('mt-check-btn').style.display='none';
-  clearInterval(mtPollTimer);
-
-  // Use saved accountId from localStorage if available
   var savedId=localStorage.getItem('mt_account_id_'+user.id);
-  if(savedId){
-    await mtImportDirect(savedId, status, btn);
-    return;
+
+  // Need credentials only if no saved account
+  if(!savedId&&(!login||!pwd||!srv)){
+    status.textContent='Remplis tous les champs.';status.style.color='var(--red)';return;
   }
 
-  status.innerHTML='<span style="color:var(--text-muted)">⏳ Connexion au broker en cours...</span>';
+  btn.disabled=true;btn.textContent='Connexion...';
+  clearInterval(mtPollTimer);
+  status.innerHTML='<span style="color:var(--text-muted)">⏳ Reconnexion au broker...</span>';
 
-  var d=await mtApi({action:'create',login,password:pwd,server:srv,platform:plat,userId:user.id});
+  // Always go through create — it deploys the account if undeployed
+  var d=await mtApi({action:'create',login:login||'',password:pwd||'',server:srv||'',platform:plat,userId:user.id});
   if(d.error){
-    status.textContent='Erreur : '+d.error;status.style.color='var(--red)';
-    btn.disabled=false;btn.innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:6px"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>Importer mes trades';
+    status.innerHTML='<span style="color:var(--red)">Erreur : '+d.error+'</span>';
+    btn.disabled=false;btn.innerHTML=MT_BTN_HTML;
     return;
   }
-
   if(d.accountId) localStorage.setItem('mt_account_id_'+user.id, d.accountId);
 
-  // If existing saved account — import directly, no polling needed
-  if(d.existing){
-    status.innerHTML='<span style="color:var(--accent)">✓ Compte trouvé ! Importation des trades...</span>';
-    var imp=await mtApi({action:'import',accountId:d.accountId,userId:user.id});
-    btn.disabled=false;btn.innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:6px"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>Importer mes trades';
-    if(imp.error){status.innerHTML='<span style="color:var(--red)">Erreur import : '+imp.error+'</span>';return;}
-    status.innerHTML='<span style="color:var(--accent)">✅ '+imp.imported+' trades importés avec succès !</span>';
-    await loadTrades();updateDash();renderJ();renderCal();renderAnalytics();
+  // If already ready — import now
+  if(d.ready){
+    status.innerHTML='<span style="color:var(--accent)">✓ Compte connecté ! Récupération des trades...</span>';
+    await mtImportDirect(d.accountId, status, btn);
     return;
   }
 
+  // Not ready yet — poll until connected
   var elapsed=0;
-  var dots=['','.','..','.  '];
-  var di=0;
-
   mtPollTimer=setInterval(async function(){
     elapsed+=5;
-    di=(di+1)%4;
-    status.innerHTML='<span style="color:var(--text-muted)">⏳ Connexion au broker'+dots[di]+'  <span style="font-size:11px">('+elapsed+'s)</span></span>';
+    status.innerHTML='<span style="color:var(--text-muted)">⏳ Connexion en cours... <span style="font-size:11px">('+elapsed+'s)</span></span>';
     var s=await mtApi({action:'status',accountId:d.accountId});
-    var isReady=s.ready||false;
-    if(isReady){
+    if(s.ready){
       clearInterval(mtPollTimer);
-      status.innerHTML='<span style="color:var(--accent)">✓ Connecté ! Importation des trades...</span>';
-      var imp=await mtApi({action:'import',accountId:d.accountId,userId:user.id});
-      btn.disabled=false;btn.innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:6px"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>Importer mes trades';
-      if(imp.error){status.innerHTML='<span style="color:var(--red)">Erreur import : '+imp.error+'</span>';return;}
-      localStorage.removeItem('mt_account_id');
-      status.innerHTML='<span style="color:var(--accent)">✅ '+imp.imported+' trades importés avec succès !</span>';
-      await loadTrades();updateDash();renderJ();renderCal();renderAnalytics();
+      status.innerHTML='<span style="color:var(--accent)">✓ Connecté ! Récupération des trades...</span>';
+      await mtImportDirect(d.accountId, status, btn);
     } else if(elapsed>=180){
       clearInterval(mtPollTimer);
-      btn.disabled=false;btn.innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:6px"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>Importer mes trades';
+      btn.disabled=false;btn.innerHTML=MT_BTN_HTML;
       status.innerHTML='<span style="color:var(--red)">❌ Timeout — vérifie ton login, mot de passe et serveur.</span>';
     }
   },5000);
