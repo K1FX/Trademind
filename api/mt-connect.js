@@ -77,11 +77,15 @@ export default async function handler(req, res){
   if(action === 'import'){
     if(!accountId || !userId) return res.status(400).json({ error: 'Missing fields' });
     try {
-      const r = await fetch(`${METASTATS_URL}/${accountId}/historical-trades/0/1000`, { headers: h });
-      const data = await r.json();
-      const raw = data.trades || [];
+      const startIso = fromDate ? new Date(fromDate).toISOString() : new Date(Date.now() - 2*365*24*60*60*1000).toISOString();
+      const endIso   = toDate   ? new Date(toDate + 'T23:59:59').toISOString() : new Date().toISOString();
+      const url = `${METASTATS_URL}/${accountId}/historical-trades/${encodeURIComponent(startIso)}/${encodeURIComponent(endIso)}`;
+      const r = await fetch(url, { headers: h });
+      const text = await r.text();
+      let data;
+      try { data = JSON.parse(text); } catch(e){ return res.status(200).json({ error: 'MetaStats response: ' + text.slice(0,200), trades: [] }); }
+      const raw = data.trades || (Array.isArray(data) ? data : []);
 
-      // Filter by date if provided
       const from = fromDate ? new Date(fromDate) : null;
       const to   = toDate   ? new Date(toDate + 'T23:59:59') : null;
 
