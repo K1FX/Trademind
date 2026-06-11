@@ -1451,8 +1451,10 @@ async
 function notifyMT5(){}
 
 async function loadMTToken(){
-  var r=await sb.from('mt_tokens').select('token').eq('user_id',user.id).single();
-  if(r.data&&r.data.token) showMTToken(r.data.token);
+  var r=await sb.from('mt_tokens').select('mt_account_id').eq('user_id',user.id).single();
+  if(r.data&&r.data.mt_account_id){
+    localStorage.setItem('mt_account_id_'+user.id, r.data.mt_account_id);
+  }
 }
 
 function showMTToken(token){
