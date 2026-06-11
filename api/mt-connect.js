@@ -19,29 +19,22 @@ export default async function handler(req, res){
 
   const { action, login, password, server, platform, accountId, userId, fromDate, toDate } = req.body;
 
-  // ── STEP 1: find or create account ──────────────────────────────
+  // ── STEP 1: find or create account (fast — 1 API call max) ────────
   if(action === 'create'){
-    if(!userId)
-      return res.status(400).json({ error: 'Missing userId' });
+    if(!userId) return res.status(400).json({ error: 'Missing userId' });
 
-    // Check if accountId already saved in Supabase for this user
+    // Check Supabase for saved accountId
     const savedRes = await fetch(
       `${SUPABASE_URL}/rest/v1/mt_tokens?user_id=eq.${userId}&select=mt_account_id`,
       { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
     );
     const savedRows = await savedRes.json();
     if(savedRows && savedRows[0] && savedRows[0].mt_account_id){
-      const savedId = savedRows[0].mt_account_id;
-      const accRes = await fetch(`${PROVISION_URL}/${savedId}`, { headers: apiHeaders });
-      const acc = await accRes.json();
-      const stateUp = (acc.state||'').toUpperCase();
-      const connUp  = (acc.connectionStatus||'').toUpperCase();
-      const ready   = stateUp === 'DEPLOYED' || connUp.includes('CONNECTED');
-      if(!ready) await fetch(`${PROVISION_URL}/${savedId}/deploy`, { method: 'POST', headers: apiHeaders });
-      return res.status(200).json({ accountId: savedId, existing: true, ready });
+      // Return saved accountId immediately — status polling will handle deploy
+      return res.status(200).json({ accountId: savedRows[0].mt_account_id, existing: true, ready: false });
     }
 
-    // Create new account — requires credentials
+    // No saved account — need credentials to create one
     if(!login || !password || !server)
       return res.status(400).json({ error: 'Missing fields' });
 
@@ -49,14 +42,10 @@ export default async function handler(req, res){
       method: 'POST',
       headers: apiHeaders,
       body: JSON.stringify({
-        login: String(login),
-        password,
-        name: 'TradeMind-' + login,
-        server,
+        login: String(login), password,
+        name: 'TradeMind-' + login, server,
         platform: platform || 'mt5',
-        magic: 0,
-        application: 'MetaApi',
-        type: 'cloud-g2'
+        magic: 0, application: 'MetaApi', type: 'cloud-g2'
       })
     });
     const created = await createRes.json();
@@ -64,19 +53,11 @@ export default async function handler(req, res){
       return res.status(400).json({ error: created.message || JSON.stringify(created) });
 
     const newId = created.id || created._id;
-
-    // Save accountId to Supabase for future use
     await fetch(`${SUPABASE_URL}/rest/v1/mt_tokens`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        apikey: SUPABASE_KEY,
-        Authorization: `Bearer ${SUPABASE_KEY}`,
-        Prefer: 'resolution=merge-duplicates'
-      },
+      headers: { 'Content-Type': 'application/json', apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, Prefer: 'resolution=merge-duplicates' },
       body: JSON.stringify({ user_id: userId, token: 'mt-'+userId, mt_account_id: newId })
     });
-
     return res.status(200).json({ accountId: newId, ready: false });
   }
 
@@ -88,11 +69,11 @@ export default async function handler(req, res){
     const stateUp = (acc.state||'').toUpperCase();
     const connUp  = (acc.connectionStatus||'').toUpperCase();
     const ready   = stateUp === 'DEPLOYED' || connUp.includes('CONNECTED');
-    return res.status(200).json({
-      state: acc.state,
-      connectionStatus: acc.connectionStatus,
-      ready
-    });
+    // Trigger deploy if not yet deployed
+    if(!ready && stateUp !== 'DEPLOYING'){
+      await fetch(`${PROVISION_URL}/${accountId}/deploy`, { method: 'POST', headers: apiHeaders });
+    }
+    return res.status(200).json({ state: acc.state, connectionStatus: acc.connectionStatus, ready });
   }
 
   // ── STEP 3: fetch trades from MetaStats, return to client ───────
