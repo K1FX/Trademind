@@ -1,6 +1,6 @@
 const METAAPI_TOKEN = process.env.METAAPI_TOKEN;
 const PROVISION_URL = 'https://mt-provisioning-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts';
-const METASTATS_URL = 'https://metastats-api-v1.london.agiliumtrade.ai/users/current/accounts';
+const HISTORY_REGIONS = ['london','new-york','singapore','sydney','johannesburg'];
 const SUPABASE_URL  = process.env.SUPABASE_URL;
 const SUPABASE_KEY  = process.env.SUPABASE_SERVICE_KEY;
 
@@ -98,31 +98,48 @@ export default async function handler(req, res){
   if(action === 'import'){
     if(!accountId || !userId) return res.status(400).json({ error: 'Missing fields' });
 
-    const tradesRes = await fetch(`${METASTATS_URL}/${accountId}/historical-trades/0/1000`, { headers: apiHeaders });
-    const tradesData = await tradesRes.json();
-    const mtTrades = tradesData.trades || [];
+    // Get account region from provisioning API
+    const accRes = await fetch(`${PROVISION_URL}/${accountId}`, { headers: apiHeaders });
+    const accData = await accRes.json();
+    const region = accData.region || accData.server?.region || 'london';
 
-    // Undeploy to save costs immediately after fetching
+    // Use MetaAPI Trading History API (reads directly from MT5, no sync delay)
+    const startTime = fromDate ? new Date(fromDate).toISOString() : new Date(Date.now() - 365*24*60*60*1000).toISOString();
+    const endTime   = toDate   ? new Date(toDate + 'T23:59:59').toISOString() : new Date().toISOString();
+    const historyUrl = `https://mt-client-api-v1.${region}.agiliumtrade.ai/users/current/accounts/${accountId}/history-deals/time/${encodeURIComponent(startTime)}/${encodeURIComponent(endTime)}`;
+    const tradesRes = await fetch(historyUrl, { headers: apiHeaders });
+    const tradesData = await tradesRes.json();
+    const mtTrades = Array.isArray(tradesData) ? tradesData : (tradesData.deals || tradesData.items || []);
+
+    // Undeploy to save costs
     await fetch(`${PROVISION_URL}/${accountId}/undeploy`, { method: 'POST', headers: apiHeaders });
 
     if(!mtTrades.length)
-      return res.status(200).json({ trades: [], found: 0, rawCount: (tradesData.trades||[]).length, sample: tradesData });
+      return res.status(200).json({ trades: [], found: 0, rawCount: 0, debug: { region, url: historyUrl, sample: tradesData } });
 
     // Map to TradeMind format and return to client for direct Supabase insert
     const toInsert = [];
     for(const t of mtTrades){
-      if(t.type !== 'DEAL_TYPE_BUY' && t.type !== 'DEAL_TYPE_SELL') continue;
-      if(t.entryType !== 'DEAL_ENTRY_OUT' && t.entryType !== 'DEAL_ENTRY_INOUT') continue;
-      if(!t.symbol) continue;
+      // Support both MetaStats format and Trading History API format
+      const dealType   = t.type || t.dealType || '';
+      const entryType  = t.entryType || t.entry || '';
+      const symbol     = t.symbol || t.s || '';
+      if(!symbol) continue;
+      // Skip non-closing deals
+      const typeUpper  = dealType.toUpperCase();
+      const entryUpper = entryType.toUpperCase();
+      if(typeUpper.includes('BALANCE') || typeUpper.includes('CREDIT') || typeUpper.includes('COMMISSION')) continue;
+      if(entryUpper && !entryUpper.includes('OUT') && !entryUpper.includes('INOUT')) continue;
       const pnl = parseFloat(t.profit) || 0;
+      const timeVal = t.time || t.brokerTime || t.doneTime || '';
       toInsert.push({
         user_id: userId,
-        date: t.time ? t.time.split('T')[0] : new Date().toISOString().split('T')[0],
-        pair: t.symbol.toUpperCase(),
-        direction: t.type === 'DEAL_TYPE_SELL' ? 'Long' : 'Short',
-        lots: parseFloat(t.volume) || 0,
+        date: timeVal ? timeVal.split('T')[0] : new Date().toISOString().split('T')[0],
+        pair: symbol.toUpperCase(),
+        direction: typeUpper.includes('SELL') ? 'Long' : 'Short',
+        lots: parseFloat(t.volume) || parseFloat(t.lots) || 0,
         pnl,
-        entry: parseFloat(t.openPrice) || 0,
+        entry: parseFloat(t.openPrice) || parseFloat(t.entryPrice) || 0,
         exit: parseFloat(t.closePrice) || parseFloat(t.price) || 0,
         sl: 0, tp: 0, rr: 0,
         result: pnl > 0 ? 'Win' : pnl < 0 ? 'Loss' : 'Breakeven',
