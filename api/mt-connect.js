@@ -80,6 +80,7 @@ export default async function handler(req, res){
           const r   = await fetch(url, { headers: h });
           const txt = await r.text();
           if(r.status >= 500){ lastErr = r.status+' from '+api.base.slice(8,50); continue; }
+          if(r.status >= 400){ lastErr = r.status+' from '+api.base.slice(8,50)+' body='+txt.slice(0,200); continue; }
           const data = JSON.parse(txt);
           const arr  = api.key ? (data[api.key]||[]) : (Array.isArray(data) ? data : (data.deals||[]));
           if(arr.length){ raw = arr; break; }
