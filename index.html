@@ -1700,7 +1700,8 @@ async function syncMT(){
     if(s.ready){
       clearInterval(mtPollTimer);
       mtProgressSet(50,'Broker connecté !');
-      status.innerHTML='<span style="color:var(--accent)">✓ Connecté !</span>';
+      status.innerHTML='<span style="color:var(--accent)">✓ Connecté — synchronisation 30s...</span>';
+      await new Promise(function(r){setTimeout(r,30000);});
       await mtImportDirect(d.accountId, status, btn);
     } else if(elapsed>=180){
       clearInterval(mtPollTimer);
