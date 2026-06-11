@@ -89,15 +89,11 @@ export default async function handler(req, res){
       const accInfo = await accR.json();
       const region = (accInfo.region||'london').toLowerCase().replace(/\s/g,'-');
 
-      // Build API list: MetaStats first (different permission scope), then client API for all regions
-      const allRegions = [region, 'london', 'new-york', 'singapore', 'sydney'].filter((v,i,a)=>a.indexOf(v)===i);
-      const dynamicBases = [];
-      for(const rg of allRegions){
-        dynamicBases.push({ base: `https://metastats-api-v1.${rg}.agiliumtrade.ai`, path: (id,s,e) => `/users/current/accounts/${id}/historical-trades/${encodeURIComponent(s)}/${encodeURIComponent(e)}`, key: 'trades' });
-      }
-      for(const rg of allRegions){
-        dynamicBases.push({ base: `https://mt-client-api-v1.${rg}.agiliumtrade.ai`, path: (id,s,e) => `/users/current/accounts/${id}/history-deals/time/${encodeURIComponent(s)}/${encodeURIComponent(e)}`, key: null });
-      }
+      // Try only the account's actual region — max 2 calls to stay under 10s Vercel limit
+      const dynamicBases = [
+        { base: `https://mt-client-api-v1.${region}.agiliumtrade.ai`, path: (id,s,e) => `/users/current/accounts/${id}/history-deals/time/${encodeURIComponent(s)}/${encodeURIComponent(e)}`, key: null },
+        { base: `https://metastats-api-v1.${region}.agiliumtrade.ai`, path: (id,s,e) => `/users/current/accounts/${id}/historical-trades/${encodeURIComponent(s)}/${encodeURIComponent(e)}`, key: 'trades' },
+      ];
 
       let raw = [];
       let lastErr = '';
