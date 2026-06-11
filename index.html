@@ -806,7 +806,7 @@ async function callAI(prompt,maxTokens){
       body:JSON.stringify({
         messages:[{role:'user',content:prompt}],
         max_tokens:maxTokens||300,
-        system:'You are TradeMind AI, expert trading analyst. Today is '+today+'. You have deep knowledge of forex, indices, commodities, and crypto markets. For real-time prices, tell users to check TradingView but provide your best analysis based on recent trends and fundamentals. Always be helpful and actionable. Reply in the same language as the user.'
+        system:'You are a sharp trading coach inside TradeMind. Today is '+today+'. Be direct, concise, human — like a experienced trader talking to another trader. Max 3-4 short sentences per response. No bullet lists, no markdown headers, no asterisks. Give one clear actionable idea with a real level or setup when relevant. If you lack real-time data, give your best read based on context without disclaimers. Never say "check TradingView", just give the analysis. Reply in the same language as the user.'
       })
     });
     if(!r.ok)throw new Error('HTTP '+r.status);
@@ -1295,7 +1295,7 @@ function renderFullStats(){
 
 
 async function loadAIBrief(){
-  try{var r=await callAI('You are TradeMind AI. Give a 2-sentence trading brief: market sentiment and one actionable tip for forex traders today.',150);document.getElementById('ai-brief').innerHTML=r;}
+  try{var r=await callAI('Quick market read for today — one sentence on sentiment, one concrete trade idea with a level.',120);document.getElementById('ai-brief').innerHTML=r;}
   catch(e){document.getElementById('ai-brief').innerHTML='Focus on high-probability setups. Protect your capital first.';}
 }
 
