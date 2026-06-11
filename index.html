@@ -1475,8 +1475,7 @@ var METAAPI_TOKEN='eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI3MTFmMDgxMGI0
 var METAAPI_ACCOUNT_ID='03f148a4-4e69-4a31-8c25-992fb8471e49';
 var WORKER_URL='https://trademind-chat.shopapple090.workers.dev/';
 
-async 
-function notifyMT5(){}
+async function notifyMT5(){}
 
 async function loadMTToken(){
   var r=await sb.from('mt_tokens').select('mt_account_id').eq('user_id',user.id).single();

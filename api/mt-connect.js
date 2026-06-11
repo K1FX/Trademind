@@ -98,24 +98,33 @@ export default async function handler(req, res){
   if(action === 'import'){
     if(!accountId || !userId) return res.status(400).json({ error: 'Missing fields' });
 
-    // Get account region from provisioning API
+    // Get account info to find region
     const accRes = await fetch(`${PROVISION_URL}/${accountId}`, { headers: apiHeaders });
     const accData = await accRes.json();
-    const region = accData.region || accData.server?.region || 'london';
+    const region = (accData.region || 'london').toLowerCase().replace(/\s+/g,'-');
 
-    // Use MetaAPI Trading History API (reads directly from MT5, no sync delay)
+    // Try Trading History API across regions if first fails
     const startTime = fromDate ? new Date(fromDate).toISOString() : new Date(Date.now() - 365*24*60*60*1000).toISOString();
     const endTime   = toDate   ? new Date(toDate + 'T23:59:59').toISOString() : new Date().toISOString();
-    const historyUrl = `https://mt-client-api-v1.${region}.agiliumtrade.ai/users/current/accounts/${accountId}/history-deals/time/${encodeURIComponent(startTime)}/${encodeURIComponent(endTime)}`;
-    const tradesRes = await fetch(historyUrl, { headers: apiHeaders });
-    const tradesData = await tradesRes.json();
-    const mtTrades = Array.isArray(tradesData) ? tradesData : (tradesData.deals || tradesData.items || []);
+
+    let mtTrades = [];
+    let lastDebug = {};
+    for(const r of [region,'london','new-york','singapore']){
+      const historyUrl = `https://mt-client-api-v1.${r}.agiliumtrade.ai/users/current/accounts/${accountId}/history-deals/time/${encodeURIComponent(startTime)}/${encodeURIComponent(endTime)}`;
+      try {
+        const tradesRes = await fetch(historyUrl, { headers: apiHeaders });
+        const tradesData = await tradesRes.json();
+        const arr = Array.isArray(tradesData) ? tradesData : (tradesData.deals || tradesData.items || []);
+        lastDebug = { region: r, url: historyUrl, sample: tradesData };
+        if(arr.length){ mtTrades = arr; break; }
+      } catch(e){ lastDebug = { error: e.message }; }
+    }
 
     // Undeploy to save costs
     await fetch(`${PROVISION_URL}/${accountId}/undeploy`, { method: 'POST', headers: apiHeaders });
 
     if(!mtTrades.length)
-      return res.status(200).json({ trades: [], found: 0, rawCount: 0, debug: { region, url: historyUrl, sample: tradesData } });
+      return res.status(200).json({ trades: [], found: 0, rawCount: 0, debug: lastDebug });
 
     // Map to TradeMind format and return to client for direct Supabase insert
     const toInsert = [];
