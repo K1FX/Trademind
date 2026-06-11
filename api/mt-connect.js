@@ -87,7 +87,7 @@ export default async function handler(req, res){
         } catch(e){ lastErr = 'err '+api.base.slice(8,50)+': '+e.message; }
       }
 
-      if(!raw.length) return res.status(200).json({ error: lastErr, trades: [] });
+      if(!raw.length) return res.status(200).json({ error: `region=${region} | ${lastErr}`, trades: [] });
 
       const fromD = fromDate ? new Date(fromDate) : null;
       const toD   = toDate   ? new Date(toDate + 'T23:59:59') : null;
