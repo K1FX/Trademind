@@ -53,7 +53,7 @@ export default async function handler(req, res){
       const ready = conn === 'CONNECTED';
       if(!ready && state !== 'DEPLOYING')
         await fetch(`${PROVISION_URL}/${accountId}/deploy`, { method: 'POST', headers: h });
-      return res.status(200).json({ state: acc.state, connectionStatus: acc.connectionStatus, ready });
+      return res.status(200).json({ state: acc.state, connectionStatus: acc.connectionStatus, ready, _acc: acc });
     } catch(e){ return res.status(200).json({ error: 'status failed: ' + e.message, ready: false }); }
   }
 
