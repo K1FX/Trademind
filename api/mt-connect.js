@@ -1,5 +1,3 @@
-import MetaApi from 'metaapi.cloud-sdk';
-
 const METAAPI_TOKEN = process.env.METAAPI_TOKEN;
 const PROVISION_URL = 'https://mt-provisioning-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts';
 const SUPABASE_URL  = process.env.SUPABASE_URL;
@@ -52,42 +50,58 @@ export default async function handler(req, res){
       const acc = await r.json();
       const state = (acc.state||'').toUpperCase();
       const conn  = (acc.connectionStatus||'').toUpperCase();
-      const ready = conn.includes('CONNECTED');
+      const ready = state === 'DEPLOYED' || conn.includes('CONNECTED');
       if(!ready && state !== 'DEPLOYING')
         await fetch(`${PROVISION_URL}/${accountId}/deploy`, { method: 'POST', headers: h });
       return res.status(200).json({ state: acc.state, connectionStatus: acc.connectionStatus, ready });
     } catch(e){ return res.status(200).json({ error: 'status failed: ' + e.message, ready: false }); }
   }
 
-  // ── IMPORT via MetaAPI SDK ───────────────────────────────────────────
+  // ── IMPORT ──────────────────────────────────────────────────────────
   if(action === 'import'){
     if(!accountId || !userId) return res.status(400).json({ error: 'Missing fields' });
     try {
-      const api = new MetaApi(METAAPI_TOKEN);
-      const account = await api.metatraderAccountApi.getAccount(accountId);
+      const startIso = fromDate ? new Date(fromDate).toISOString() : '2018-01-01T00:00:00.000Z';
+      const endIso   = toDate   ? new Date(toDate + 'T23:59:59').toISOString() : new Date().toISOString();
 
-      const startDate = fromDate ? new Date(fromDate) : new Date('2018-01-01');
-      const endDate   = toDate   ? new Date(toDate + 'T23:59:59') : new Date();
+      const accR   = await fetch(`${PROVISION_URL}/${accountId}`, { headers: h });
+      const accInfo = await accR.json();
+      const region  = (accInfo.region||'london').toLowerCase().replace(/\s/g,'-');
 
-      const connection = account.getRPCConnection();
-      await connection.connect();
-      await connection.waitSynchronized({ timeoutInSeconds: 60 });
+      const apis = [
+        { base: `https://mt-client-api-v1.${region}.agiliumtrade.ai`,    path: (id,s,e) => `/users/current/accounts/${id}/history-deals/time/${encodeURIComponent(s)}/${encodeURIComponent(e)}`, key: null },
+        { base: `https://metastats-api-v1.${region}.agiliumtrade.ai`,    path: (id,s,e) => `/users/current/accounts/${id}/historical-trades/${encodeURIComponent(s)}/${encodeURIComponent(e)}`, key: 'trades' },
+      ];
 
-      const deals = await connection.getHistoryDealsByTimeRange(startDate, endDate);
-      await connection.close();
+      let raw = [], lastErr = '';
+      for(const api of apis){
+        try {
+          const url = api.base + api.path(accountId, startIso, endIso);
+          const r   = await fetch(url, { headers: h });
+          const txt = await r.text();
+          if(r.status >= 500){ lastErr = r.status+' from '+api.base.slice(8,50); continue; }
+          const data = JSON.parse(txt);
+          const arr  = api.key ? (data[api.key]||[]) : (Array.isArray(data) ? data : (data.deals||[]));
+          if(arr.length){ raw = arr; break; }
+          lastErr = 'empty ('+r.status+') from '+api.base.slice(8,50);
+        } catch(e){ lastErr = 'err '+api.base.slice(8,50)+': '+e.message; }
+      }
 
-      if(!deals || !deals.deals || !deals.deals.length)
-        return res.status(200).json({ trades: [], found: 0, rawCount: 0 });
+      if(!raw.length) return res.status(200).json({ error: lastErr, trades: [] });
 
+      const fromD = fromDate ? new Date(fromDate) : null;
+      const toD   = toDate   ? new Date(toDate + 'T23:59:59') : null;
       const trades = [];
-      for(const t of deals.deals){
+      for(const t of raw){
         const typeUp  = (t.type||'').toUpperCase();
         const entryUp = (t.entryType||'').toUpperCase();
         if(!t.symbol) continue;
         if(typeUp.includes('BALANCE')||typeUp.includes('CREDIT')||typeUp.includes('COMMISSION')) continue;
         if(entryUp && !entryUp.includes('OUT') && !entryUp.includes('INOUT')) continue;
-        const rawTime = t.time || t.brokerTime || t.closeTime;
-        const date = rawTime ? (rawTime instanceof Date ? rawTime.toISOString() : String(rawTime)).split('T')[0] : new Date().toISOString().split('T')[0];
+        const rawTime = t.time || t.brokerTime || t.closeTime || t.doneTime || t.openTime;
+        const date = rawTime ? String(rawTime).split('T')[0] : new Date().toISOString().split('T')[0];
+        if(fromD && new Date(date) < fromD) continue;
+        if(toD   && new Date(date) > toD)   continue;
         const pnl = parseFloat(t.profit)||0;
         trades.push({
           user_id: userId, date,
@@ -102,10 +116,8 @@ export default async function handler(req, res){
           notes:'Imported from MetaTrader', screenshot:null
         });
       }
-      return res.status(200).json({ trades, found: trades.length, rawCount: deals.deals.length });
-    } catch(e){
-      return res.status(200).json({ error: 'import failed: ' + e.message, trades: [] });
-    }
+      return res.status(200).json({ trades, found: trades.length, rawCount: raw.length });
+    } catch(e){ return res.status(200).json({ error: 'import failed: ' + e.message, trades: [] }); }
   }
 
   return res.status(400).json({ error: 'Unknown action' });
