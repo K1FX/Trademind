@@ -91,7 +91,7 @@ export default async function handler(req, res){
     });
   }
 
-  // ── STEP 3: fetch trades & import ───────────────────────────────
+  // ── STEP 3: fetch trades from MetaStats, return to client ───────
   if(action === 'import'){
     if(!accountId || !userId) return res.status(400).json({ error: 'Missing fields' });
 
@@ -101,12 +101,13 @@ export default async function handler(req, res){
     const tradesData = await tradesRes.json();
     const mtTrades = tradesData.trades || [];
 
-    // Undeploy to save costs
+    // Undeploy to save costs immediately after fetching
     await fetch(`${PROVISION_URL}/${accountId}/undeploy`, { method: 'POST', headers: apiHeaders });
 
     if(!mtTrades.length)
-      return res.status(200).json({ imported: 0, found: 0 });
+      return res.status(200).json({ trades: [], found: 0 });
 
+    // Map to TradeMind format and return to client for direct Supabase insert
     const toInsert = [];
     for(const t of mtTrades){
       if(t.type !== 'DEAL_TYPE_BUY' && t.type !== 'DEAL_TYPE_SELL') continue;
@@ -131,23 +132,7 @@ export default async function handler(req, res){
       });
     }
 
-    let imported = 0;
-    for(let i = 0; i < toInsert.length; i += 50){
-      const batch = toInsert.slice(i, i + 50);
-      const insRes = await fetch(`${SUPABASE_URL}/rest/v1/trades`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': SUPABASE_KEY,
-          'Authorization': `Bearer ${SUPABASE_KEY}`,
-          'Prefer': 'return=minimal'
-        },
-        body: JSON.stringify(batch)
-      });
-      if(insRes.ok) imported += batch.length;
-    }
-
-    return res.status(200).json({ imported, found: toInsert.length });
+    return res.status(200).json({ trades: toInsert, found: toInsert.length });
   }
 
   return res.status(400).json({ error: 'Unknown action' });
