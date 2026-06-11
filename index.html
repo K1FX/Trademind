@@ -1715,7 +1715,8 @@ async function syncMT(){
     elapsed+=5;
     if(connProg<48){connProg+=2;mtProgressSet(connProg,'En attente de connexion... ('+elapsed+'s)');}
     var s=await mtApi({action:'status',accountId:d.accountId});
-    status.innerHTML='<span style="color:var(--text-muted)">⏳ '+elapsed+'s — '+JSON.stringify(s._acc||s).slice(0,120)+'</span>';
+    var connMsg = s.connectionStatus ? ' ('+s.connectionStatus+')' : '';
+    status.innerHTML='<span style="color:var(--text-muted)">⏳ Connexion au broker... '+elapsed+'s'+connMsg+'</span>';
     if(s.ready){
       clearInterval(mtPollTimer);
       mtProgressSet(50,'Broker connecté !');
