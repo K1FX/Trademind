@@ -1,9 +1,8 @@
 const METAAPI_TOKEN = process.env.METAAPI_TOKEN;
 const PROVISION_URL = 'https://mt-provisioning-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts';
-const METASTATS_REGIONS = [
+const METASTATS_BASES = [
   'https://metastats-api-v1.london.agiliumtrade.ai',
-  'https://metastats-api-v1.new-york.agiliumtrade.ai',
-  'https://metastats-api-v1.singapore.agiliumtrade.ai'
+  'https://metastats-api-v1.agiliumtrade.agiliumtrade.ai'
 ];
 const SUPABASE_URL  = process.env.SUPABASE_URL;
 const SUPABASE_KEY  = process.env.SUPABASE_SERVICE_KEY;
@@ -86,18 +85,19 @@ export default async function handler(req, res){
 
       let raw = [];
       let lastErr = '';
-      for(const base of METASTATS_REGIONS){
-        const url = `${base}/users/current/accounts/${accountId}/historical-trades/${encodeURIComponent(startIso)}/${encodeURIComponent(endIso)}`;
-        const r = await fetch(url, { headers: h });
-        const text = await r.text();
-        if(r.status === 503){ lastErr = '503 on ' + base; continue; }
+      for(const base of METASTATS_BASES){
         try {
+          const url = `${base}/users/current/accounts/${accountId}/historical-trades/${encodeURIComponent(startIso)}/${encodeURIComponent(endIso)}`;
+          const r = await fetch(url, { headers: h });
+          const text = await r.text();
+          if(r.status >= 500){ lastErr = r.status+' on '+base+': '+text.slice(0,80); continue; }
           const data = JSON.parse(text);
           raw = data.trades || (Array.isArray(data) ? data : []);
+          lastErr = 'parsed ok, raw='+raw.length+' url='+url;
           break;
-        } catch(e){ lastErr = 'parse error: ' + text.slice(0,100); }
+        } catch(e){ lastErr = 'fetch error on '+base+': '+e.message; continue; }
       }
-      if(!raw.length && lastErr)
+      if(!raw.length)
         return res.status(200).json({ error: lastErr, trades: [] });
 
       const from = fromDate ? new Date(fromDate) : null;
