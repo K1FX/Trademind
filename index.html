@@ -1550,10 +1550,10 @@ async function mtImportDirect(accountId, status, btn){
   var fromDate=document.getElementById('mt-from').value;
   var toDate=document.getElementById('mt-to').value;
   status.innerHTML='<span style="color:var(--accent)">⏳ Récupération des trades depuis MetaTrader...</span>';
-  mtProgressStart('Connexion à MetaTrader...');
-  var prog=5;
+  var prog=52;
+  mtProgressSet(prog,'Récupération de l\'historique...');
   var progTimer=setInterval(function(){
-    if(prog<70){prog+=3;mtProgressSet(prog,'Récupération de l\'historique...');}
+    if(prog<72){prog+=2;mtProgressSet(prog,'Récupération de l\'historique...');}
   },1000);
 
   var imp=await mtApi({action:'import',accountId:accountId,userId:user.id,fromDate:fromDate||null,toDate:toDate||null});
@@ -1627,36 +1627,46 @@ async function syncMT(){
 
   btn.disabled=true;btn.textContent='Connexion...';
   clearInterval(mtPollTimer);
+
+  // Phase 1 — reconnexion broker (progress 0→50%)
+  mtProgressStart('Reconnexion au broker...');
+  mtProgressSet(5,'Reconnexion au broker...');
   status.innerHTML='<span style="color:var(--text-muted)">⏳ Reconnexion au broker...</span>';
 
-  // Always go through create — it deploys the account if undeployed
   var d=await mtApi({action:'create',login:login||'',password:pwd||'',server:srv||'',platform:plat,userId:user.id});
   if(d.error){
+    mtProgressEnd();
     status.innerHTML='<span style="color:var(--red)">Erreur : '+d.error+'</span>';
     btn.disabled=false;btn.innerHTML=MT_BTN_HTML;
     return;
   }
   if(d.accountId) localStorage.setItem('mt_account_id_'+user.id, d.accountId);
 
-  // If already ready — import now
+  // If already ready — skip polling
   if(d.ready){
-    status.innerHTML='<span style="color:var(--accent)">✓ Compte connecté ! Récupération des trades...</span>';
+    mtProgressSet(50,'Compte connecté !');
+    status.innerHTML='<span style="color:var(--accent)">✓ Compte connecté !</span>';
     await mtImportDirect(d.accountId, status, btn);
     return;
   }
 
-  // Not ready yet — poll until connected
+  // Not ready — poll with animated progress bar 10→48%
   var elapsed=0;
+  var connProg=10;
+  mtProgressSet(connProg,'En attente de connexion broker...');
   mtPollTimer=setInterval(async function(){
     elapsed+=5;
+    if(connProg<48){connProg+=2;mtProgressSet(connProg,'En attente de connexion... ('+elapsed+'s)');}
     status.innerHTML='<span style="color:var(--text-muted)">⏳ Connexion en cours... <span style="font-size:11px">('+elapsed+'s)</span></span>';
     var s=await mtApi({action:'status',accountId:d.accountId});
     if(s.ready){
       clearInterval(mtPollTimer);
-      status.innerHTML='<span style="color:var(--accent)">✓ Connecté ! Récupération des trades...</span>';
+      mtProgressSet(50,'Broker connecté !');
+      status.innerHTML='<span style="color:var(--accent)">✓ Connecté !</span>';
       await mtImportDirect(d.accountId, status, btn);
     } else if(elapsed>=180){
       clearInterval(mtPollTimer);
+      mtProgressEnd();
       btn.disabled=false;btn.innerHTML=MT_BTN_HTML;
       status.innerHTML='<span style="color:var(--red)">❌ Timeout — vérifie ton login, mot de passe et serveur.</span>';
     }
