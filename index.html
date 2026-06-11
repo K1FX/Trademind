@@ -1638,7 +1638,8 @@ async function syncMT(){
     if(createProg<45){createProg+=2;mtProgressSet(createProg,'Reconnexion au broker...');}
   },400);
 
-  var d=await mtApi({action:'create',login:login||'',password:pwd||'',server:srv||'',platform:plat,userId:user.id});
+  var savedId=localStorage.getItem('mt_account_id_'+user.id);
+  var d=await mtApi({action:'create',accountId:savedId||null,login:login||'',password:pwd||'',server:srv||'',platform:plat,userId:user.id});
   clearInterval(createTimer);
   if(d.error){
     mtProgressEnd();
