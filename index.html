@@ -1642,6 +1642,8 @@ async function mtImportDirect(accountId, status, btn){
 
   btn.disabled=false;btn.innerHTML=MT_BTN_HTML;
   mtProgressSet(100,'Terminé !');
+  // Undeploy account after import to stop MetaAPI billing
+  mtApi({action:'undeploy',accountId:accountId}).catch(function(){});
   setTimeout(mtProgressEnd,2000);
   await loadTrades();
   updateDash();renderAnalytics();renderJ();

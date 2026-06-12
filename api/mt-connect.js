@@ -44,7 +44,7 @@ export default async function handler(req, res){
         return res.status(200).json({ accountId: rows[0].mt_account_id, existing: true, ready: false });
       const cr = await fetch(PROVISION_URL, {
         method: 'POST', headers: h,
-        body: JSON.stringify({ login: String(login), password, name: 'TradeMind-'+login, server, platform: platform||'mt5', magic: 0, application: 'MetaApi', type: 'cloud-g2' })
+        body: JSON.stringify({ login: String(login), password, name: 'TradeMind-'+login, server, platform: platform||'mt5', magic: 0, application: 'MetaApi', type: 'cloud-g2', reliability: 'regular' })
       });
       const acc = await cr.json();
       if(!acc.id && !acc._id) return res.status(400).json({ error: acc.message || JSON.stringify(acc) });
@@ -56,6 +56,15 @@ export default async function handler(req, res){
       });
       return res.status(200).json({ accountId: newId, ready: false });
     } catch(e){ return res.status(200).json({ error: 'create failed: ' + e.message }); }
+  }
+
+  // ── UNDEPLOY ─────────────────────────────────────────────────────────
+  if(action === 'undeploy'){
+    if(!accountId) return res.status(400).json({ ok: true });
+    try {
+      await fetch(`${PROVISION_URL}/${accountId}/undeploy`, { method: 'POST', headers: h });
+      return res.status(200).json({ ok: true });
+    } catch(e){ return res.status(200).json({ ok: true }); }
   }
 
   // ── STATUS ──────────────────────────────────────────────────────────
