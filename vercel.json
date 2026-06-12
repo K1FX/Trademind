@@ -6,5 +6,8 @@
     "api/mt-connect.js": {
       "regions": ["lhr1"]
     }
-  }
+  },
+  "crons": [
+    { "path": "/api/weekly-report", "schedule": "0 8 * * 1" }
+  ]
 }

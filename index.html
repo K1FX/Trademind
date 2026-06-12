@@ -553,6 +553,12 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
         <div style="font-size:15px;font-weight:600;margin-bottom:4px">MT4 / MT5 Connect</div>
         <div style="font-size:12px;color:var(--text-muted);margin-bottom:20px">Connecte ton compte broker — tes trades s'importent automatiquement. Fonctionne sur PC et mobile.</div>
 
+        <!-- Connected accounts list -->
+        <div id="mt-accounts-section" class="card" style="margin-bottom:12px;display:none">
+          <div class="card-title" style="margin-bottom:12px">Comptes connectés</div>
+          <div id="mt-accounts-list"></div>
+        </div>
+
         <!-- Credential login -->
         <div class="card" style="margin-bottom:12px">
           <div class="card-title" style="margin-bottom:14px">Connecter mon compte MT4 / MT5</div>
@@ -1526,6 +1532,7 @@ async function loadMTToken(){
   if(r.data&&r.data.mt_account_id){
     localStorage.setItem('mt_account_id_'+user.id, r.data.mt_account_id);
   }
+  renderMTAccounts();
   // Default: from = 3 months ago, to = empty (no limit)
   var fromEl=document.getElementById('mt-from');
   if(fromEl&&!fromEl.value){
@@ -1645,6 +1652,46 @@ async function mtImportDirect(accountId, status, btn){
 var mtPollTimer=null;
 var MT_BTN_HTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:6px"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>Importer mes trades';
 
+function getMTAccounts(){return JSON.parse(localStorage.getItem('mt-accounts-'+user.id)||'[]');}
+function saveMTAccounts(arr){localStorage.setItem('mt-accounts-'+user.id,JSON.stringify(arr));}
+function getActiveMTAccountId(){return localStorage.getItem('mt_account_id_'+user.id)||localStorage.getItem('mt-account-'+user.id);}
+
+function renderMTAccounts(){
+  var accounts=getMTAccounts();
+  var section=document.getElementById('mt-accounts-section');
+  var list=document.getElementById('mt-accounts-list');
+  if(!accounts.length){section.style.display='none';return;}
+  section.style.display='';
+  var activeId=getActiveMTAccountId();
+  list.innerHTML=accounts.map(function(a){
+    var isActive=a.accountId===activeId;
+    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px;background:var(--bg);border-radius:8px;margin-bottom:8px">'
+      +'<div><div style="font-size:12px;font-weight:600;color:var(--text)">'+a.login+' <span style="color:var(--text-muted);font-weight:400">· '+a.server+'</span></div>'
+      +'<div style="font-size:10px;color:var(--text-muted);margin-top:2px">'+a.platform.toUpperCase()+(isActive?' · <span style="color:var(--accent)">Actif</span>':'')+'</div></div>'
+      +'<div style="display:flex;gap:6px">'
+      +(isActive?'':'<button class="btn btn-ghost btn-sm" onclick="switchMTAccount(\''+a.accountId+'\')">Activer</button>')
+      +'<button class="btn btn-red btn-sm" style="font-size:10px;padding:4px 8px" onclick="deleteMTAccount(\''+a.accountId+'\')">✕</button>'
+      +'</div></div>';
+  }).join('');
+}
+
+function switchMTAccount(accountId){
+  localStorage.setItem('mt_account_id_'+user.id,accountId);
+  localStorage.setItem('mt-account-'+user.id,accountId);
+  renderMTAccounts();
+}
+
+function deleteMTAccount(accountId){
+  var accounts=getMTAccounts().filter(function(a){return a.accountId!==accountId;});
+  saveMTAccounts(accounts);
+  if(getActiveMTAccountId()===accountId){
+    var next=accounts[0];
+    if(next){localStorage.setItem('mt_account_id_'+user.id,next.accountId);localStorage.setItem('mt-account-'+user.id,next.accountId);}
+    else{localStorage.removeItem('mt_account_id_'+user.id);localStorage.removeItem('mt-account-'+user.id);}
+  }
+  renderMTAccounts();
+}
+
 async function syncMT(){
   var login=document.getElementById('mt-login').value.trim();
   var pwd=document.getElementById('mt-pwd').value;
@@ -1653,6 +1700,14 @@ async function syncMT(){
   var status=document.getElementById('mt-status');
   var btn=document.getElementById('mt-sync-btn');
   var savedId=localStorage.getItem('mt_account_id_'+user.id);
+
+  // Account limit check
+  var accounts=getMTAccounts();
+  var maxAccounts=userPlan==='elite'?3:userPlan==='pro'?1:0;
+  if(userPlan==='free'){showUpgradeModal('MT5 Auto-Import is available on Pro and Elite plans.');return;}
+  if(!savedId&&accounts.length>=maxAccounts){
+    showUpgradeModal(userPlan==='pro'?'Pro allows 1 broker account. Upgrade to Elite for up to 3 accounts.':'Maximum accounts reached.');return;
+  }
 
   // Need credentials only if no saved account
   if(!savedId&&(!login||!pwd||!srv)){
@@ -1680,7 +1735,16 @@ async function syncMT(){
     btn.disabled=false;btn.innerHTML=MT_BTN_HTML;
     return;
   }
-  if(d.accountId) localStorage.setItem('mt_account_id_'+user.id, d.accountId);
+  if(d.accountId){
+    localStorage.setItem('mt_account_id_'+user.id, d.accountId);
+    // Save to accounts list
+    var accs=getMTAccounts();
+    if(!accs.find(function(a){return a.accountId===d.accountId;})){
+      accs.push({accountId:d.accountId,login:login||'compte',server:srv||'',platform:plat||'mt5'});
+      saveMTAccounts(accs);
+    }
+    renderMTAccounts();
+  }
 
   // If already ready — skip polling
   if(d.ready){
