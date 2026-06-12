@@ -1826,13 +1826,7 @@ async function syncMT(){
       mtProgressSet(50,'Broker connecté !');
       status.innerHTML='<span style="color:var(--accent)">✓ Prêt !</span>';
       await mtImportDirect(d.accountId, status, btn);
-    } else if(elapsed>=60 && (s.state||'').toUpperCase()==='DEPLOYED'){
-      // Try import anyway after 60s if deployed (even if not fully connected)
-      clearInterval(mtPollTimer);
-      mtProgressSet(50,'Tentative import...');
-      status.innerHTML='<span style="color:var(--text-muted)">⏳ Tentative import (compte déployé)...</span>';
-      await mtImportDirect(d.accountId, status, btn);
-    } else if(elapsed>=300){
+    } else if(elapsed>=420){
       clearInterval(mtPollTimer);
       mtProgressEnd();
       btn.disabled=false;btn.innerHTML=MT_BTN_HTML;
