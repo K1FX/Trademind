@@ -42,12 +42,20 @@ export default async function handler(req, res){
       const rows = await sbRes.json();
       if(rows && rows[0] && rows[0].mt_account_id)
         return res.status(200).json({ accountId: rows[0].mt_account_id, existing: true, ready: false });
-      const cr = await fetch(PROVISION_URL, {
-        method: 'POST', headers: h,
-        body: JSON.stringify({ login: String(login), password, name: 'TradeMind-'+login, server, platform: platform||'mt5', magic: 0, application: 'MetaApi', type: 'cloud-g2', reliability: 'regular' })
-      });
-      const acc = await cr.json();
-      if(!acc.id && !acc._id) return res.status(400).json({ error: acc.message || JSON.stringify(acc) });
+      let acc, lastErr;
+      for(let attempt=0; attempt<3; attempt++){
+        try {
+          if(attempt>0) await new Promise(r=>setTimeout(r,2000));
+          const cr = await fetch(PROVISION_URL, {
+            method: 'POST', headers: h,
+            body: JSON.stringify({ login: String(login), password, name: 'TradeMind-'+login, server, platform: platform||'mt5', magic: 0, application: 'MetaApi', type: 'cloud-g2', reliability: 'regular' })
+          });
+          acc = await cr.json();
+          if(acc.id || acc._id) break;
+          lastErr = acc.message || JSON.stringify(acc);
+        } catch(e){ lastErr = e.message; }
+      }
+      if(!acc || (!acc.id && !acc._id)) return res.status(400).json({ error: lastErr || 'MetaAPI unreachable' });
       const newId = acc.id || acc._id;
       await fetch(`${SUPABASE_URL}/rest/v1/mt_tokens`, {
         method: 'POST',
