@@ -479,7 +479,7 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
       <div id="page-rules" class="page">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
           <div><div style="font-size:15px;font-weight:600">My Trading Rules</div><div style="font-size:11px;color:var(--text-muted)">Define rules — AI checks compliance</div></div>
-          <button class="btn btn-acc btn-sm" onclick="openM('m-rule')">+ Add Rule</button>
+          <button class="btn btn-acc btn-sm" onclick="if(userPlan==='free'){showUpgradeModal('Trading rules are available on Pro and Elite plans. Upgrade to unlock.');}else{openM('m-rule');}">+ Add Rule</button>
         </div>
         <div class="g2">
           <div class="card"><div class="card-title">Rules &amp; Compliance</div><div id="rules-list"><div style="color:var(--text-muted);font-size:12px;padding:10px 0">No rules yet</div></div></div>
