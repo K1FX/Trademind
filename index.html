@@ -721,7 +721,7 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
       <div class="fg"><label>Setup</label><input class="fi2" id="t-setup" placeholder="Break and Retest"></div>
     </div>
     <div class="fg"><label>Notes</label><textarea class="fi2" id="t-notes" placeholder="Why this trade? Emotions? Lessons learned..."></textarea></div>
-    <div class="fg"><label>Screenshot (optional)</label><input class="fi2" id="t-img" type="file" accept="image/*" onchange="previewImg(this)"><img id="img-preview" class="img-preview"></div>
+    <div class="fg"><label>Screenshot (optional)</label><input class="fi2" id="t-img" type="file" accept="image/*" onclick="if(userPlan==='free'){showUpgradeModal('Screenshot upload is available on Pro and Elite plans.');return false;}" onchange="previewImg(this)"><img id="img-preview" class="img-preview"></div>
     <div class="ma"><button class="btn btn-ghost" onclick="closeM('m-trade')">Cancel</button><button class="btn btn-acc" onclick="saveTrade()">Save Trade</button></div>
   </div>
 </div>
@@ -734,7 +734,7 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
     <div id="det-edit-form" style="display:none;margin-top:14px;border-top:1px solid var(--border);padding-top:14px">
       <div class="fg"><label class="fl">Notes</label><textarea class="fi2" id="det-edit-notes" rows="3" style="resize:vertical"></textarea></div>
       <div class="fg"><label class="fl">Setup</label><input class="fi2" id="det-edit-setup"></div>
-      <div class="fg"><label class="fl">Screenshot</label><input class="fi2" type="file" accept="image/*" onchange="editPreviewImg(this)"><img id="det-edit-img-preview" class="img-preview" style="display:none;width:100%;border-radius:8px;margin-top:6px"><input type="hidden" id="det-edit-screenshot"></div>
+      <div class="fg"><label class="fl">Screenshot</label><input class="fi2" type="file" accept="image/*" onclick="if(userPlan==='free'){showUpgradeModal('Screenshot upload is available on Pro and Elite plans.');return false;}" onchange="editPreviewImg(this)"><img id="det-edit-img-preview" class="img-preview" style="display:none;width:100%;border-radius:8px;margin-top:6px"><input type="hidden" id="det-edit-screenshot"></div>
       <div style="display:flex;gap:8px;margin-top:8px">
         <button class="btn btn-acc btn-sm" onclick="saveTradeEdit()">Sauvegarder</button>
         <button class="btn btn-ghost btn-sm" onclick="document.getElementById('det-edit-form').style.display='none'">Annuler</button>
