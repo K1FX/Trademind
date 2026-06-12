@@ -935,12 +935,14 @@ async function loadTrades(){var r=await sb.from('trades').select('*').eq('user_i
 async function loadRules(){var s=localStorage.getItem('tm-rules-'+user.id);rules=s?JSON.parse(s):[];}
 
 function previewImg(inp){
+  if(userPlan==='free'){showUpgradeModal('Screenshot upload is available on Pro and Elite plans. Upgrade to unlock.');inp.value='';return;}
   var file=inp.files[0];if(!file)return;
   var reader=new FileReader();
   reader.onload=function(e){imgBase64=e.target.result;var img=document.getElementById('img-preview');img.src=imgBase64;img.style.display='block';};
   reader.readAsDataURL(file);
 }
 function editPreviewImg(inp){
+  if(userPlan==='free'){showUpgradeModal('Screenshot upload is available on Pro and Elite plans. Upgrade to unlock.');inp.value='';return;}
   var file=inp.files[0];if(!file)return;
   var reader=new FileReader();
   reader.onload=function(e){
@@ -1240,6 +1242,7 @@ function setSsFilter(f,btn){
 }
 
 async function periodAnalysis(){
+  if(userPlan==='free'){showUpgradeModal('AI period analysis is available on Pro and Elite plans. Upgrade to unlock.');return;}
   var from=document.getElementById('p-from').value,to=document.getElementById('p-to').value;
   if(!from||!to)return;
   var period=trades.filter(function(t){return t.date>=from&&t.date<=to;});
