@@ -19,7 +19,6 @@ export default async function handler(req, res) {
     if (!priceId) return res.status(400).json({ error: 'Invalid plan' });
 
     const params = new URLSearchParams({
-      'payment_method_types[]': 'card',
       'mode': 'subscription',
       'line_items[0][price]': priceId,
       'line_items[0][quantity]': '1',
