@@ -1603,11 +1603,14 @@ function mtProgressEnd(){
 async function mtImportDirect(accountId, status, btn){
   var fromDate=document.getElementById('mt-from').value;
   var toDate=document.getElementById('mt-to').value;
-  mtProgressSet(55,'Récupération des trades...');
-  status.innerHTML='<span style="color:var(--text-muted)">⏳ Récupération des trades MT...</span>';
+  var accs=getMTAccounts();
+  var acc=accs.find(function(a){return a.accountId===accountId;})||{};
+  var loginTag=acc.login||document.getElementById('mt-login').value.trim()||'';
+  var setupTag='MT Auto-Import'+(loginTag?'·'+loginTag:'');
 
+  mtProgressSet(55,'Récupération des trades...');
   status.innerHTML='<span style="color:var(--text-muted)">⏳ Récupération des trades...</span>';
-  var imp=await mtApi({action:'import',accountId:accountId,userId:user.id,fromDate:fromDate||null,toDate:toDate||null});
+  var imp=await mtApi({action:'import',accountId:accountId,userId:user.id,fromDate:fromDate||null,toDate:toDate||null,login:loginTag});
   var trades=imp.trades||[];
 
   if(!trades.length){
@@ -1616,8 +1619,9 @@ async function mtImportDirect(accountId, status, btn){
     return;
   }
 
-  // Delete previously imported MT trades for this user before re-inserting
+  // Delete only this account's previously imported trades
   mtProgressSet(70,'Suppression des anciens trades MT...');
+  await sb.from('trades').delete().eq('user_id',user.id).eq('setup',setupTag);
   await sb.from('trades').delete().eq('user_id',user.id).eq('setup','MT Auto-Import');
 
   // Insert directly into Supabase with real progress
@@ -1698,12 +1702,24 @@ function renderMTAccounts(){
   var activeId=getActiveMTAccountId();
   list.innerHTML=accounts.map(function(a){
     var isActive=a.accountId===activeId;
-    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px;background:var(--bg);border-radius:8px;margin-bottom:8px">'
-      +'<div><div style="font-size:12px;font-weight:600;color:var(--text)">'+a.login+' <span style="color:var(--text-muted);font-weight:400">· '+a.server+'</span></div>'
-      +'<div style="font-size:10px;color:var(--text-muted);margin-top:2px">'+a.platform.toUpperCase()+(isActive?' · <span style="color:var(--accent)">Actif</span>':'')+'</div></div>'
-      +'<div style="display:flex;gap:6px">'
-      +(isActive?'':'<button class="btn btn-ghost btn-sm" onclick="switchMTAccount(\''+a.accountId+'\')">Activer</button>')
+    var setupTag='MT Auto-Import'+(a.login?'·'+a.login:'');
+    var accTrades=(trades||[]).filter(function(t){return t.setup===setupTag||t.setup==='MT Auto-Import';});
+    var accWins=accTrades.filter(function(t){return t.result==='Win';}).length;
+    var accPnl=accTrades.reduce(function(s,t){return s+(t.pnl||0);},0);
+    var accWr=accTrades.length?Math.round(accWins/accTrades.length*100):0;
+    var pnlColor=accPnl>=0?'var(--accent)':'var(--red)';
+    return '<div style="border:1px solid '+(isActive?'var(--accent)':'var(--border)')+';border-radius:10px;padding:14px;margin-bottom:10px;background:'+(isActive?'rgba(85,211,150,0.04)':'var(--bg)')+';">'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">'
+      +'<div><div style="font-size:12px;font-weight:700;color:var(--text)">Login '+a.login+'</div>'
+      +'<div style="font-size:10px;color:var(--text-muted);margin-top:2px">'+a.platform.toUpperCase()+' · '+a.server+'</div></div>'
+      +'<div style="display:flex;gap:6px;align-items:center">'
+      +(isActive?'<span style="font-size:10px;color:var(--accent);font-weight:700;background:rgba(85,211,150,0.1);padding:3px 8px;border-radius:6px">● Actif</span>':'<button class="btn btn-ghost btn-sm" onclick="switchMTAccount(\''+a.accountId+'\')">Activer</button>')
       +'<button class="btn btn-red btn-sm" style="font-size:10px;padding:4px 8px" onclick="deleteMTAccount(\''+a.accountId+'\')">✕</button>'
+      +'</div></div>'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">'
+      +'<div style="background:var(--card);border-radius:8px;padding:8px;text-align:center"><div style="font-size:9px;color:var(--text-muted);margin-bottom:3px">TRADES</div><div style="font-size:14px;font-weight:700;color:var(--text)">'+accTrades.length+'</div></div>'
+      +'<div style="background:var(--card);border-radius:8px;padding:8px;text-align:center"><div style="font-size:9px;color:var(--text-muted);margin-bottom:3px">WIN RATE</div><div style="font-size:14px;font-weight:700;color:var(--text)">'+accWr+'%</div></div>'
+      +'<div style="background:var(--card);border-radius:8px;padding:8px;text-align:center"><div style="font-size:9px;color:var(--text-muted);margin-bottom:3px">P&L</div><div style="font-size:14px;font-weight:700;color:'+pnlColor+'">'+(accPnl>=0?'+':'')+accPnl.toFixed(0)+'$</div></div>'
       +'</div></div>';
   }).join('');
 }

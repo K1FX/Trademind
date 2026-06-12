@@ -137,7 +137,7 @@ export default async function handler(req, res){
           exit:  parseFloat(t.closePrice)||parseFloat(t.price)||0,
           sl:0, tp:0, rr:0,
           result: pnl>0?'Win':pnl<0?'Loss':'Breakeven',
-          session:'', setup:'MT Auto-Import',
+          session:'', setup:'MT Auto-Import'+(login?'·'+login:''),
           notes:'Imported from MetaTrader', screenshot:null
         });
       }
