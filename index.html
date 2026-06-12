@@ -734,7 +734,7 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
     <div id="det-edit-form" style="display:none;margin-top:14px;border-top:1px solid var(--border);padding-top:14px">
       <div class="fg"><label class="fl">Notes</label><textarea class="fi2" id="det-edit-notes" rows="3" style="resize:vertical"></textarea></div>
       <div class="fg"><label class="fl">Setup</label><input class="fi2" id="det-edit-setup"></div>
-      <div class="fg"><label class="fl">Screenshot (URL ou base64)</label><input class="fi2" id="det-edit-screenshot" placeholder="https://... ou colle une image"></div>
+      <div class="fg"><label class="fl">Screenshot</label><input class="fi2" type="file" accept="image/*" onchange="editPreviewImg(this)"><img id="det-edit-img-preview" class="img-preview" style="display:none;width:100%;border-radius:8px;margin-top:6px"><input type="hidden" id="det-edit-screenshot"></div>
       <div style="display:flex;gap:8px;margin-top:8px">
         <button class="btn btn-acc btn-sm" onclick="saveTradeEdit()">Sauvegarder</button>
         <button class="btn btn-ghost btn-sm" onclick="document.getElementById('det-edit-form').style.display='none'">Annuler</button>
@@ -940,6 +940,15 @@ function previewImg(inp){
   reader.onload=function(e){imgBase64=e.target.result;var img=document.getElementById('img-preview');img.src=imgBase64;img.style.display='block';};
   reader.readAsDataURL(file);
 }
+function editPreviewImg(inp){
+  var file=inp.files[0];if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    document.getElementById('det-edit-screenshot').value=e.target.result;
+    var img=document.getElementById('det-edit-img-preview');img.src=e.target.result;img.style.display='block';
+  };
+  reader.readAsDataURL(file);
+}
 
 async function saveTrade(){
   if(!checkTradeLimit())return;
@@ -998,6 +1007,8 @@ function openEditInDetail(){
   document.getElementById('det-edit-notes').value=currentTrade.notes||'';
   document.getElementById('det-edit-setup').value=currentTrade.setup||'';
   document.getElementById('det-edit-screenshot').value=currentTrade.screenshot||'';
+  var prev=document.getElementById('det-edit-img-preview');
+  if(currentTrade.screenshot){prev.src=currentTrade.screenshot;prev.style.display='block';}else{prev.src='';prev.style.display='none';}
   document.getElementById('det-edit-status').textContent='';
 }
 
