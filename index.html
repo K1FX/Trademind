@@ -553,10 +553,14 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
         <div style="font-size:15px;font-weight:600;margin-bottom:4px">MT4 / MT5 Connect</div>
         <div style="font-size:12px;color:var(--text-muted);margin-bottom:20px">Connecte ton compte broker — tes trades s'importent automatiquement. Fonctionne sur PC et mobile.</div>
 
+        <!-- Plan badge + Elite info -->
+        <div id="mt-plan-info" style="margin-bottom:12px"></div>
+
         <!-- Connected accounts list -->
         <div id="mt-accounts-section" class="card" style="margin-bottom:12px;display:none">
-          <div class="card-title" style="margin-bottom:12px">Comptes connectés</div>
+          <div class="card-title" style="margin-bottom:12px">Comptes connectés <span id="mt-accounts-count" style="font-size:11px;color:var(--text-muted);font-weight:400"></span></div>
           <div id="mt-accounts-list"></div>
+          <button id="mt-add-account-btn" class="btn btn-ghost btn-sm" style="margin-top:8px;display:none" onclick="showAddMTAccount()">+ Ajouter un compte</button>
         </div>
 
         <!-- Credential login -->
@@ -1660,8 +1664,37 @@ function renderMTAccounts(){
   var accounts=getMTAccounts();
   var section=document.getElementById('mt-accounts-section');
   var list=document.getElementById('mt-accounts-list');
+  var planInfo=document.getElementById('mt-plan-info');
+  var maxAccounts=userPlan==='elite'?3:userPlan==='pro'?1:0;
+
+  // Plan info banner
+  if(planInfo){
+    if(userPlan==='elite'){
+      planInfo.innerHTML='<div style="background:linear-gradient(135deg,#1a2a1a,#0f1a0f);border:1px solid rgba(85,211,150,0.3);border-radius:10px;padding:14px;margin-bottom:4px">'
+        +'<div style="font-size:11px;font-weight:700;color:var(--accent);margin-bottom:8px">⭐ ELITE — Tes avantages</div>'
+        +'<div style="font-size:11px;color:var(--text-muted);line-height:2">'
+        +'✓ Jusqu\'à 3 comptes MT4/MT5 connectés<br>'
+        +'✓ Rapport de performance envoyé chaque lundi par email<br>'
+        +'✓ Support prioritaire sous 24h'
+        +'</div></div>';
+    } else if(userPlan==='pro'){
+      planInfo.innerHTML='<div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:11px;color:var(--text-muted)">'
+        +'<span style="color:var(--accent);font-weight:700">PRO</span> · 1 compte MT5 inclus. <span style="color:var(--accent);cursor:pointer;text-decoration:underline" onclick="nav(\'pricing\',null)">Passe à Elite pour en connecter 3 + rapport email hebdo →</span>'
+        +'</div>';
+    } else {
+      planInfo.innerHTML='<div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:11px;color:var(--text-muted)">'
+        +'MT4/MT5 Connect est disponible sur les plans payants. <span style="color:var(--accent);cursor:pointer;text-decoration:underline" onclick="nav(\'pricing\',null)">Voir les plans →</span>'
+        +'</div>';
+    }
+  }
+
   if(!accounts.length){section.style.display='none';return;}
   section.style.display='';
+  var countEl=document.getElementById('mt-accounts-count');
+  if(countEl) countEl.textContent='('+accounts.length+'/'+maxAccounts+')';
+  var addBtn=document.getElementById('mt-add-account-btn');
+  if(addBtn) addBtn.style.display=(accounts.length<maxAccounts&&userPlan!=='free')?'':'none';
+
   var activeId=getActiveMTAccountId();
   list.innerHTML=accounts.map(function(a){
     var isActive=a.accountId===activeId;
@@ -1673,6 +1706,14 @@ function renderMTAccounts(){
       +'<button class="btn btn-red btn-sm" style="font-size:10px;padding:4px 8px" onclick="deleteMTAccount(\''+a.accountId+'\')">✕</button>'
       +'</div></div>';
   }).join('');
+}
+
+function showAddMTAccount(){
+  // Scroll to the form and clear fields
+  document.getElementById('mt-login').value='';
+  document.getElementById('mt-pwd').value='';
+  document.getElementById('mt-srv').value='';
+  document.getElementById('mt-login').focus();
 }
 
 function switchMTAccount(accountId){
