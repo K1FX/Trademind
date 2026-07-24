@@ -380,7 +380,47 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
         </div>
         <div class="g2">
           <div>
-            <div class="ai-box"><div class="ai-hdr"><div class="ai-dot"></div><div class="ai-lbl">TradeMind AI — Session Brief</div></div><div class="ai-txt" id="ai-brief"><div class="ld"><div class="ld-dot"></div><div class="ld-dot"></div><div class="ld-dot"></div><span>Analyzing market...</span></div></div></div>
+            <div class="ai-box" style="padding:0;overflow:hidden">
+              <!-- Stats row -->
+              <div style="display:flex;gap:0;border-bottom:1px solid rgba(85,211,150,0.1)">
+                <div style="flex:1;padding:14px 16px;border-right:1px solid rgba(85,211,150,0.1)">
+                  <div style="font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;font-weight:600;margin-bottom:6px">Win Rate</div>
+                  <div style="display:flex;align-items:center;gap:10px">
+                    <svg viewBox="0 0 36 36" width="44" height="44" style="transform:rotate(-90deg)">
+                      <circle cx="18" cy="18" r="15" fill="none" stroke="rgba(85,211,150,0.12)" stroke-width="3"/>
+                      <circle id="wr-ring" cx="18" cy="18" r="15" fill="none" stroke="#55D396" stroke-width="3" stroke-linecap="round" stroke-dasharray="94.2" stroke-dashoffset="94.2" style="transition:stroke-dashoffset .6s ease"/>
+                    </svg>
+                    <div>
+                      <div id="brief-wr" style="font-size:20px;font-weight:700;font-family:'Space Grotesk',sans-serif;line-height:1">0%</div>
+                      <div id="brief-wl" style="font-size:10px;color:var(--text-muted);margin-top:1px">0W · 0L</div>
+                    </div>
+                  </div>
+                </div>
+                <div style="flex:1;padding:14px 16px">
+                  <div style="font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;font-weight:600;margin-bottom:6px">Profit Factor</div>
+                  <div id="brief-pf" style="font-size:20px;font-weight:700;font-family:'Space Grotesk',sans-serif;margin-bottom:6px">—</div>
+                  <div style="height:6px;background:rgba(255,255,255,0.06);border-radius:99px;overflow:hidden;display:flex;gap:2px">
+                    <div id="brief-win-bar" style="height:100%;background:#55D396;border-radius:99px;transition:width .5s ease;width:0%"></div>
+                    <div id="brief-loss-bar" style="height:100%;background:#FF4466;border-radius:99px;transition:width .5s ease;width:0%"></div>
+                  </div>
+                  <div style="display:flex;justify-content:space-between;margin-top:4px">
+                    <span id="brief-gp" style="font-size:9px;color:#55D396">$0</span>
+                    <span id="brief-gl" style="font-size:9px;color:#FF4466">$0</span>
+                  </div>
+                </div>
+              </div>
+              <!-- AI Cards -->
+              <div style="padding:14px 16px">
+                <div style="display:flex;align-items:center;gap:7px;margin-bottom:10px">
+                  <div class="ai-dot"></div>
+                  <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em">AI Performance Overview</div>
+                </div>
+                <div id="ai-brief-title" style="font-size:14px;font-weight:600;margin-bottom:10px;line-height:1.4">Analyzing your trading patterns...</div>
+                <div id="ai-brief-cards" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                  <div class="ld" style="grid-column:1/-1;display:flex;align-items:center;gap:6px;color:var(--text-muted);font-size:11px"><div class="ld-dot"></div><div class="ld-dot"></div><div class="ld-dot"></div></div>
+                </div>
+              </div>
+            </div>
             <div class="card"><div class="card-title">Advanced Stats</div><div id="adv-stats"><div style="color:var(--text-muted);font-size:12px">Add trades to see stats</div></div></div>
           </div>
           <div>
@@ -1207,7 +1247,7 @@ function updateDash(){
     return '<tr class="clickable" onclick="openTradeDetail('+JSON.stringify(t).replace(/'/g,"\\'")+')"><td>'+t.date+'</td><td><strong>'+t.pair+'</strong></td><td><span class="bdg '+(t.direction==='Long'?'bg':'br')+'">'+t.direction+'</span></td><td style="color:'+(t.pnl>=0?'var(--accent)':'var(--red)')+'"><strong>'+(t.pnl>=0?'+ ':'')+'$'+(t.pnl||0).toFixed(2)+'</strong></td><td><span class="bdg '+(t.result==='Win'?'bg':t.result==='Loss'?'br':'bgr')+'">'+t.result+'</span></td></tr>';
   }).join('');
   renderAdvStats(totalPnl,wins,losses,gp,gl,pf);
-  renderBehav();updatePnlChart();renderProfileStats(totalPnl,wins,losses,wr,pf);if(typeof renderGoals==='function')renderGoals();
+  renderBehav();updatePnlChart();renderProfileStats(totalPnl,wins,losses,wr,pf);if(typeof renderGoals==='function')renderGoals();if(typeof updateBriefStats==='function')updateBriefStats();
 }
 
 function renderAdvStats(totalPnl,wins,losses,gp,gl,pf){
@@ -1393,9 +1433,69 @@ function renderFullStats(){
 
 
 
+function updateBriefStats(){
+  var wins=trades.filter(function(t){return t.result==='Win';}).length;
+  var losses=trades.filter(function(t){return t.result==='Loss';}).length;
+  var total=trades.length;
+  var wr=total>0?Math.round(wins/total*100):0;
+  var gp=trades.filter(function(t){return t.pnl>0;}).reduce(function(s,t){return s+t.pnl;},0);
+  var gl=Math.abs(trades.filter(function(t){return t.pnl<0;}).reduce(function(s,t){return s+t.pnl;},0));
+  var pf=gl>0?(gp/gl).toFixed(2):'∞';
+  var wrEl=document.getElementById('brief-wr');
+  var wlEl=document.getElementById('brief-wl');
+  var ring=document.getElementById('wr-ring');
+  var pfEl=document.getElementById('brief-pf');
+  var gpEl=document.getElementById('brief-gp');
+  var glEl=document.getElementById('brief-gl');
+  var wBar=document.getElementById('brief-win-bar');
+  var lBar=document.getElementById('brief-loss-bar');
+  if(wrEl)wrEl.textContent=wr+'%';
+  if(wrEl)wrEl.style.color=wr>=50?'#55D396':'#FF4466';
+  if(wlEl)wlEl.textContent=wins+'W · '+losses+'L';
+  if(ring){var circ=94.2;ring.style.strokeDashoffset=circ-(circ*wr/100);ring.style.stroke=wr>=50?'#55D396':'#FF4466';}
+  if(pfEl){pfEl.textContent=pf;pfEl.style.color=parseFloat(pf)>=1.5?'#55D396':parseFloat(pf)>=1?'#FFB800':'#FF4466';}
+  var tot=gp+gl;
+  if(wBar)wBar.style.width=tot>0?(gp/tot*100)+'%':'0%';
+  if(lBar)lBar.style.width=tot>0?(gl/tot*100)+'%':'0%';
+  if(gpEl)gpEl.textContent='$'+gp.toFixed(0);
+  if(glEl)glEl.textContent='-$'+gl.toFixed(0);
+}
+
 async function loadAIBrief(){
-  try{var r=await callAI('Quick market read for today — one sentence on sentiment, one concrete trade idea with a level.',120);document.getElementById('ai-brief').innerHTML=r;}
-  catch(e){document.getElementById('ai-brief').innerHTML='Focus on high-probability setups. Protect your capital first.';}
+  updateBriefStats();
+  var cardsEl=document.getElementById('ai-brief-cards');
+  var titleEl=document.getElementById('ai-brief-title');
+  if(!trades.length){
+    if(titleEl)titleEl.textContent='Add trades to unlock AI insights.';
+    if(cardsEl)cardsEl.innerHTML='<div style="color:var(--text-muted);font-size:11px;grid-column:1/-1">Your patterns will appear once you log some trades.</div>';
+    return;
+  }
+  var wins=trades.filter(function(t){return t.result==='Win';}).length;
+  var losses=trades.filter(function(t){return t.result==='Loss';}).length;
+  var pnl=trades.reduce(function(s,t){return s+(t.pnl||0);},0);
+  var pairs=[...new Set(trades.map(function(t){return t.pair;}))].join(', ');
+  var setups=[...new Set(trades.map(function(t){return t.setup;}).filter(Boolean))].join(', ');
+  var prompt='You are a trading coach. Based on this data: '+wins+' wins, '+losses+' losses, total P&L $'+pnl.toFixed(2)+', pairs: '+pairs+', setups: '+setups+'. Reply ONLY with valid JSON, no markdown: {"title":"one motivating insight sentence","focus":{"label":"Focus Action","text":"one specific thing to avoid or improve"},"strength":{"label":"Strength","text":"one specific strength observed"}}';
+  try{
+    var r=await callAI(prompt,200);
+    var clean=r.replace(/```json/g,'').replace(/```/g,'').trim();
+    var start=clean.indexOf('{');var end=clean.lastIndexOf('}');
+    if(start===-1||end===-1)throw new Error('no json');
+    var data=JSON.parse(clean.slice(start,end+1));
+    if(titleEl)titleEl.textContent=data.title||'';
+    if(cardsEl)cardsEl.innerHTML=
+      '<div style="background:rgba(85,211,150,0.05);border:1px solid rgba(85,211,150,0.12);border-radius:8px;padding:10px">'
+      +'<div style="display:flex;align-items:center;gap:5px;margin-bottom:5px"><span style="font-size:12px">🎯</span><span style="font-size:10px;font-weight:700;color:#55D396">'+(data.focus&&data.focus.label||'Focus Action')+'</span></div>'
+      +'<div style="font-size:11px;color:var(--text-muted);line-height:1.5">'+(data.focus&&data.focus.text||'')+'</div>'
+      +'</div>'
+      +'<div style="background:rgba(74,158,255,0.05);border:1px solid rgba(74,158,255,0.12);border-radius:8px;padding:10px">'
+      +'<div style="display:flex;align-items:center;gap:5px;margin-bottom:5px"><span style="font-size:12px">💪</span><span style="font-size:10px;font-weight:700;color:#4A9EFF">'+(data.strength&&data.strength.label||'Strength')+'</span></div>'
+      +'<div style="font-size:11px;color:var(--text-muted);line-height:1.5">'+(data.strength&&data.strength.text||'')+'</div>'
+      +'</div>';
+  }catch(e){
+    if(titleEl)titleEl.textContent='Keep logging trades to reveal your patterns.';
+    if(cardsEl)cardsEl.innerHTML='<div style="color:var(--text-muted);font-size:11px;grid-column:1/-1">AI analysis unavailable — try again later.</div>';
+  }
 }
 
 async function sendMsg(){
