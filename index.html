@@ -743,6 +743,18 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
 </div>
 
 <!-- MODALS -->
+<div id="m-goal" class="mo">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-hdr">Set Goal <button class="mc-btn" onclick="closeM('m-goal')">×</button></div>
+    <div class="fr">
+      <div class="fg"><label>Goal Name</label><input class="fi" id="g-name" placeholder="Ex: Reach $60,000"></div>
+      <div class="fg"><label>Target Amount ($)</label><input class="fi" id="g-target" type="number" placeholder="Ex: 60000"></div>
+      <div class="fg"><label>Starting Amount ($)</label><input class="fi" id="g-start" type="number" placeholder="Ex: 50000"></div>
+      <div class="fg"><label>Target Trades (optionnel)</label><input class="fi" id="g-trades" type="number" placeholder="Ex: 100"></div>
+      <button class="btn btn-acc" style="width:100%;margin-top:4px" onclick="saveGoal()">Save Goal</button>
+    </div>
+  </div>
+</div>
 <div id="m-trade" class="mo">
   <div class="modal">
     <div class="modal-hdr">Add Trade <button class="mc-btn" onclick="closeM('m-trade')">x</button></div>
