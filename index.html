@@ -369,7 +369,10 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
       <div id="page-journal" class="page">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
           <div><div style="font-size:15px;font-weight:600">Trade Journal</div><div style="font-size:11px;color:var(--text-muted)">Click a trade to view details</div></div>
-          <button class="btn btn-acc" onclick="openM('m-trade')">+ Add Trade</button>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-ghost" onclick="deleteAllTrades()" style="font-size:11px;opacity:0.6;color:#f87171">🗑 Tout effacer</button>
+            <button class="btn btn-acc" onclick="openM('m-trade')">+ Add Trade</button>
+          </div>
         </div>
         <div class="card" style="margin-bottom:10px">
           <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -609,11 +612,13 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
             🔒 Tes identifiants sont utilisés uniquement pour lire ton historique de trades. Ils ne sont jamais stockés.<br>
             <strong style="color:var(--text)">Compatible avec 500+ brokers</strong> — IC Markets, Pepperstone, Exness, XM, FTMO, The5ers...
           </div>
+          <input type="hidden" id="mt-manual-id">
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <button class="btn btn-acc" id="mt-sync-btn" onclick="syncMT()">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:6px"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
               Importer mes trades
             </button>
+            <button class="btn btn-ghost" onclick="syncMTRecent()" style="font-size:12px">🔄 Sync récents</button>
             <button class="btn btn-ghost" onclick="resetMT()" style="font-size:11px;opacity:0.6">↺ Réinitialiser le compte</button>
             <button class="btn btn-ghost" id="mt-check-btn" onclick="checkAndImportMT()" style="display:none">Vérifier &amp; importer</button>
           </div>
@@ -690,11 +695,6 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
             <button class="btn btn-acc btn-sm" onclick="changePassword()">Update Password</button>
             <div id="pwd-status" style="font-size:11px;margin-top:8px"></div>
           </div>
-        </div>
-        <div class="card" style="margin-top:0">
-          <div class="card-title">API Configuration</div>
-          <div style="font-size:11px;color:var(--text-muted);margin-bottom:12px">API keys are configured server-side on Vercel for security.</div>
-          <div id="keys-status" style="font-size:12px;color:var(--accent)">Keys configured server-side</div>
         </div>
       </div>
 
@@ -815,12 +815,17 @@ function showUpgradeModal(msg){
   modal.classList.add('open');
 }
 
+async function getAuthToken(){
+  try{var s=await sb.auth.getSession();return s.data.session?s.data.session.access_token:'';}catch(e){return '';}
+}
+
 async function callAI(prompt,maxTokens){
   try{
     var today=new Date().toDateString();
+    var authToken=await getAuthToken();
     var r=await fetch('/api/chat',{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+authToken},
       body:JSON.stringify({
         messages:[{role:'user',content:prompt}],
         max_tokens:maxTokens||300,
@@ -1578,7 +1583,8 @@ function selectMTServer(name){
 }
 
 async function mtApi(body){
-  var r=await fetch('/api/mt-connect',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  var authToken=await getAuthToken();
+  var r=await fetch('/api/mt-connect',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+authToken},body:JSON.stringify(body)});
   return r.json();
 }
 
@@ -1665,6 +1671,27 @@ var MT_BTN_HTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" str
 function getMTAccounts(){return JSON.parse(localStorage.getItem('mt-accounts-'+user.id)||'[]');}
 function saveMTAccounts(arr){localStorage.setItem('mt-accounts-'+user.id,JSON.stringify(arr));}
 function getActiveMTAccountId(){return localStorage.getItem('mt_account_id_'+user.id)||localStorage.getItem('mt-account-'+user.id);}
+
+function setManualMTId(){
+  var id=(document.getElementById('mt-manual-id').value||'').trim();
+  if(!id){alert('Entre l\'ID du compte MetaAPI');return;}
+  var login=document.getElementById('mt-login').value.trim()||'manuel';
+  var server=document.getElementById('mt-server').value.trim()||'';
+  var accounts=getMTAccounts();
+  var maxAccounts=userPlan==='elite'?3:userPlan==='pro'?1:0;
+  if(userPlan==='free'){showUpgradeModal('MT5 Auto-Import est disponible sur les plans Pro et Elite.');return;}
+  if(accounts.length>=maxAccounts){showUpgradeModal(userPlan==='pro'?'Pro permet 1 compte broker. Upgrade vers Elite pour jusqu\'à 3 comptes.':'Maximum de comptes atteint.');return;}
+  var exists=accounts.find(function(a){return a.id===id;});
+  if(!exists){
+    accounts.push({id:id,login:login,server:server,platform:'mt5',addedAt:Date.now()});
+    saveMTAccounts(accounts);
+  }
+  localStorage.setItem('mt_account_id_'+user.id,id);
+  localStorage.setItem('mt-account-'+user.id,id);
+  document.getElementById('mt-manual-id').value='';
+  renderMTAccounts();
+  alert('✅ Compte configuré avec l\'ID: '+id.slice(0,8)+'...');
+}
 
 function renderMTAccounts(){
   var accounts=getMTAccounts();
@@ -1758,7 +1785,10 @@ async function syncMT(){
   var plat=document.getElementById('mt-plat').value;
   var status=document.getElementById('mt-status');
   var btn=document.getElementById('mt-sync-btn');
-  var savedId=localStorage.getItem('mt_account_id_'+user.id);
+  var manualIdInput=document.getElementById('mt-manual-id');
+  var manualId=manualIdInput?manualIdInput.value.trim():'';
+  if(manualId) localStorage.setItem('mt_account_id_'+user.id, manualId);
+  var savedId=localStorage.getItem('mt_account_id_'+user.id)||localStorage.getItem('mt-account-'+user.id);
 
   // Account limit check
   var accounts=getMTAccounts();
@@ -1805,39 +1835,72 @@ async function syncMT(){
     renderMTAccounts();
   }
 
-  // If already ready — skip polling
-  if(d.ready){
-    mtProgressSet(50,'Compte connecté !');
-    status.innerHTML='<span style="color:var(--accent)">✓ Compte connecté !</span>';
-    await mtImportDirect(d.accountId, status, btn);
-    return;
-  }
-
-  // Not ready — poll with animated progress bar 10→48%
-  var elapsed=0;
-  var connProg=10;
-  mtProgressSet(connProg,'En attente de connexion broker...');
-  mtPollTimer=setInterval(async function(){
-    elapsed+=5;
-    if(connProg<48){connProg+=2;mtProgressSet(connProg,'En attente de connexion... ('+elapsed+'s)');}
-    var s=await mtApi({action:'status',accountId:d.accountId});
-    var connMsg = (s.state||'')+'/'+(s.connectionStatus||'');
-    status.innerHTML='<span style="color:var(--text-muted)">⏳ '+elapsed+'s — '+connMsg+'</span>';
-    if(s.ready){
-      clearInterval(mtPollTimer);
-      mtProgressSet(50,'Broker connecté !');
-      status.innerHTML='<span style="color:var(--accent)">✓ Prêt !</span>';
-      await mtImportDirect(d.accountId, status, btn);
-    } else if(elapsed>=420){
-      clearInterval(mtPollTimer);
-      mtProgressEnd();
-      btn.disabled=false;btn.innerHTML=MT_BTN_HTML;
-      status.innerHTML='<span style="color:var(--red)">❌ Timeout — le broker ne répond pas. Réessaie dans quelques minutes.</span>';
-    }
-  },5000);
+  // Try import directly — if account is already connected on MetaAPI it will work immediately
+  mtProgressSet(50,'Connexion établie, import en cours...');
+  status.innerHTML='<span style="color:var(--accent)">⏳ Import en cours...</span>';
+  await mtImportDirect(d.accountId, status, btn);
 }
 
 function checkAndImportMT(){}
+
+async function syncMTRecent(){
+  var savedId=localStorage.getItem('mt_account_id_'+user.id)||localStorage.getItem('mt-account-'+user.id);
+  if(!savedId){
+    document.getElementById('mt-status').innerHTML='<span style="color:var(--red)">Importe d\'abord tes trades avec le bouton principal.</span>';
+    return;
+  }
+  var status=document.getElementById('mt-status');
+  var btn=document.getElementById('mt-sync-btn');
+  btn.disabled=true;
+  mtProgressStart('Sync des trades récents...');
+  mtProgressSet(30,'Récupération des 7 derniers jours...');
+  status.innerHTML='<span style="color:var(--text-muted)">⏳ Sync des trades récents...</span>';
+
+  var toDate=new Date().toISOString().split('T')[0];
+  var fromDate=new Date(Date.now()-7*24*60*60*1000).toISOString().split('T')[0];
+
+  var accs=getMTAccounts();
+  var acc=accs.find(function(a){return a.accountId===savedId;})||{};
+  var loginTag=acc.login||'';
+  var setupTag='MT Auto-Import'+(loginTag?'·'+loginTag:'');
+
+  var imp=await mtApi({action:'import',accountId:savedId,userId:user.id,fromDate:fromDate,toDate:toDate,login:loginTag});
+  var trades=imp.trades||[];
+
+  if(!trades.length){
+    mtProgressEnd();btn.disabled=false;
+    status.innerHTML='<span style="color:var(--text-muted)">'+(imp.error||'Aucun trade sur les 7 derniers jours.')+'</span>';
+    return;
+  }
+
+  mtProgressSet(60,'Mise à jour de '+trades.length+' trades...');
+  // Remove recent trades for this account then reinsert
+  var recentFrom=new Date(fromDate);
+  var {data:existing}=await sb.from('trades').select('id,date').eq('user_id',user.id).eq('setup',setupTag);
+  var toDelete=(existing||[]).filter(function(t){return new Date(t.date)>=recentFrom;}).map(function(t){return t.id;});
+  if(toDelete.length) await sb.from('trades').delete().in('id',toDelete);
+
+  var batchSize=25;
+  for(var i=0;i<trades.length;i+=batchSize){
+    await sb.from('trades').insert(trades.slice(i,i+batchSize));
+    mtProgressSet(60+Math.round((i/trades.length)*35),'Insertion...');
+  }
+
+  mtProgressSet(100,'✓ Sync terminée !');
+  setTimeout(function(){mtProgressEnd();},800);
+  btn.disabled=false;
+  status.innerHTML='<span style="color:var(--accent)">✓ '+trades.length+' trades synchronisés (7 derniers jours)</span>';
+  mtApi({action:'undeploy',accountId:savedId}).catch(function(){});
+  loadTrades();
+}
+
+async function deleteAllTrades(){
+  if(!confirm('Supprimer TOUS tes trades ? Cette action est irréversible.')) return;
+  const {error}=await sb.from('trades').delete().eq('user_id',user.id);
+  if(error){alert('Erreur: '+error.message);return;}
+  trades=[];renderJ();loadDash();
+  alert('Tous les trades ont été supprimés.');
+}
 
 async function resetMT(){
   if(!confirm('Réinitialiser le compte MetaAPI ? Tu devras ressaisir tes identifiants.')) return;
