@@ -505,28 +505,70 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
       <!-- ANALYTICS -->
       <div id="page-analytics" class="page">
         <div style="font-size:15px;font-weight:600;margin-bottom:14px">Analytics</div>
-        <div class="card">
-          <div class="card-title">AI Period Analysis</div>
-          <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;margin-bottom:12px">
+
+        <!-- AI Period Analysis -->
+        <div class="ai-box" style="padding:14px;margin-bottom:14px">
+          <div class="ai-hdr" style="margin-bottom:10px"><div class="ai-dot"></div><div class="ai-lbl">AI Period Analysis</div></div>
+          <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;margin-bottom:10px">
             <div class="fg" style="margin:0"><label style="font-size:10px;color:var(--text-muted);display:block;margin-bottom:4px">From</label><input class="fi2" type="date" id="p-from" style="padding:5px 8px;font-size:11px"></div>
             <div class="fg" style="margin:0"><label style="font-size:10px;color:var(--text-muted);display:block;margin-bottom:4px">To</label><input class="fi2" type="date" id="p-to" style="padding:5px 8px;font-size:11px"></div>
-            <button class="btn btn-acc btn-sm" onclick="periodAnalysis()">Analyze with AI</button>
+            <button class="btn btn-acc btn-sm" onclick="periodAnalysis()">Analyze</button>
           </div>
           <div id="period-result" class="ai-txt" style="font-size:12px;line-height:1.6"></div>
         </div>
-        <div class="g4">
-          <div class="mc"><div class="ml">Best Pair</div><div class="mv c-acc" id="s-bp" style="font-size:16px">--</div></div>
-          <div class="mc"><div class="ml">Best Day</div><div class="mv c-acc" id="s-bd" style="font-size:16px">--</div></div>
-          <div class="mc"><div class="ml">Avg Win</div><div class="mv c-acc" id="s-aw">$0</div></div>
-          <div class="mc"><div class="ml">Avg Loss</div><div class="mv c-red" id="s-al">$0</div></div>
+
+        <!-- Key stats row -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px">
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px">
+            <div style="font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--text-muted);font-weight:600;margin-bottom:6px">Best Pair</div>
+            <div class="mv c-acc" id="s-bp" style="font-size:17px;font-weight:700;font-family:'Space Grotesk',sans-serif">--</div>
+          </div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px">
+            <div style="font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--text-muted);font-weight:600;margin-bottom:6px">Best Day</div>
+            <div class="mv c-acc" id="s-bd" style="font-size:17px;font-weight:700;font-family:'Space Grotesk',sans-serif">--</div>
+          </div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px">
+            <div style="font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--text-muted);font-weight:600;margin-bottom:6px">Avg Win</div>
+            <div class="mv" id="s-aw" style="font-size:17px;font-weight:700;color:#55D396;font-family:'Space Grotesk',sans-serif">$0</div>
+          </div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px">
+            <div style="font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--text-muted);font-weight:600;margin-bottom:6px">Avg Loss</div>
+            <div class="mv" id="s-al" style="font-size:17px;font-weight:700;color:#FF4466;font-family:'Space Grotesk',sans-serif">$0</div>
+          </div>
         </div>
-        <div class="g2">
-          <div class="card"><div class="card-title">P&amp;L by Pair</div><div style="height:180px"><canvas id="pair-chart"></canvas></div></div>
-          <div class="card"><div class="card-title">P&amp;L by Day of Week</div><div style="height:180px"><canvas id="day-chart"></canvas></div></div>
+
+        <!-- Charts row 1 -->
+        <div class="g2" style="margin-bottom:14px">
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px">
+            <div style="font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--text-muted);font-weight:600;margin-bottom:14px">P&amp;L by Pair</div>
+            <div style="height:180px"><canvas id="pair-chart"></canvas></div>
+          </div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px">
+            <div style="font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--text-muted);font-weight:600;margin-bottom:14px">P&amp;L by Day of Week</div>
+            <div style="height:180px"><canvas id="day-chart"></canvas></div>
+          </div>
         </div>
+
+        <!-- Hour chart (full width) -->
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:14px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+            <div style="font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--text-muted);font-weight:600">P&amp;L par Heure</div>
+            <div id="best-hour-badge" style="font-size:10px;color:#55D396;font-weight:600"></div>
+          </div>
+          <div style="font-size:10px;color:var(--text-muted);margin-bottom:12px">Heures les plus rentables (basé sur les trades avec heure renseignée)</div>
+          <div style="height:160px"><canvas id="hour-chart"></canvas></div>
+        </div>
+
+        <!-- Charts row 2 -->
         <div class="g2">
-          <div class="card"><div class="card-title">Sessions</div><div style="height:160px"><canvas id="sess-chart"></canvas></div></div>
-          <div class="card"><div class="card-title">Full Statistics</div><div id="full-stats"></div></div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px">
+            <div style="font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--text-muted);font-weight:600;margin-bottom:14px">Sessions</div>
+            <div style="height:160px"><canvas id="sess-chart"></canvas></div>
+          </div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px">
+            <div style="font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--text-muted);font-weight:600;margin-bottom:14px">Full Statistics</div>
+            <div id="full-stats"></div>
+          </div>
         </div>
       </div>
 
@@ -800,6 +842,7 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
     <div class="modal-hdr">Add Trade <button class="mc-btn" onclick="closeM('m-trade')">x</button></div>
     <div class="fr">
       <div class="fg"><label>Date</label><input class="fi2" id="t-date" type="date"></div>
+      <div class="fg"><label>Heure d'entrée</label><input class="fi2" id="t-time" type="time" placeholder="09:30"></div>
       <div class="fg"><label>Pair</label><select class="fi2" id="t-pair"><option>EUR/USD</option><option>GBP/USD</option><option>USD/JPY</option><option>USD/CHF</option><option>AUD/USD</option><option>NZD/USD</option><option>USD/CAD</option><option>EUR/GBP</option><option>XAU/USD</option><option>XAG/USD</option><option>NAS100</option><option>NQ1</option><option>MNQ1</option><option>US30</option><option>S&P500</option><option>GC1</option><option>MGC1</option><option>BTC/USD</option><option>ETH/USD</option></select></div>
     </div>
     <div class="fr">
@@ -1067,7 +1110,7 @@ async function saveTrade(){
   var sl=parseFloat(document.getElementById('t-sl').value)||0;
   var tp=parseFloat(document.getElementById('t-tp').value)||0;
   var rr=0;if(sl&&tp&&entry){var risk=Math.abs(entry-sl);var reward=Math.abs(tp-entry);rr=risk>0?Math.round(reward/risk*100)/100:0;}
-  var t={user_id:user.id,date:document.getElementById('t-date').value,pair:document.getElementById('t-pair').value,direction:document.getElementById('t-dir').value,session:document.getElementById('t-sess').value,entry:entry,exit:exit,sl:sl,tp:tp,lots:parseFloat(document.getElementById('t-lots').value)||0,pnl:pnl,rr:rr,result:document.getElementById('t-result').value,setup:document.getElementById('t-setup').value,notes:document.getElementById('t-notes').value,screenshot:imgBase64||null};
+  var t={user_id:user.id,date:document.getElementById('t-date').value,time:document.getElementById('t-time').value||null,pair:document.getElementById('t-pair').value,direction:document.getElementById('t-dir').value,session:document.getElementById('t-sess').value,entry:entry,exit:exit,sl:sl,tp:tp,lots:parseFloat(document.getElementById('t-lots').value)||0,pnl:pnl,rr:rr,result:document.getElementById('t-result').value,setup:document.getElementById('t-setup').value,notes:document.getElementById('t-notes').value,screenshot:imgBase64||null};
   var r=await sb.from('trades').insert([t]);
   if(r.error){alert('Error: '+r.error.message);return;}
   closeM('m-trade');
@@ -1393,15 +1436,34 @@ function renderAnalytics(){
   var pairs=Object.keys(pairPnl);
   var ctx2=document.getElementById('pair-chart').getContext('2d');
   if(pairC)pairC.destroy();
-  pairC=new Chart(ctx2,{type:'bar',data:{labels:pairs,datasets:[{data:pairs.map(function(p){return pairPnl[p];}),backgroundColor:pairs.map(function(p){return pairPnl[p]>=0?'rgba(85,211,150,0.6)':'rgba(255,68,102,0.6)';}),borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:'#0F2414'},ticks:{color:'#4A6B50'}},x:{grid:{display:false},ticks:{color:'#4A6B50',font:{size:10}}}}}});
+  var chartOpts=function(extra){return Object.assign({responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#0d0d0d',borderColor:'#1f1f1f',borderWidth:1,titleColor:'#6b7280',bodyColor:'#f0f0f0'}},scales:{y:{grid:{color:'rgba(255,255,255,0.04)'},border:{display:false},ticks:{color:'#6b7280',font:{size:10}}},x:{grid:{display:false},border:{display:false},ticks:{color:'#6b7280',font:{size:10}}}}},extra||{});};
+  pairC=new Chart(ctx2,{type:'bar',data:{labels:pairs,datasets:[{data:pairs.map(function(p){return pairPnl[p];}),backgroundColor:pairs.map(function(p){return pairPnl[p]>=0?'rgba(85,211,150,0.55)':'rgba(255,68,102,0.55)';}),borderRadius:6,borderSkipped:false}]},options:chartOpts({scales:{y:{grid:{color:'rgba(255,255,255,0.04)'},border:{display:false},ticks:{color:'#6b7280',font:{size:10},callback:function(v){return '$'+v;}}},x:{grid:{display:false},border:{display:false},ticks:{color:'#6b7280',font:{size:10}}}}})});
   var ctx3=document.getElementById('day-chart').getContext('2d');
   if(dayC)dayC.destroy();
-  dayC=new Chart(ctx3,{type:'bar',data:{labels:days,datasets:[{data:dayPnlArr,backgroundColor:dayPnlArr.map(function(v){return v>=0?'rgba(85,211,150,0.6)':'rgba(255,68,102,0.6)';}),borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:'#0F2414'},ticks:{color:'#4A6B50'}},x:{grid:{display:false},ticks:{color:'#4A6B50'}}}}});
+  dayC=new Chart(ctx3,{type:'bar',data:{labels:days,datasets:[{data:dayPnlArr,backgroundColor:dayPnlArr.map(function(v){return v>=0?'rgba(85,211,150,0.55)':'rgba(255,68,102,0.55)';}),borderRadius:6,borderSkipped:false}]},options:chartOpts({scales:{y:{grid:{color:'rgba(255,255,255,0.04)'},border:{display:false},ticks:{color:'#6b7280',font:{size:10},callback:function(v){return '$'+v;}}},x:{grid:{display:false},border:{display:false},ticks:{color:'#6b7280',font:{size:10}}}}})});
+
+  // Hour chart
+  var hourPnl={};
+  trades.forEach(function(t){if(t.time){var h=parseInt(t.time.split(':')[0]);hourPnl[h]=(hourPnl[h]||0)+(t.pnl||0);}});
+  var hourKeys=Object.keys(hourPnl).map(Number).sort(function(a,b){return a-b;});
+  var hourLabels=hourKeys.map(function(h){return h+'h';});
+  var hourVals=hourKeys.map(function(h){return parseFloat(hourPnl[h].toFixed(2));});
+  var bestH=hourKeys.length?hourKeys.reduce(function(a,b){return hourPnl[a]>hourPnl[b]?a:b;}):null;
+  var badgeEl=document.getElementById('best-hour-badge');
+  if(badgeEl&&bestH!==null)badgeEl.textContent='🏆 Meilleure heure : '+bestH+'h00';
+  var ctx5=document.getElementById('hour-chart').getContext('2d');
+  if(window.hourC)window.hourC.destroy();
+  if(hourKeys.length){
+    window.hourC=new Chart(ctx5,{type:'bar',data:{labels:hourLabels,datasets:[{data:hourVals,backgroundColor:hourVals.map(function(v){return v>=0?'rgba(85,211,150,0.55)':'rgba(255,68,102,0.55)';}),borderRadius:6,borderSkipped:false}]},options:chartOpts({scales:{y:{grid:{color:'rgba(255,255,255,0.04)'},border:{display:false},ticks:{color:'#6b7280',font:{size:10},callback:function(v){return '$'+v;}}},x:{grid:{display:false},border:{display:false},ticks:{color:'#6b7280',font:{size:10}}}}})});
+  } else {
+    ctx5.canvas.parentElement.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted);font-size:11px">Aucun trade avec heure renseignée — ajoute l\'heure lors de tes prochains trades</div>';
+  }
+
   var sessions={London:0,'New York':0,Asian:0,'London-NY Overlap':0};
   trades.forEach(function(t){if(sessions[t.session]!==undefined)sessions[t.session]++;});
   var ctx4=document.getElementById('sess-chart').getContext('2d');
   if(sessC)sessC.destroy();
-  sessC=new Chart(ctx4,{type:'doughnut',data:{labels:Object.keys(sessions),datasets:[{data:Object.values(sessions),backgroundColor:['rgba(85,211,150,0.8)','rgba(74,158,255,0.8)','rgba(255,184,0,0.8)','rgba(33,241,168,0.8)'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#4A6B50',font:{size:10}}}}}});
+  sessC=new Chart(ctx4,{type:'doughnut',data:{labels:Object.keys(sessions),datasets:[{data:Object.values(sessions),backgroundColor:['rgba(85,211,150,0.8)','rgba(74,158,255,0.8)','rgba(255,184,0,0.8)','rgba(33,241,168,0.8)'],borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#6b7280',font:{size:10},padding:10}},tooltip:{backgroundColor:'#0d0d0d',borderColor:'#1f1f1f',borderWidth:1,titleColor:'#6b7280',bodyColor:'#f0f0f0'}}}});
   renderFullStats();
 }
 
