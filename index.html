@@ -388,7 +388,16 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
             <div class="card"><div class="card-title">Recent Trades <button class="btn btn-ghost btn-sm" onclick="nav('journal',null)">View All</button></div><div class="tw"><table><thead><tr><th>Date</th><th>Pair</th><th>Direction</th><th>P&amp;L</th><th>Result</th></tr></thead><tbody id="d-trades"><tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:20px">No trades yet</td></tr></tbody></table></div></div>
           </div>
         </div>
-        <div class="card"><div class="card-title">Cumulative P&amp;L</div><div style="height:160px"><canvas id="pnl-chart"></canvas></div></div>
+        <div class="card" style="padding:16px 16px 10px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+            <div>
+              <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;font-weight:600">Cumulative P&amp;L</div>
+              <div style="font-size:22px;font-weight:700;font-family:'Space Grotesk',sans-serif;margin-top:2px" id="chart-total-pnl">$0</div>
+            </div>
+            <div id="chart-pnl-badge" style="font-size:11px;font-weight:600;padding:4px 10px;border-radius:99px;background:rgba(85,211,150,0.1);color:#55D396"></div>
+          </div>
+          <div style="height:180px;position:relative"><canvas id="pnl-chart"></canvas></div>
+        </div>
         <!-- OBJECTIFS -->
         <div class="card" id="goals-card">
           <div class="card-title">Trading Goals <button class="btn btn-ghost btn-sm" onclick="openM('m-goal')">+ Set Goal</button></div>
@@ -1243,11 +1252,21 @@ function renderBehav(){
 
 function updatePnlChart(){
   var ctx=document.getElementById('pnl-chart').getContext('2d');
-  var sorted=trades.slice().reverse();
+  var sorted=trades.slice().sort(function(a,b){return a.date<b.date?-1:1;});
   var labels=sorted.map(function(t){return t.date;});
-  var cum=[];var run=0;sorted.forEach(function(t){run+=(t.pnl||0);cum.push(run);});
+  var cum=[];var run=0;sorted.forEach(function(t){run+=(t.pnl||0);cum.push(parseFloat(run.toFixed(2)));});
+  var totalPnl=cum.length?cum[cum.length-1]:0;
+  var el=document.getElementById('chart-total-pnl');
+  var badge=document.getElementById('chart-pnl-badge');
+  if(el)el.innerHTML='<span style="color:'+(totalPnl>=0?'#55D396':'#FF4466')+'">$'+totalPnl.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})+'</span>';
+  if(badge){badge.textContent=totalPnl>=0?'▲ Profitable':'▼ Negative';badge.style.background=totalPnl>=0?'rgba(85,211,150,0.1)':'rgba(255,68,102,0.1)';badge.style.color=totalPnl>=0?'#55D396':'#FF4466';}
   if(pnlC)pnlC.destroy();
-  pnlC=new Chart(ctx,{type:'line',data:{labels:labels,datasets:[{data:cum,borderColor:'#55D396',backgroundColor:'rgba(85,211,150,0.06)',fill:true,tension:0.4,pointRadius:2,pointBackgroundColor:'#55D396'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:'#0F2414'},ticks:{color:'#4A6B50',callback:function(v){return '$'+v;}}},x:{grid:{display:false},ticks:{color:'#4A6B50',maxTicksLimit:5}}}}});
+  if(!cum.length){if(el)el.textContent='$0.00';return;}
+  var grad=ctx.createLinearGradient(0,0,0,ctx.canvas.clientHeight||180);
+  grad.addColorStop(0,'rgba(85,211,150,0.25)');
+  grad.addColorStop(0.6,'rgba(85,211,150,0.05)');
+  grad.addColorStop(1,'rgba(85,211,150,0)');
+  pnlC=new Chart(ctx,{type:'line',data:{labels:labels,datasets:[{data:cum,borderColor:'#55D396',borderWidth:2,backgroundColor:grad,fill:true,tension:0.35,pointRadius:0,pointHoverRadius:5,pointHoverBackgroundColor:'#55D396',pointHoverBorderColor:'#fff',pointHoverBorderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{backgroundColor:'#0d0d0d',borderColor:'#1f1f1f',borderWidth:1,titleColor:'#6b7280',bodyColor:'#f0f0f0',bodyFont:{weight:'700'},callbacks:{label:function(c){return ' $'+c.parsed.y.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});}}}},scales:{y:{position:'right',grid:{color:'rgba(255,255,255,0.04)'},border:{display:false},ticks:{color:'#6b7280',font:{size:10},callback:function(v){return '$'+v;}}},x:{grid:{display:false},border:{display:false},ticks:{color:'#6b7280',font:{size:10},maxTicksLimit:6}}}}});
 }
 
 function renderJ(){
@@ -2299,18 +2318,18 @@ function renderGoals(){
     var pct=range>0?Math.min(Math.round((current-(g.start_amount||0))/range*100),100):0;
     if(pct<0)pct=0;
     var tradePct=g.target_trades>0?Math.min(Math.round(trades.length/g.target_trades*100),100):null;
-    return '<div style="margin-bottom:14px">'
-      +'<div style="display:flex;justify-content:space-between;margin-bottom:6px">'
+    return '<div style="margin-bottom:14px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;position:relative">'
+      +'<button onclick="deleteGoal(\''+g.id+'\')" title="Supprimer" style="position:absolute;top:8px;right:8px;background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:14px;line-height:1;padding:2px 5px;border-radius:4px" onmouseover="this.style.color=\'#FF4466\'" onmouseout="this.style.color=\'var(--text-muted)\'">×</button>'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;padding-right:20px">'
       +'<span style="font-size:12px;font-weight:600">'+g.name+'</span>'
-      +'<span style="font-size:12px;color:var(--accent);font-weight:700;font-family:JetBrains Mono,monospace">'+pct+'%</span>'
+      +'<span style="font-size:13px;color:var(--accent);font-weight:700;font-family:JetBrains Mono,monospace">'+pct+'%</span>'
       +'</div>'
-      +'<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);margin-bottom:6px">'
+      +'<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);margin-bottom:8px">'
       +'<span>$'+Math.round(current).toLocaleString()+' / $'+g.target.toLocaleString()+'</span>'
       +(g.target_trades?'<span>'+trades.length+' / '+g.target_trades+' trades</span>':'')
       +'</div>'
       +'<div class="bar-t"><div class="bar-f" style="width:'+pct+'%"></div></div>'
       +(tradePct!==null?'<div class="bar-t" style="margin-top:4px"><div style="height:100%;border-radius:99px;background:var(--blue);width:'+tradePct+'%"></div></div>':'')
-      +'<button class="btn btn-red btn-sm" style="margin-top:6px;font-size:10px" onclick="deleteGoal(\"'+g.id+'\")">Remove</button>'
       +'</div>';
   }).join('');
 }
