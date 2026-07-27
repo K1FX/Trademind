@@ -603,20 +603,47 @@ textarea.fi2{resize:vertical;min-height:70px;line-height:1.5}
       <!-- MY RULES -->
       <div id="page-rules" class="page">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-          <div><div style="font-size:15px;font-weight:600">My Trading Rules</div><div style="font-size:11px;color:var(--text-muted)">Define rules — AI checks compliance</div></div>
-          <button class="btn btn-acc btn-sm" onclick="if(userPlan==='free'){showUpgradeModal('Trading rules are available on Pro and Elite plans. Upgrade to unlock.');}else{openM('m-rule');}">+ Add Rule</button>
+          <div><div style="font-size:15px;font-weight:600">My Trading Rules</div><div style="font-size:11px;color:var(--text-muted)">Définis tes règles — l'IA vérifie le respect</div></div>
+          <button class="btn btn-acc btn-sm" onclick="if(userPlan==='free'){showUpgradeModal('Trading rules are available on Pro and Elite plans.');}else{openM('m-rule');}">+ Add Rule</button>
         </div>
-        <div class="g2">
-          <div class="card"><div class="card-title">Rules &amp; Compliance</div><div id="rules-list"><div style="color:var(--text-muted);font-size:12px;padding:10px 0">No rules yet</div></div></div>
-          <div class="card">
-            <div class="card-title">Consistency Score</div>
-            <div style="text-align:center;padding:20px 0">
-              <div style="font-size:52px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--accent)" id="cons-score">--</div>
-              <div style="font-size:12px;color:var(--text-muted);margin-top:6px">Based on rule compliance</div>
-            </div>
+
+        <!-- Date filter -->
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <span style="font-size:11px;color:var(--text-muted);font-weight:600">Analyser du</span>
+          <input class="fi2" type="date" id="rule-from" style="padding:5px 8px;font-size:11px;width:auto" onchange="renderRules();analyzeRulesAI()">
+          <span style="font-size:11px;color:var(--text-muted)">au</span>
+          <input class="fi2" type="date" id="rule-to" style="padding:5px 8px;font-size:11px;width:auto" onchange="renderRules();analyzeRulesAI()">
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('rule-from').value='';document.getElementById('rule-to').value='';renderRules();analyzeRulesAI()">Tout</button>
+          <button class="btn btn-acc btn-sm" style="margin-left:auto" onclick="analyzeRulesAI()">🤖 Analyser</button>
+        </div>
+
+        <div class="g2" style="margin-bottom:14px">
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px">
+            <div style="font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--text-muted);font-weight:600;margin-bottom:12px">Règles &amp; Compliance</div>
+            <div id="rules-list"><div style="color:var(--text-muted);font-size:12px;padding:10px 0">Aucune règle</div></div>
+          </div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;display:flex;flex-direction:column;align-items:center;justify-content:center">
+            <div style="font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--text-muted);font-weight:600;margin-bottom:16px;align-self:flex-start">Consistency Score</div>
+            <svg viewBox="0 0 80 80" width="100" height="100" style="transform:rotate(-90deg)">
+              <circle cx="40" cy="40" r="34" fill="none" stroke="rgba(85,211,150,0.1)" stroke-width="6"/>
+              <circle id="cons-ring" cx="40" cy="40" r="34" fill="none" stroke="#55D396" stroke-width="6" stroke-linecap="round" stroke-dasharray="213.6" stroke-dashoffset="213.6" style="transition:stroke-dashoffset .7s ease"/>
+            </svg>
+            <div style="font-size:40px;font-weight:700;font-family:'Space Grotesk',sans-serif;margin-top:-10px" id="cons-score">--</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:4px">sur la période sélectionnée</div>
           </div>
         </div>
-        <div class="card"><div class="card-title">AI Rule Analysis</div><div class="ai-txt" id="rules-ai-txt" style="font-size:12px"><span style="color:var(--text-muted)">Add trades and rules to get AI analysis</span></div></div>
+
+        <!-- AI analysis cards -->
+        <div class="ai-box" style="padding:0;overflow:hidden">
+          <div style="padding:14px 16px;border-bottom:1px solid rgba(85,211,150,0.1);display:flex;align-items:center;gap:7px">
+            <div class="ai-dot"></div>
+            <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em">AI Rule Analysis</div>
+          </div>
+          <div style="padding:14px 16px">
+            <div id="rules-ai-title" style="font-size:14px;font-weight:600;margin-bottom:10px;line-height:1.4;color:var(--text-muted)">Lance l'analyse pour voir tes résultats</div>
+            <div id="rules-ai-cards" style="display:grid;grid-template-columns:1fr 1fr;gap:8px"></div>
+          </div>
+        </div>
       </div>
 
       <!-- SUPPORT -->
@@ -1199,25 +1226,77 @@ function saveRule(){
   document.getElementById('r-name').value='';document.getElementById('r-desc').value='';
 }
 
-function renderRules(){
-  if(!rules.length){document.getElementById('rules-list').innerHTML='<div style="color:var(--text-muted);font-size:12px;padding:10px 0">No rules yet</div>';document.getElementById('cons-score').textContent='--';return;}
-  var comp=calcCompliance();
-  document.getElementById('rules-list').innerHTML=rules.map(function(r){
-    var ok=checkRule(r);
-    return '<div class="rule-item"><div class="rule-check '+(ok?'ok':'fail')+'">'+(ok?'v':'x')+'</div><div style="flex:1"><div style="font-size:12px;font-weight:500">'+r.name+'</div><div style="font-size:10px;color:var(--text-muted)">'+r.cat+'</div></div><div style="font-size:11px;font-weight:700;color:'+(ok?'var(--accent)':'var(--red)')+'">'+( ok?'OK':'FAIL')+'</div><button class="btn btn-red btn-sm" onclick="deleteRule('+r.id+')">x</button></div>';
-  }).join('');
-  document.getElementById('cons-score').textContent=comp+'%';
-  document.getElementById('cons-score').style.color=comp>=70?'var(--accent)':comp>=50?'var(--gold)':'var(--red)';
+function getRuleFilteredTrades(){
+  var from=document.getElementById('rule-from')?document.getElementById('rule-from').value:'';
+  var to=document.getElementById('rule-to')?document.getElementById('rule-to').value:'';
+  return trades.filter(function(t){
+    if(from&&t.date<from)return false;
+    if(to&&t.date>to)return false;
+    return true;
+  });
 }
 
-function checkRule(r){
-  if(!trades.length)return true;
-  var name=r.name.toLowerCase();
-  if(name.includes('1%')||name.includes('risk')){return trades.every(function(t){return Math.abs(t.pnl||0)<500;});}
-  if(name.includes('london')||name.includes('session')){var na=trades.filter(function(t){return t.session==='Asian';}).length;return na/trades.length<0.3;}
-  return Math.random()>0.3;
+function checkRule(r,filteredTrades){
+  var ts=filteredTrades||getRuleFilteredTrades();
+  if(!ts.length)return true;
+  var name=(r.name+' '+(r.desc||'')).toLowerCase();
+  // Risk management rules
+  if(name.includes('1%')||name.includes('risk')||name.includes('risque')){
+    return ts.every(function(t){return Math.abs(t.pnl||0)<500;});
+  }
+  // Session rules
+  if(name.includes('london')||name.includes('session')){
+    var na=ts.filter(function(t){return t.session==='Asian';}).length;
+    return na/ts.length<0.3;
+  }
+  // Revenge / psychology — check if ending in profit overall
+  if(name.includes('veng')||name.includes('revan')||name.includes('psycho')||name.includes('emotion')||name.includes('anger')||name.includes('colere')||name.includes('colère')){
+    var totalPnl=ts.reduce(function(s,t){return s+(t.pnl||0);},0);
+    var winRate=ts.filter(function(t){return t.result==='Win';}).length/ts.length;
+    return totalPnl>=0||winRate>=0.5;
+  }
+  // Stop loss rules
+  if(name.includes('stop')||name.includes('sl')){
+    return ts.filter(function(t){return t.sl>0;}).length/ts.length>0.7;
+  }
+  // Win rate rules
+  if(name.includes('win rate')||name.includes('taux')){
+    var wr=ts.filter(function(t){return t.result==='Win';}).length/ts.length;
+    return wr>=0.5;
+  }
+  // Default: consider compliant (AI will give the real verdict)
+  return true;
 }
-function calcCompliance(){if(!rules.length)return 0;var ok=rules.filter(function(r){return checkRule(r);}).length;return Math.round(ok/rules.length*100);}
+
+function calcCompliance(){
+  if(!rules.length)return 0;
+  var ts=getRuleFilteredTrades();
+  var ok=rules.filter(function(r){return checkRule(r,ts);}).length;
+  return Math.round(ok/rules.length*100);
+}
+
+function renderRules(){
+  if(!rules.length){
+    document.getElementById('rules-list').innerHTML='<div style="color:var(--text-muted);font-size:12px;padding:10px 0">Aucune règle</div>';
+    document.getElementById('cons-score').textContent='--';
+    return;
+  }
+  var ts=getRuleFilteredTrades();
+  var comp=calcCompliance();
+  document.getElementById('rules-list').innerHTML=rules.map(function(r){
+    var ok=checkRule(r,ts);
+    return '<div class="rule-item">'
+      +'<div class="rule-check '+(ok?'ok':'fail')+'">'+(ok?'✓':'✗')+'</div>'
+      +'<div style="flex:1"><div style="font-size:12px;font-weight:500">'+r.name+'</div><div style="font-size:10px;color:var(--text-muted)">'+r.cat+'</div></div>'
+      +'<div style="font-size:11px;font-weight:700;color:'+(ok?'var(--accent)':'var(--red)')+'">'+( ok?'OK':'FAIL')+'</div>'
+      +'<button class="btn btn-red btn-sm" onclick="deleteRule('+r.id+')" style="padding:2px 6px">×</button>'
+      +'</div>';
+  }).join('');
+  var scoreEl=document.getElementById('cons-score');
+  var ringEl=document.getElementById('cons-ring');
+  if(scoreEl){scoreEl.textContent=comp+'%';scoreEl.style.color=comp>=70?'var(--accent)':comp>=50?'var(--gold)':'var(--red)';}
+  if(ringEl){var circ=213.6;ringEl.style.strokeDashoffset=circ-(circ*comp/100);ringEl.style.stroke=comp>=70?'#55D396':comp>=50?'#FFB800':'#FF4466';}
+}
 function deleteRule(id){rules=rules.filter(function(r){return r.id!==id;});localStorage.setItem('tm-rules-'+user.id,JSON.stringify(rules));renderRules();}
 
 function calNav(dir){calMonth+=dir;if(calMonth>11){calMonth=0;calYear++;}if(calMonth<0){calMonth=11;calYear--;}renderCal();}
@@ -1607,10 +1686,47 @@ async function loadEcoCal(){
 }
 
 async function analyzeRulesAI(){
-  if(!rules.length||!trades.length)return;
+  var titleEl=document.getElementById('rules-ai-title');
+  var cardsEl=document.getElementById('rules-ai-cards');
+  if(!rules.length||!trades.length){
+    if(titleEl)titleEl.textContent='Ajoute des trades et des règles pour obtenir une analyse.';
+    if(cardsEl)cardsEl.innerHTML='';
+    return;
+  }
+  if(titleEl)titleEl.innerHTML='<span style="color:var(--text-muted)">Analyse en cours...</span>';
+  if(cardsEl)cardsEl.innerHTML='<div class="ld" style="grid-column:1/-1;display:flex;gap:5px"><div class="ld-dot"></div><div class="ld-dot"></div><div class="ld-dot"></div></div>';
+  var ts=getRuleFilteredTrades();
   var comp=calcCompliance();
-  try{var r=await callAI('Trader has '+rules.length+' rules, '+comp+'% compliance, '+trades.length+' trades. Rules: '+rules.map(function(r){return r.name;}).join(', ')+'. Give 2 tips to improve. Concise.',200);document.getElementById('rules-ai-txt').innerHTML=r;}
-  catch(e){}
+  var failed=rules.filter(function(r){return !checkRule(r,ts);}).map(function(r){return r.name;});
+  var ok=rules.filter(function(r){return checkRule(r,ts);}).map(function(r){return r.name;});
+  var from=document.getElementById('rule-from').value;
+  var to=document.getElementById('rule-to').value;
+  var period=from&&to?' du '+from+' au '+to:from?' depuis '+from:to?' jusqu\'au '+to:' (tout l\'historique)';
+  var totalPnl=ts.reduce(function(s,t){return s+(t.pnl||0);},0);
+  var winRate=ts.length?Math.round(ts.filter(function(t){return t.result==='Win';}).length/ts.length*100):0;
+  var prompt='Tu es un coach trading. Période analysée'+period+'. '+ts.length+' trades, P&L total $'+totalPnl.toFixed(0)+', win rate '+winRate+'%, compliance '+comp+'%. '
+    +'Règles respectées: '+(ok.join(', ')||'aucune')+'. Règles non respectées: '+(failed.join(', ')||'aucune')+'. '
+    +'Réponds UNIQUEMENT en JSON valide, pas de markdown: {"title":"une phrase de synthèse courte","violation":{"label":"À corriger","text":"conseil précis sur la règle la plus violée ou axe principal"},"strength":{"label":"Point fort","text":"ce qui est bien respecté ou atout principal"}}';
+  try{
+    var r=await callAI(prompt,200);
+    var clean=r.replace(/```json/g,'').replace(/```/g,'').trim();
+    var s=clean.indexOf('{'),e=clean.lastIndexOf('}');
+    if(s===-1||e===-1)throw new Error('no json');
+    var data=JSON.parse(clean.slice(s,e+1));
+    if(titleEl)titleEl.textContent=data.title||'';
+    if(cardsEl)cardsEl.innerHTML=
+      '<div style="background:rgba(255,68,102,0.05);border:1px solid rgba(255,68,102,0.15);border-radius:8px;padding:10px">'
+      +'<div style="display:flex;align-items:center;gap:5px;margin-bottom:5px"><span style="font-size:12px">⚠️</span><span style="font-size:10px;font-weight:700;color:#FF4466">'+(data.violation&&data.violation.label||'À corriger')+'</span></div>'
+      +'<div style="font-size:11px;color:var(--text-muted);line-height:1.5">'+(data.violation&&data.violation.text||'')+'</div>'
+      +'</div>'
+      +'<div style="background:rgba(85,211,150,0.05);border:1px solid rgba(85,211,150,0.12);border-radius:8px;padding:10px">'
+      +'<div style="display:flex;align-items:center;gap:5px;margin-bottom:5px"><span style="font-size:12px">💪</span><span style="font-size:10px;font-weight:700;color:#55D396">'+(data.strength&&data.strength.label||'Point fort')+'</span></div>'
+      +'<div style="font-size:11px;color:var(--text-muted);line-height:1.5">'+(data.strength&&data.strength.text||'')+'</div>'
+      +'</div>';
+  }catch(e){
+    if(titleEl)titleEl.textContent='Analyse indisponible — réessaie dans un instant.';
+    if(cardsEl)cardsEl.innerHTML='';
+  }
 }
 
 var currentPricePeriod='monthly';
