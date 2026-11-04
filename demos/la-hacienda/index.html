@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>La Hacienda Coffee Shop · Nice</title>
+<meta name="description" content="La Hacienda Coffee Shop, 2 Bd Gambetta à Nice. Café de spécialité, pâtisseries et brunch. Ouvert 7j/7.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#f7efe4; --sand:#ead8c0; --terra:#c0603a; --terra-dark:#9c4826;
+    --coffee:#3b2418; --ink:#2a1a12; --muted:#7a6252; --white:#fffaf3;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:Inter,system-ui,sans-serif;background:var(--cream);color:var(--ink);line-height:1.6}
+  h1,h2,h3{font-family:Fraunces,Georgia,serif;line-height:1.15}
+  a{color:inherit}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+
+  .demo-bar{background:var(--coffee);color:var(--sand);font-size:13px;text-align:center;padding:8px 16px}
+
+  nav{position:sticky;top:0;z-index:10;background:rgba(247,239,228,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--sand)}
+  nav .wrap{display:flex;align-items:center;justify-content:space-between;height:64px}
+  .logo{font-family:Fraunces,serif;font-weight:700;font-size:20px;text-decoration:none}
+  .logo span{color:var(--terra)}
+  nav ul{display:flex;gap:24px;list-style:none;font-size:15px}
+  nav ul a{text-decoration:none;color:var(--muted)}
+  nav ul a:hover{color:var(--terra)}
+  @media(max-width:640px){nav ul{display:none}}
+
+  .hero{position:relative;overflow:hidden;padding:96px 0 110px;
+    background:
+      radial-gradient(circle at 85% 20%, rgba(192,96,58,.28), transparent 45%),
+      radial-gradient(circle at 10% 90%, rgba(59,36,24,.18), transparent 50%),
+      var(--cream);}
+  .hero .wrap{display:grid;grid-template-columns:1.2fr .8fr;gap:40px;align-items:center}
+  @media(max-width:800px){.hero .wrap{grid-template-columns:1fr}.hero-art{display:none}}
+  .eyebrow{display:inline-block;background:var(--white);border:1px solid var(--sand);border-radius:99px;padding:6px 14px;font-size:14px;color:var(--muted);margin-bottom:20px}
+  .eyebrow b{color:var(--terra)}
+  .hero h1{font-size:clamp(40px,7vw,72px);color:var(--coffee);margin-bottom:20px}
+  .hero h1 em{color:var(--terra);font-style:italic}
+  .hero p{font-size:19px;color:var(--muted);max-width:520px;margin-bottom:32px}
+  .btns{display:flex;gap:12px;flex-wrap:wrap}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:14px 24px;border-radius:12px;font-weight:600;text-decoration:none;transition:.2s}
+  .btn-primary{background:var(--terra);color:#fff}
+  .btn-primary:hover{background:var(--terra-dark)}
+  .btn-ghost{border:1.5px solid var(--coffee);color:var(--coffee)}
+  .btn-ghost:hover{background:var(--coffee);color:var(--cream)}
+
+  .hero-art{aspect-ratio:1;border-radius:50% 50% 24px 24px;background:linear-gradient(160deg,var(--terra),var(--coffee));display:grid;place-items:center;box-shadow:0 30px 60px -20px rgba(59,36,24,.45)}
+  .hero-art svg{width:55%;height:auto}
+
+  section{padding:88px 0}
+  .section-title{font-size:clamp(30px,4.5vw,44px);color:var(--coffee);margin-bottom:12px}
+  .section-sub{color:var(--muted);font-size:17px;max-width:560px;margin-bottom:44px}
+
+  .rating{background:var(--coffee);color:var(--cream);padding:48px 0}
+  .rating .wrap{display:flex;align-items:center;justify-content:center;gap:28px;flex-wrap:wrap;text-align:center}
+  .rating .big{font-family:Fraunces,serif;font-size:64px;font-weight:700;color:#f1b48f;line-height:1}
+  .stars{color:#f1b48f;font-size:26px;letter-spacing:4px}
+  .rating p{color:var(--sand)}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px}
+  .card{background:var(--white);border:1px solid var(--sand);border-radius:20px;padding:28px}
+  .card .ico{font-size:34px;margin-bottom:14px}
+  .card h3{font-size:22px;margin-bottom:8px;color:var(--coffee)}
+  .card p{color:var(--muted);font-size:15px}
+
+  .menu{background:var(--white)}
+  .menu-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:40px}
+  .menu h3{font-size:24px;color:var(--terra);margin-bottom:16px;padding-bottom:8px;border-bottom:2px dotted var(--sand)}
+  .menu ul{list-style:none}
+  .menu li{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f0e5d6}
+  .menu li span:last-child{color:var(--muted);font-size:14px}
+  .note{margin-top:28px;font-size:14px;color:var(--muted);font-style:italic}
+
+  .info .wrap{display:grid;grid-template-columns:1fr 1fr;gap:40px}
+  @media(max-width:800px){.info .wrap{grid-template-columns:1fr}}
+  table{width:100%;border-collapse:collapse;font-size:16px}
+  td{padding:10px 0;border-bottom:1px solid var(--sand)}
+  td:last-child{text-align:right;font-weight:500}
+  tr.today td{color:var(--terra);font-weight:600}
+  .contact-line{display:flex;gap:12px;align-items:flex-start;margin-bottom:18px;font-size:17px}
+  .contact-line .ico{font-size:22px}
+  .map{border-radius:20px;overflow:hidden;border:1px solid var(--sand);margin-top:12px;height:260px}
+  .map iframe{width:100%;height:100%;border:0}
+
+  .cta{background:linear-gradient(135deg,var(--terra),var(--terra-dark));color:#fff;text-align:center;border-radius:28px;padding:64px 24px;margin:0 20px}
+  .cta h2{font-size:clamp(28px,4.5vw,42px);margin-bottom:12px}
+  .cta p{opacity:.9;margin-bottom:28px;font-size:17px}
+  .cta .btn{background:#fff;color:var(--terra-dark)}
+
+  footer{padding:48px 0 32px;text-align:center;color:var(--muted);font-size:14px}
+  footer .logo{display:inline-block;margin-bottom:8px}
+
+  .fab{position:fixed;right:18px;bottom:18px;z-index:20;background:var(--terra);color:#fff;width:58px;height:58px;border-radius:50%;display:grid;place-items:center;font-size:24px;text-decoration:none;box-shadow:0 10px 25px -5px rgba(156,72,38,.6)}
+  @media(min-width:801px){.fab{display:none}}
+</style>
+</head>
+<body>
+
+<div class="demo-bar">✨ Maquette de démonstration proposée à La Hacienda Coffee Shop, pas encore le site officiel</div>
+
+<nav>
+  <div class="wrap">
+    <a href="#" class="logo">La <span>Hacienda</span></a>
+    <ul>
+      <li><a href="#about">Le lieu</a></li>
+      <li><a href="#menu">La carte</a></li>
+      <li><a href="#infos">Infos &amp; horaires</a></li>
+    </ul>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <div>
+      <div class="eyebrow">⭐ <b>4,8/5</b> · 327 avis Google</div>
+      <h1>Votre pause café <em>à deux pas</em> de la mer.</h1>
+      <p>Coffee shop chaleureux au cœur de Nice, Boulevard Gambetta. Cafés, douceurs et bonne humeur, 7 jours sur 7.</p>
+      <div class="btns">
+        <a class="btn btn-primary" href="#infos">📍 Venir nous voir</a>
+        <a class="btn btn-ghost" href="https://instagram.com/lahaciendacoffeeshop" target="_blank" rel="noopener">Instagram</a>
+      </div>
+    </div>
+    <div class="hero-art" aria-hidden="true">
+      <svg viewBox="0 0 120 120" fill="none" stroke="#f7efe4" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 50h62v22a26 26 0 0 1-26 26h-10a26 26 0 0 1-26-26z"/>
+        <path d="M84 56h6a12 12 0 0 1 0 24h-8"/>
+        <path d="M42 18c-4 6 4 10 0 18M56 14c-4 6 4 10 0 18M70 18c-4 6 4 10 0 18"/>
+        <path d="M14 108h88"/>
+      </svg>
+    </div>
+  </div>
+</header>
+
+<div class="rating">
+  <div class="wrap">
+    <div class="big">4,8</div>
+    <div>
+      <div class="stars">★★★★★</div>
+      <p>Note moyenne sur 327 avis Google</p>
+    </div>
+  </div>
+</div>
+
+<section id="about">
+  <div class="wrap">
+    <h2 class="section-title">Bienvenue à La Hacienda</h2>
+    <p class="section-sub">Un endroit où l'on prend le temps : un bon café, quelque chose de gourmand, et une équipe qui vous accueille avec le sourire.</p>
+    <div class="grid">
+      <div class="card"><div class="ico">☕</div><h3>Cafés préparés avec soin</h3><p>Espresso, cappuccino, latte… préparés à la minute, sur place ou à emporter.</p></div>
+      <div class="card"><div class="ico">🥐</div><h3>Douceurs du jour</h3><p>De quoi accompagner votre boisson, du petit-déjeuner au goûter.</p></div>
+      <div class="card"><div class="ico">🌿</div><h3>Une ambiance cosy</h3><p>Le spot idéal pour travailler, discuter ou simplement souffler entre deux balades.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="menu" class="menu">
+  <div class="wrap">
+    <h2 class="section-title">La carte</h2>
+    <p class="section-sub">Un aperçu de ce qui vous attend.</p>
+    <div class="menu-cols">
+      <div>
+        <h3>Cafés</h3>
+        <ul>
+          <li><span>Espresso</span><span>—</span></li>
+          <li><span>Cappuccino</span><span>—</span></li>
+          <li><span>Latte</span><span>—</span></li>
+          <li><span>Flat white</span><span>—</span></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Autres boissons</h3>
+        <ul>
+          <li><span>Chocolat chaud</span><span>—</span></li>
+          <li><span>Thé &amp; infusions</span><span>—</span></li>
+          <li><span>Boissons fraîches</span><span>—</span></li>
+        </ul>
+      </div>
+      <div>
+        <h3>À grignoter</h3>
+        <ul>
+          <li><span>Pâtisseries</span><span>—</span></li>
+          <li><span>Viennoiseries</span><span>—</span></li>
+          <li><span>Formules du moment</span><span>—</span></li>
+        </ul>
+      </div>
+    </div>
+    <p class="note">Carte et prix à compléter avec les vôtres, ainsi que vos photos.</p>
+  </div>
+</section>
+
+<section id="infos" class="info">
+  <div class="wrap">
+    <div>
+      <h2 class="section-title">Horaires</h2>
+      <table id="hours">
+        <tr data-d="1"><td>Lundi</td><td>9h – 18h</td></tr>
+        <tr data-d="2"><td>Mardi</td><td>9h – 18h</td></tr>
+        <tr data-d="3"><td>Mercredi</td><td>9h – 18h</td></tr>
+        <tr data-d="4"><td>Jeudi</td><td>9h – 18h</td></tr>
+        <tr data-d="5"><td>Vendredi</td><td>9h – 18h</td></tr>
+        <tr data-d="6"><td>Samedi</td><td>9h – 18h</td></tr>
+        <tr data-d="0"><td>Dimanche</td><td>9h – 15h</td></tr>
+      </table>
+    </div>
+    <div>
+      <h2 class="section-title">Nous trouver</h2>
+      <div class="contact-line"><span class="ico">📍</span><span>2 Boulevard Gambetta<br>06000 Nice</span></div>
+      <div class="contact-line"><span class="ico">📞</span><a href="tel:+33647597013">06 47 59 70 13</a></div>
+      <div class="contact-line"><span class="ico">📸</span><a href="https://instagram.com/lahaciendacoffeeshop" target="_blank" rel="noopener">@lahaciendacoffeeshop</a></div>
+      <div class="map">
+        <iframe loading="lazy" title="Carte" src="https://maps.google.com/maps?q=La%20Hacienda%20Coffee%20Shop%2C%202%20Bd%20Gambetta%2C%2006000%20Nice&z=16&output=embed"></iframe>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="cta">
+  <h2>On vous garde une place ?</h2>
+  <p>Passez nous voir au 2 Boulevard Gambetta, on s'occupe du reste.</p>
+  <a class="btn" href="https://www.google.com/maps/dir/?api=1&destination=La+Hacienda+Coffee+Shop+2+Bd+Gambetta+Nice" target="_blank" rel="noopener">🧭 Itinéraire</a>
+</div>
+
+<footer>
+  <div class="logo">La <span style="color:var(--terra)">Hacienda</span></div>
+  <p>Coffee Shop · 2 Bd Gambetta, 06000 Nice</p>
+</footer>
+
+<a class="fab" href="tel:+33647597013" aria-label="Appeler">📞</a>
+
+<script>
+  try{
+    var d=new Date().getDay();
+    var row=document.querySelector('#hours tr[data-d="'+d+'"]');
+    if(row) row.classList.add('today');
+  }catch(e){}
+</script>
+</body>
+</html>
