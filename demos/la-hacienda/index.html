@@ -95,6 +95,30 @@
   footer{padding:48px 0 32px;text-align:center;color:var(--muted);font-size:14px}
   footer .logo{display:inline-block;margin-bottom:8px}
 
+  .ph{position:relative;overflow:hidden;background:linear-gradient(160deg,var(--terra),var(--coffee))}
+  .ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+  .hero-art{position:relative;overflow:hidden}
+  .hero-art img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  @media(max-width:800px){.hero .wrap .hero-art{display:block;aspect-ratio:4/3;border-radius:24px;order:-1}}
+
+  .story .wrap{display:grid;grid-template-columns:.9fr 1.1fr;gap:56px;align-items:center}
+  @media(max-width:800px){.story .wrap{grid-template-columns:1fr;gap:32px}}
+  .story .ph{aspect-ratio:4/5;border-radius:24px;box-shadow:0 30px 60px -25px rgba(59,36,24,.5)}
+  .story p{color:var(--muted);font-size:17px;margin-bottom:16px}
+  .story blockquote{font-family:Fraunces,serif;font-size:24px;font-style:italic;color:var(--terra);border-left:3px solid var(--terra);padding-left:18px;margin:24px 0}
+
+  .gallery{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:200px;gap:14px}
+  .gallery .ph{border-radius:18px}
+  .gallery .tall{grid-row:span 2}
+  .gallery .wide{grid-column:span 2}
+  @media(max-width:700px){.gallery{grid-template-columns:repeat(2,1fr);grid-auto-rows:150px}}
+
+  .moments{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px}
+  .moment{background:var(--white);border:1px solid var(--sand);border-radius:20px;padding:24px}
+  .moment .time{font-family:Fraunces,serif;font-size:28px;color:var(--terra);font-weight:700}
+  .moment h3{font-size:19px;margin:6px 0;color:var(--coffee)}
+  .moment p{color:var(--muted);font-size:15px}
+
   .fab{position:fixed;right:18px;bottom:18px;z-index:20;background:var(--terra);color:#fff;width:58px;height:58px;border-radius:50%;display:grid;place-items:center;font-size:24px;text-decoration:none;box-shadow:0 10px 25px -5px rgba(156,72,38,.6)}
   @media(min-width:801px){.fab{display:none}}
 </style>
@@ -107,7 +131,7 @@
   <div class="wrap">
     <a href="#" class="logo">La <span>Hacienda</span></a>
     <ul>
-      <li><a href="#about">Le lieu</a></li>
+      <li><a href="#histoire">Notre histoire</a></li>
       <li><a href="#menu">La carte</a></li>
       <li><a href="#infos">Infos &amp; horaires</a></li>
     </ul>
@@ -126,6 +150,7 @@
       </div>
     </div>
     <div class="hero-art" aria-hidden="true">
+      <img src="https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=900&q=75&auto=format&fit=crop" alt="" onerror="this.remove()">
       <svg viewBox="0 0 120 120" fill="none" stroke="#f7efe4" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
         <path d="M22 50h62v22a26 26 0 0 1-26 26h-10a26 26 0 0 1-26-26z"/>
         <path d="M84 56h6a12 12 0 0 1 0 24h-8"/>
@@ -155,6 +180,46 @@
       <div class="card"><div class="ico">🥐</div><h3>Douceurs du jour</h3><p>De quoi accompagner votre boisson, du petit-déjeuner au goûter.</p></div>
       <div class="card"><div class="ico">🌿</div><h3>Une ambiance cosy</h3><p>Le spot idéal pour travailler, discuter ou simplement souffler entre deux balades.</p></div>
     </div>
+  </div>
+</section>
+
+<section id="histoire" class="story" style="background:var(--white)">
+  <div class="wrap">
+    <div class="ph"><img src="https://images.unsplash.com/photo-1442512595331-e89e73853f31?w=900&q=75&auto=format&fit=crop" alt="Café préparé au comptoir" onerror="this.remove()"></div>
+    <div>
+      <h2 class="section-title">Notre histoire</h2>
+      <p>Une <em>hacienda</em>, c'est une grande maison où l'on accueille, où l'on partage, où la porte reste ouverte. C'est exactement ce qu'on a voulu créer ici, au 2 Boulevard Gambetta.</p>
+      <p>Un coin de Nice où l'on vient pour un espresso rapide avant le travail, et où l'on finit par rester une heure de plus. Où l'on connaît vite votre prénom et votre commande préférée.</p>
+      <blockquote>« Un bon café, c'est un moment. On s'occupe de rendre chacun d'eux un peu meilleur. »</blockquote>
+      <p>Merci aux centaines de clients qui nous ont laissé un avis : c'est grâce à vous que La Hacienda est devenue une adresse incontournable du quartier.</p>
+    </div>
+  </div>
+</section>
+
+<section id="moments">
+  <div class="wrap">
+    <h2 class="section-title">Un moment pour chaque envie</h2>
+    <p class="section-sub">Du premier café du matin à la dernière douceur de l'après-midi.</p>
+    <div class="moments">
+      <div class="moment"><div class="time">9h</div><h3>Le réveil en douceur</h3><p>Un café bien serré et une viennoiserie pour bien démarrer la journée.</p></div>
+      <div class="moment"><div class="time">12h</div><h3>La pause du midi</h3><p>Une parenthèse au calme pour souffler entre deux rendez-vous.</p></div>
+      <div class="moment"><div class="time">16h</div><h3>L'heure du goûter</h3><p>Une boisson gourmande et un morceau de gâteau, seul ou entre amis.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="galerie" style="padding-top:0">
+  <div class="wrap">
+    <h2 class="section-title">L'ambiance</h2>
+    <p class="section-sub">Un aperçu de ce qui vous attend en poussant la porte.</p>
+    <div class="gallery">
+      <div class="ph tall"><img src="https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=700&q=75&auto=format&fit=crop" alt="" onerror="this.remove()"></div>
+      <div class="ph wide"><img src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=900&q=75&auto=format&fit=crop" alt="" onerror="this.remove()"></div>
+      <div class="ph"><img src="https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=600&q=75&auto=format&fit=crop" alt="" onerror="this.remove()"></div>
+      <div class="ph"><img src="https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=600&q=75&auto=format&fit=crop" alt="" onerror="this.remove()"></div>
+      <div class="ph wide"><img src="https://images.unsplash.com/photo-1511920170033-f8396924c348?w=900&q=75&auto=format&fit=crop" alt="" onerror="this.remove()"></div>
+    </div>
+    <p class="note">Photos d'illustration, à remplacer par les vôtres.</p>
   </div>
 </section>
 
